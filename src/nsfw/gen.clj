@@ -19,7 +19,7 @@
 (defn underscore-name [name]
   (string/replace name #"-" "_"))
 
-(def *project-root* "/Users/zkim/napplelabs/test-nsfw/my-proj/") ; for dev
+#_(def *project-root* "/Users/zkim/napplelabs/test-nsfw/my-proj/") ; for dev
 (def *project-root* "./")
 
 (defn resolve-file [& path-strs]
@@ -73,7 +73,9 @@
     (catch Exception e (throw e))))
 
 (defn mkdir [path-coll]
-  (let [f (File. (apply resolve-file path-coll))]
+  (let [f (if (string? path-coll)
+            (File. path-coll)
+            (File. (apply resolve-file path-coll)))]
     (if (and (.exists f))
       {:success false :status "exists" :path (.getPath f)}
       (do
@@ -119,12 +121,20 @@
     (copy-file (resource-to-str "nsfw/404.tpl.html") "resources/public/404.html" force)
     (println)))
 
-(defn module [name]
-  (let [parts (map underscore-name (string/split name #"\."))
-        dir-res (mkdir [(apply resolve-project-src-file parts)])]
-    dir-res))
-
-(module "hello-world.foo-bar")
-
+(defn module [name & [force]]
+  (let [name (as-str name)
+        parts (string/split name #"\.")
+        parts-count (count parts)
+        path (take (- parts-count 1) (map underscore-name parts))
+        file (str (first (drop (- parts-count 1) (map underscore-name parts))) ".clj")
+        ns (symbol (apply str *project-name* "." (interpose "." parts)))
+        tpl (str ((fleet/fleet [module-ns] (resource-to-str "nsfw/module.tpl.clj")) ns))
+        out-file-name (apply resolve-project-src-file (apply vector (reverse (conj (reverse path) file))))]
+    (mkdir (apply resolve-project-src-file path))
+    (report-path-gen (if (or (not (file-exists out-file-name)) force)
+                       (do (spit out-file-name tpl)
+                           "created")
+                       "exists")
+                     out-file-name)))
 
 

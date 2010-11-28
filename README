@@ -21,6 +21,11 @@ Experimental clojure web frameworks
 8. `(my-proj.boot/start-server)`
 
 
+### Create a module
+
+Modules are just pre-nsed clj files.
+
+
 ## Extras
 
 `(wget-js "http://code.jquery.com/jquery-1.4.4.min.js")` -- Grabs file and outputs to `./resources/public/js/jquery-1.4.4.min.js`
