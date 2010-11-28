@@ -9,7 +9,9 @@
 (deftest test-resolve-js
   (is (= "./resources/public/js/hello.js" (resolve-js "hello")))
   (is (= "./resources/public/js/hello.js" (resolve-js :hello)))
-  (is (= "./resources/public/js/hello/world.min.js" (resolve-js :hello :world.min))))
+  (is (= "./resources/public/js/hello/world.min.js" (resolve-js :hello :world.min)))
+  (is (= "./resources/public/js/hello.js" (resolve-js "hello.js")))
+  (is (= "./resources/public/js/hello.js" (resolve-js :hello.js))))
 
 (deftest test-read-project-name
   (is (= "nsfw" (read-project-name))))

@@ -16,7 +16,7 @@
 (defn javascript-root [] "")
 
 
-(defn underscore-project-name [name]
+(defn underscore-name [name]
   (string/replace name #"-" "_"))
 
 (def *project-root* "/Users/zkim/napplelabs/test-nsfw/my-proj/") ; for dev
@@ -26,13 +26,15 @@
   (str *project-root* (apply str (interpose file-sep (map as-str path-strs)))))
 
 (defn resolve-js [& path-strs]
-  (str *project-root*
-       "resources/public/js/"
-       (apply str
-              (interpose
-               file-sep
-               (map as-str path-strs)))
-       ".js"))
+  (let [path-strs (map as-str path-strs)]
+    (str *project-root*
+         "resources/public/js/"
+         (apply str
+                (interpose
+                 file-sep
+                 path-strs))
+         (when (not (re-find #"\.js$" (first (reverse path-strs))))
+           ".js"))))
 
 (defn read-project-name []
   (let [f-str (resolve-file "project.clj")]
@@ -44,7 +46,7 @@
 
 
 (def *project-name* (read-project-name))
-(def *underscore-project-name* (underscore-project-name *project-name*))
+(def *underscore-project-name* (underscore-name *project-name*))
 
 (def *project-src-path* (str (resolve-file "src" *underscore-project-name*) file-sep))
 
@@ -53,11 +55,22 @@
        (apply str
               (interpose file-sep (map as-str path-strs)))))
 
-(defn wget-js [url]
-  (let [fn (.getFile (java.net.URL. url))
-        name (.getName (java.io.File. fn))
-        out-fn (resolve-js name)]
-    (spit out-fn (slurp url))))
+(defn wget-js [url & [save-as]]
+  (try
+    (let [fn (.getFile (java.net.URL. url))
+          name (.getName (java.io.File. fn))
+          out-fn (if save-as
+                   (resolve-js save-as)
+                   (resolve-js name))]
+      (spit out-fn (slurp url)))
+    {:success true}
+    (catch java.net.MalformedURLException e
+      {:success false :message "Malformed URL" :exception e})
+    (catch java.net.UnknownHostException e
+      {:success false :message "Unknown Host" :exception e})
+    (catch java.io.FileNotFoundException e
+      {:success false :message "Remote File Not Found" :exception e})
+    (catch Exception e (throw e))))
 
 (defn mkdir [path-coll]
   (let [f (File. (apply resolve-file path-coll))]
@@ -89,8 +102,6 @@
         (spit target-path ((fleet/fleet [project-name] template) project-name))
         (report-path-gen "created" target-path)))))
 
-
-
 (defn project [& [force]]
   (let [dirs [["resources"]
               ["resources" "public"]
@@ -107,5 +118,13 @@
     (copy-file (resource-to-str "nsfw/routes.tpl.clj") (resolve-project-src-file "routes.clj") force)
     (copy-file (resource-to-str "nsfw/404.tpl.html") "resources/public/404.html" force)
     (println)))
+
+(defn module [name]
+  (let [parts (map underscore-name (string/split name #"\."))
+        dir-res (mkdir [(apply resolve-project-src-file parts)])]
+    dir-res))
+
+(module "hello-world.foo-bar")
+
 
 
