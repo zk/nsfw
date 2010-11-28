@@ -3,24 +3,64 @@
             [fleet])
   (:import [java.io File]))
 
-(defn project-root [] "/Users/zkim/napplelabs/test-nsfw/my-proj/")
+(def file-sep java.io.File/separator)
 
 (defn file-exists [f-str]
   (.exists (File. f-str)))
 
+(defn as-str [keyword-or-str]
+  (if (keyword? keyword-or-str)
+    (name keyword-or-str)
+    keyword-or-str))
+
+(defn javascript-root [] "")
+
+
+(defn underscore-project-name [name]
+  (string/replace name #"-" "_"))
+
+(def *project-root* "/Users/zkim/napplelabs/test-nsfw/my-proj/") ; for dev
+(def *project-root* "./")
+
+(defn resolve-file [& path-strs]
+  (str *project-root* (apply str (interpose file-sep (map as-str path-strs)))))
+
+(defn resolve-js [& path-strs]
+  (str *project-root*
+       "resources/public/js/"
+       (apply str
+              (interpose
+               file-sep
+               (map as-str path-strs)))
+       ".js"))
+
 (defn read-project-name []
-  (let [f-str (str (project-root) "/project.clj")]
+  (let [f-str (resolve-file "project.clj")]
     (if (file-exists f-str)
       (let [rdr (clojure.lang.LineNumberingPushbackReader. (java.io.FileReader. f-str))
             pdef (read rdr)]
         (str (second pdef)))
       {:success false})))
 
-(defn project-name-underscore []
-  (string/replace (read-project-name) #"-" "_"))
+
+(def *project-name* (read-project-name))
+(def *underscore-project-name* (underscore-project-name *project-name*))
+
+(def *project-src-path* (str (resolve-file "src" *underscore-project-name*) file-sep))
+
+(defn resolve-project-src-file [& path-strs]
+  (str *project-src-path*
+       (apply str
+              (interpose file-sep (map as-str path-strs)))))
+
+(defn wget-js [url]
+  (let [fn (.getFile (java.net.URL. url))
+        name (.getName (java.io.File. fn))
+        out-fn (resolve-js name)]
+    (spit out-fn (slurp url))))
 
 (defn mkdir [path-coll]
-  (let [f (File. (apply str (project-root) (interpose File/separator path-coll)))]
+  (let [f (File. (apply resolve-file path-coll))]
     (if (and (.exists f))
       {:success false :status "exists" :path (.getPath f)}
       (do
@@ -41,7 +81,7 @@
   (println "  " status " | " path))
 
 (defn copy-file [template target-path force]
-  (let [target-path (str (project-root) target-path)
+  (let [target-path (resolve-file target-path)
         project-name (read-project-name)]
     (if (and (file-exists target-path) (not force))
       (report-path-gen "exists" target-path)
@@ -49,8 +89,7 @@
         (spit target-path ((fleet/fleet [project-name] template) project-name))
         (report-path-gen "created" target-path)))))
 
-(defn proj-src-path [s]
-  (str "src/" (project-name-underscore) "/" s))
+
 
 (defn project [& [force]]
   (let [dirs [["resources"]
@@ -64,12 +103,9 @@
       (let [res (mkdir d)]
         (println "  " (:status res) " | " (:path res))))
     (println)
-    (copy-file (resource-to-str "nsfw/bootstrap.tpl.clj") (proj-src-path "boot.clj") force)
-    (copy-file (resource-to-str "nsfw/routes.tpl.clj") (proj-src-path "routes.clj") force)
+    (copy-file (resource-to-str "nsfw/bootstrap.tpl.clj") (resolve-project-src-file "boot.clj") force)
+    (copy-file (resource-to-str "nsfw/routes.tpl.clj") (resolve-project-src-file "routes.clj") force)
     (copy-file (resource-to-str "nsfw/404.tpl.html") "resources/public/404.html" force)
     (println)))
-
-(project true)
-
 
 
