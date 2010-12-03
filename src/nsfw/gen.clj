@@ -13,9 +13,6 @@
     (name keyword-or-str)
     keyword-or-str))
 
-(defn javascript-root [] "")
-
-
 (defn underscore-name [name]
   (string/replace name #"-" "_"))
 
