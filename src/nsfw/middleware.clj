@@ -1,4 +1,5 @@
-(ns nsfw.middleware)
+(ns nsfw.middleware
+  (:use [nsfw.util]))
 
 (defn wrap-log-request [handler]
   (fn [r]
@@ -16,3 +17,12 @@
 (defn wrap-always-session [handler]
   (fn [r]
     (merge {:session (:session r)} (handler r))))
+
+(defn wrap-stacktrace [handler]
+  (fn [req]
+    (try
+      (handler req)
+      (catch Exception e
+        {:status 500
+         :headers {"Content-Type" "text/html"}
+         :body (web-stacktrace e req)}))))

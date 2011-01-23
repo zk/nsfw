@@ -1,7 +1,10 @@
 (ns nsfw.util
-  (:use [hiccup core])
+  (:use [hiccup core
+         [page-helpers :only (doctype)]])
   (:require [clj-stacktrace.repl :as stacktrace]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [ring.util.response :as resp]
+            [org.danlarkin.json :as json]))
 
 (defn web-stacktrace [e req]
   (str "<html><body>"
@@ -101,10 +104,39 @@
         (throw (new RuntimeException e))))))
 
 (defn grav-url-for [email & [_ size]]
-  (let [email (->> email
-                   (clojure.string/trim)
-                   (clojure.string/lower-case))
-        url (str "http://gravatar.com/avatar/" (md5-sum email))]
-    (if size
-      (str url "?s=" size)
-      url)))
+  (when email
+    (let [email (->> email
+                     (clojure.string/trim)
+                     (clojure.string/lower-case))
+          url (str "http://gravatar.com/avatar/" (md5-sum email))]
+      (if size
+        (str url "?s=" size)
+        url))))
+
+(defn html-response [& body]
+  (-> (html body)
+      (resp/response)
+      (resp/header "Content-Type" "text/html;charset=utf-8")))
+
+(defn json-encode [o]
+  (json/encode o))
+
+(defn json-decode [s]
+  (json/decode s))
+
+(defn ich-tpl [name & body]
+  (html
+   [:script {:id name :type "text/html"}
+    body]))
+
+(defn sha1-str [obj]
+  (let [bytes (.getBytes (with-out-str (pr obj)))] 
+    (->> (.digest (java.security.MessageDigest/getInstance "SHA1") bytes)
+         (map #(Integer/toHexString (bit-and % 0xff)))
+         (apply str))))
+
+(defn html5 [& content]
+  (html
+   (doctype :html5)
+   [:html
+    content]))
