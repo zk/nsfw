@@ -2,7 +2,7 @@
   (:use [hiccup core
          [page-helpers :only (doctype)]])
   (:require [clj-stacktrace.repl :as stacktrace]
-            [clojure.string :as string]
+            [clojure.string :as str]
             [ring.util.response :as resp]
             [org.danlarkin.json :as json]))
 
@@ -12,7 +12,7 @@
        
        "<pre>" (stacktrace/pst-str e) "</pre>"
 
-       "<pre>" (string/replace (str req) #", " "\n") "</pre>"
+       "<pre>" (str/replace (str req) #", " "\n") "</pre>"
        "</html></body>"))
 
 (defn include-css
@@ -106,8 +106,8 @@
 (defn grav-url-for [email & [_ size]]
   (when email
     (let [email (->> email
-                     (clojure.string/trim)
-                     (clojure.string/lower-case))
+                     (str/trim)
+                     (str/lower-case))
           url (str "http://gravatar.com/avatar/" (md5-sum email))]
       (if size
         (str url "?s=" size)
@@ -135,8 +135,14 @@
          (map #(Integer/toHexString (bit-and % 0xff)))
          (apply str))))
 
+(defn uuid []
+  (-> (java.util.UUID/randomUUID)
+      (str)
+      (str/replace #"-" "")))
+
 (defn html5 [& content]
   (html
    (doctype :html5)
    [:html
     content]))
+
