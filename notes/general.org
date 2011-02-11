@@ -1,0 +1,25 @@
+<2011-02-03 Thu 15:44>
+
+Where does validation go?
+
+Where does the logic for maintaining data integrity (i.e. not
+inserting duplicate records) go?
+
+
+
+Basic directory structure
+
+/<prj-name>/boot.clj
+/<prj-name>/dev.clj
+/<prj-name>/routes.clj
+/<prj-name>/actions.clj
+/<prj-name>/templates.clj
+/<prj-name>/state.clj
+/<prj-name>/<mod-name>/routes.clj
+/<prj-name>/<mod-name>/actions.clj
+/<prj-name>/<mod-name>/template.clj
+
+
+
+
+

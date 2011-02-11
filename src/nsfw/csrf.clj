@@ -18,10 +18,11 @@
   (sha1-str (str (java.util.UUID/randomUUID))))
 
 (defn insert-token [resp token]
-  (let [ses (get resp :session {})]
-    (assoc resp
-      :session (assoc ses
-                 :csrf-token token))))
+  (let [ses (get resp :session {})
+        out (assoc resp
+              :session (assoc ses
+                         :csrf-token token))]
+    out))
 
 (defn pull [req]
   (-> req
