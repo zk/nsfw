@@ -4,27 +4,6 @@ Experimental clojure web frameworks
 
 ## Usage
 
-1. `lein new my-proj`
-
-2. Add `[nsfw/nsfw "1.0.0-SNAPSHOT"]` to your `project.clj`
-
-3. `lein deps`
-
-4. `lein repl`
-
-5. `(require 'nsfw.gen)`
-
-6. `(nsfw.gen/project)`
-
-7. `(require 'my-proj.boot)`
-
-8. `(my-proj.boot/start-server)`
-
-
-### Create a module
-
-Modules are just pre-nsed clj files.
-
 
 ## Extras
 
