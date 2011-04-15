@@ -34,6 +34,7 @@
 (def *local-js-root* "./public/js")
 
 (defn include-js
+  ([] nil)
   ([n]
      (when n
        (if (= :all n)
@@ -58,11 +59,6 @@
   (apply vector (concat [:div {:class (str "grid_" width)}] body)))
 
 (def grid-16 (partial grid 16))
-
-(defn image [name & opts]
-  (let [opts (apply hash-map opts)
-        opts (merge {:src (str "/images/" name)} opts)]
-    (html [:img opts])))
 
 (defn as-str [thing]
   (if (keyword? thing)
