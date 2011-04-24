@@ -4,7 +4,17 @@
   (:require [clj-stacktrace.repl :as stacktrace]
             [clojure.string :as str]
             [ring.util.response :as resp]
-            [org.danlarkin.json :as json]))
+            [org.danlarkin.json :as json])
+  (:import [java.util Date]
+           [java.text SimpleDateFormat]))
+
+(def iso-formatter (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssZ"))
+
+(defn to-iso-8601 [o]
+  (cond
+   (= Date (class o)) (.format iso-formatter o)
+   (= java.lang.Long (class o)) (.format iso-formatter (Date. o))
+   :else (throw (Exception. (str "Don't know how to iso-8601 format " o)))))
 
 (defn web-stacktrace [e req]
   (str "<html><body>"
