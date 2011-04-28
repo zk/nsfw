@@ -14,6 +14,8 @@
   (cond
    (= Date (class o)) (.format iso-formatter o)
    (= java.lang.Long (class o)) (.format iso-formatter (Date. o))
+   (= nil o) nil
+   (= "" o) nil
    :else (throw (Exception. (str "Don't know how to iso-8601 format " o)))))
 
 (defn web-stacktrace [e req]
