@@ -16,7 +16,7 @@
    (= java.lang.Long (class o)) (.format iso-formatter (Date. o))
    (= nil o) nil
    (= "" o) nil
-   :else (throw (Exception. (str "Don't know how to iso-8601 format " o)))))
+   :else nil))
 
 (defn web-stacktrace [e req]
   (str "<html><body>"
