@@ -14,10 +14,10 @@
             :headers {"Content-Type" "text/html;charset=utf-8"}
             :body (apply template args)})
 
-(defmethod render :text [_ text & args]
+(defmethod render :text [_ thing & args]
            (merge {:status 200
                    :headers {"Content-Type" "text/html;charset=utf-8"}
-                   :body text}
+                   :body (str thing)}
                   (apply hash-map args)))
 
 (defmethod render :html [_ text & args]
