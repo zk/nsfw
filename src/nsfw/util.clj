@@ -72,11 +72,6 @@
 
 (def grid-16 (partial grid 16))
 
-(defn as-str [thing]
-  (if (keyword? thing)
-    (str (name thing))
-    (str thing)))
-
 (defn css [& in]
   (apply
    str

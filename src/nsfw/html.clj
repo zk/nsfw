@@ -1,6 +1,5 @@
 (ns nsfw.html
-  (:use [hiccup core]
-        [clojure.contrib.string :only (as-str)]))
+  (:use [hiccup core]))
 
 (defmacro defopts
   "Allows passing of key-value pairs at the end of a function call,
