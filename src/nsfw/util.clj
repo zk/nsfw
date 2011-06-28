@@ -1,10 +1,11 @@
 (ns nsfw.util
-  (:use [hiccup core
-         [page-helpers :only (doctype)]])
+  (:use hiccup.core
+        [hiccup.page-helpers :only (doctype)]
+        [clojure.contrib.string :only (as-str)])
   (:require [clj-stacktrace.repl :as stacktrace]
             [clojure.string :as str]
             [ring.util.response :as resp]
-            [org.danlarkin.json :as json])
+            [cheshire.custom :as json])
   (:import [java.util Date]
            [java.text SimpleDateFormat]))
 
@@ -122,10 +123,10 @@
       (resp/header "Content-Type" "text/html;charset=utf-8")))
 
 (defn json-encode [o]
-  (json/encode o))
+  (json/generate-string o))
 
 (defn json-decode [s]
-  (json/decode s))
+  (json/parse-string s true))
 
 (defn ich-tpl [name & body]
   (html

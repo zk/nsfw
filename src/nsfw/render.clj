@@ -1,6 +1,6 @@
 (ns nsfw.render
-  (:require [org.danlarkin.json :as json]
-            [ring.util.response :as resp]))
+  (:use nsfw.util)
+  (:require [ring.util.response :as resp]))
 
 (defn render-dispatch [& args]
   (if (keyword? (first args))
@@ -29,7 +29,7 @@
 (defmethod render :json [_ map & args]
            (merge {:status 200
                    :headers {"Content-Type" "application/json; charset=utf-8"}
-                   :body (json/encode map)}
+                   :body (json-encode map)}
                   (apply hash-map args)))
 
 (defmethod render :resource [_ resource-name & args]

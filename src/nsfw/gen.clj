@@ -1,4 +1,5 @@
 (ns nsfw.gen
+  (:use [clojure.contrib.string :only (as-str)])
   (:require [clojure.string :as string]
             [fleet])
   (:import [java.io File]))
@@ -7,11 +8,6 @@
 
 (defn file-exists [f-str]
   (.exists (File. f-str)))
-
-(defn as-str [keyword-or-str]
-  (if (keyword? keyword-or-str)
-    (name keyword-or-str)
-    keyword-or-str))
 
 (defn underscore-name [name]
   (string/replace name #"-" "_"))
