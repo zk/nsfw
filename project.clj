@@ -10,8 +10,9 @@
                  [net.cgrand/moustache "1.0.0"]
                  [nstools "0.2.4"]
                  [slingshot "0.2.0"]
-                 [clj-http "0.1.3"]]
-  :dev-dependencies [[swank-clojure "1.2.0"]
+                 [clj-http "0.1.3"]
+                 [midje "1.2.0"]]
+  :dev-dependencies [[swank-clojure "1.4.0-SNAPSHOT"]
                      [lein-clojars "0.6.0"]])
 
 

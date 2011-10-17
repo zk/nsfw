@@ -23,3 +23,49 @@ Basic directory structure
 
 
 
+<2011-10-16 Sun 16:47>
+
+* Template Dependencies
+
+Need a way to define dependencies (html, css, javascript) locally, and
+have them bubble up to the top level:
+
+#+BEGIN_SRC
+{:html 
+#+END_SRC
+
+** HTML
+Options:
++ hiccup format [:div {:class "foo"}], etc.
+  + Allows for easier instrospection (has html? has etc).
++ String
+  + More difficult, need to use string manipulation to insert.
+
+Going with hiccup format for now.
+
+
+* Ordering
+
+Asset ordering (order of css, javascript) matters.  How am I going to
+handle this?
+
+I'd like to provide 
+
+* Escaping
+
+Have to provide a way to 'escape' templates, meaning that js and css
+tags aren't pulled out of source.
+
++ [:link {:rel "stylesheet" :href "foo.css" :escape true]
++ Require each template be wrapped in a top-level structure denoting a
+  template: 
+  - {:template [:link {:rel "stylesheet" :href "foo.css"]
+     :escape true}
+
+I kind of like the first one, but the template marker will be passed
+on to the rendered html.  Or not... Pull it from the structure on
+parsing!
+
+
+
+
