@@ -90,8 +90,6 @@
         :else r))
      in))))
 
-
-
 (defn throw-str [& args]
   (throw (Exception. (apply str (interpose " " args)))))
 
@@ -137,7 +135,6 @@
 
 (defn from-json [s]
   (json/parse-string s true))
-
 
 (defn html5 [& content]
   (html
