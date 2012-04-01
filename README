@@ -1,22 +1,9 @@
-# nsfw - no such framework
+# nsfw
 
-Experimental clojure web frameworks
-
-## Usage
-
-
-## Extras
-
-`(wget-js "http://code.jquery.com/jquery-1.4.4.min.js")` -- Grabs file and outputs to `./resources/public/js/jquery-1.4.4.min.js`
-
-`(wget-js "http://code.jquery.com/jquery-1.4.4.min.js" "jquery")` -- Grabs file and outputs to `./resources/public/js/jquery.js`
-
-## Installation
-
-FIXME: write
+Various web (and non-web) helpers and utilities.
 
 ## License
 
-Copyright (C) 2010 Zachary Kim
+Copyright (C) 2010-2012 Zachary Kim
 
 Distributed under the Eclipse Public License, the same as Clojure.
