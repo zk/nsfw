@@ -1,7 +1,6 @@
 (ns nsfw.util
   (:use hiccup.core
-        [hiccup.page-helpers :only (doctype)]
-        [clojure.contrib.string :only (as-str)])
+        [hiccup.page :only (doctype)])
   (:require [clj-stacktrace.repl :as stacktrace]
             [clojure.string :as str]
             [ring.util.response :as resp]
@@ -11,7 +10,7 @@
 
 (def iso-formatter (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssZ"))
 
-(defn to-iso-8601 [o]
+(defn iso-8601 [o]
   (cond
    (= Date (class o)) (.format iso-formatter o)
    (= java.lang.Long (class o)) (.format iso-formatter (Date. o))
@@ -43,8 +42,6 @@
            (html [:link {:rel "stylesheet" :href (str "/css/" filename) :type "text/css"}])))))
   ([n & more]
      (cons (include-css n) (map include-css more))))
-
-(def *local-js-root* "./public/js")
 
 (defn include-js
   ([] nil)
@@ -85,16 +82,29 @@
               rules (first (reverse r))]
          
           (str (if (vector? (first sels))
-                 (apply str (interpose ", " (map #(apply str (interpose " " (map as-str %))) sels)))
-                 (apply str (interpose " " (map as-str sels))))
+                 (apply str (interpose ", " (map #(apply str (interpose " " (map name %))) sels)))
+                 (apply str (interpose " " (map name sels))))
                " {"
-               (apply str (map #(str (name (key %)) ":" (as-str (val %)) ";") rules))
+               (apply str (map #(str (name (key %)) ":" (name (val %)) ";") rules))
                "}"))
         :else r))
      in))))
 
+
+
 (defn throw-str [& args]
   (throw (Exception. (apply str (interpose " " args)))))
+
+(defn sha1 [obj]
+  (let [bytes (.getBytes (with-out-str (pr obj)))] 
+    (->> (.digest (java.security.MessageDigest/getInstance "SHA1") bytes)
+         (map #(Integer/toHexString (bit-and % 0xff)))
+         (apply str))))
+
+(defn uuid []
+  (-> (java.util.UUID/randomUUID)
+      (str)
+      (str/replace #"-" "")))
 
 (defn md5-sum
   "Compute the hex MD5 sum of a string."
@@ -122,27 +132,12 @@
       (resp/response)
       (resp/header "Content-Type" "text/html;charset=utf-8")))
 
-(defn json-encode [o]
+(defn to-json [o]
   (json/generate-string o))
 
-(defn json-decode [s]
+(defn from-json [s]
   (json/parse-string s true))
 
-(defn ich-tpl [name & body]
-  (html
-   [:script {:id name :type "text/html"}
-    body]))
-
-(defn sha1-str [obj]
-  (let [bytes (.getBytes (with-out-str (pr obj)))] 
-    (->> (.digest (java.security.MessageDigest/getInstance "SHA1") bytes)
-         (map #(Integer/toHexString (bit-and % 0xff)))
-         (apply str))))
-
-(defn uuid []
-  (-> (java.util.UUID/randomUUID)
-      (str)
-      (str/replace #"-" "")))
 
 (defn html5 [& content]
   (html
