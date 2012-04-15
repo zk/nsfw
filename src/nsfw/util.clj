@@ -130,6 +130,8 @@
       (resp/response)
       (resp/header "Content-Type" "text/html;charset=utf-8")))
 
+(json/add-encoder org.bson.types.ObjectId json/encode-str)
+
 (defn to-json [o]
   (json/generate-string o))
 
