@@ -13,7 +13,7 @@
 
 ;; # Server
 
-(def server-defaults {:port 8080 :join? false :max-threads 100})
+(def server-defaults {:port 8080 :join? false :max-threads 100 :min-threads 10})
 
 (defn start-server
   "Start a jetty server. Opts include:
@@ -32,5 +32,9 @@
       (.setMaxThreads (:max-threads opts))
       (.setMinThreads (:min-threads opts)))
     server-atom))
+
+(defn stop-server [server-atom]
+  (when @server-atom
+    (.stop @server-atom)))
 
 (def restart-server start-server)
