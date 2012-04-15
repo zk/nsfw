@@ -91,7 +91,7 @@
      in))))
 
 (defn throw-str [& args]
-  (throw (Exception. (apply str (interpose " " args)))))
+  (throw (Exception. (apply str args))))
 
 (defn sha1 [obj]
   (let [bytes (.getBytes (with-out-str (pr obj)))] 
