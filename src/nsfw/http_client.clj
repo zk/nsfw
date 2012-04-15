@@ -1,7 +1,37 @@
 (ns nsfw.http-client
   (:use [clj-http.cookies :only (wrap-cookies)])
   (:require [clj-http.client :as cl]
-            [clj-http.core :as core]))
+            [clj-http.core :as core])
+  (:import (java.io InputStream File)
+           (java.net URL UnknownHostException)
+           (org.apache.http.entity ByteArrayEntity InputStreamEntity
+                                   FileEntity StringEntity)))
+
+(defn wrap-input-coercion [client]
+  (fn [{:keys [body body-encoding length] :as req}]
+    (if body
+      (cond
+       (string? body)
+       (client (-> req (assoc :body (StringEntity. body (or body-encoding
+                                                            "UTF-8"))
+                              :character-encoding (or body-encoding
+                                                      "UTF-8"))))
+       (instance? File body)
+       (client (-> req (assoc :body (FileEntity. body (or body-encoding
+                                                          "UTF-8")))))
+       (instance? InputStream body)
+       (do
+         (when (or (nil? length) (neg? length))
+           (throw
+            (Exception. ":length key is required for InputStream bodies")))
+         (client (-> req (assoc :body (InputStreamEntity. body length)))))
+
+       (instance? (Class/forName "[B") body)
+       (client (-> req (assoc :body (ByteArrayEntity. body))))
+
+       :else
+       (client req))
+      (client req))))
 
 (defn wrap-request
   "Everything in default except exceptions on non 2xx responses. See
@@ -13,7 +43,7 @@
       cl/wrap-url
       cl/wrap-redirects
       cl/wrap-decompression
-      cl/wrap-input-coercion
+      wrap-input-coercion
       cl/wrap-output-coercion
       cl/wrap-basic-auth
       cl/wrap-accept
