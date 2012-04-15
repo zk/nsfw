@@ -13,6 +13,6 @@
        (reduce str)
        (str (System/currentTimeMillis) " ")))
 
-(defn make-logger [ns]
+(defn make-logger [app-id ns]
   (fn [& key-vals]
-    (println (format-log-entry (concat [:ns ns] key-vals)))))
+    (println (format-log-entry (concat [:app-id app-id :ns ns] key-vals)))))
