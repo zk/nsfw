@@ -12,10 +12,10 @@
 
 ;; Used in the middleware to bind the current csrf token for
 ;; use through (current) by actions and templates.
-(def *csrf-token* nil)
+(def ^:dynamic *csrf-token* nil)
 
 (defn gen-token []
-  (sha1-str (str (java.util.UUID/randomUUID))))
+  (sha1 (str (java.util.UUID/randomUUID))))
 
 (defn insert-token [resp token]
   (let [ses (get resp :session {})

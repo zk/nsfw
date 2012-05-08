@@ -1,5 +1,6 @@
 (ns nsfw.env "Shell environment helpers."
-    (:require [clojure.string :as str]))
+    (:require [clojure.string :as str])
+    (:refer-clojure :exclude (int str)))
 
 (defn clj->env [sym-or-str]
   (-> sym-or-str
@@ -13,4 +14,12 @@
   [sym & [default]]
   (or (System/getenv (clj->env sym))
       default))
+
+(defn int [sym & [default]]
+  (if-let [env-var (env sym)]
+    (Integer/parseInt env-var)
+    default))
+
+(defn str [sym & [default]]
+  (env sym default))
 

@@ -36,7 +36,8 @@
   session, file handling, and params."
   [handler & opts]
   (let [opts (apply hash-map opts)
-        session-store (get opts :session-store (memory-store))
+        session-store (get opts :session-store (memory-store
+                                                (get opts :session-atom (atom {}))))
         public-path (get opts :public-path "resources/public")]
     (-> handler
         wrap-keyword-params
