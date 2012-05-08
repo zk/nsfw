@@ -1,6 +1,6 @@
 (ns nsfw.mongo
-  (:use [somnium.congomongo])
-  (:require [nsfw.util :as util])
+  (:require [nsfw.util :as util]
+            [somnium.congomongo :as mon])
   (:import [java.net URI]))
 
 (defn bson-id [id-or-str]
@@ -42,5 +42,3 @@
      :port (.getPort uri)
      :username (parse-username uri)
      :password (parse-password uri)}))
-
-
