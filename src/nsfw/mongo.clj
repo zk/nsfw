@@ -3,8 +3,11 @@
             [somnium.congomongo :as mon])
   (:import [java.net URI]))
 
-(defn bson-id [id-or-str]
-  (org.bson.types.ObjectId/massageToObjectId id-or-str))
+(defn bson-id
+  ([]
+     (org.bson.types.ObjectId.))
+  ([id-or-str]
+     (org.bson.types.ObjectId/massageToObjectId id-or-str)))
 
 (defn parse-username
   "ex. uri http://foo:bar@zaarly.com returns `\"foo\"`."
