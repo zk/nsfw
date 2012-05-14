@@ -28,7 +28,7 @@
                      (reduce str))]
     (if-not (empty? pw) pw nil)))
 
-(defn parse-mongo-conn-info
+(defn parse-mongo-url
   "Takes a string representing a mongod connection and returns a map
   representing the connection information.
  
