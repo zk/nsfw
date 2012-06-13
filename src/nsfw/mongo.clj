@@ -1,6 +1,7 @@
 (ns nsfw.mongo
   (:require [nsfw.util :as util]
-            [somnium.congomongo :as mon])
+            [somnium.congomongo :as mon]
+            [clojure.string :as str])
   (:import [java.net URI]))
 
 (defn bson-id
@@ -28,16 +29,21 @@
                      (reduce str))]
     (if-not (empty? pw) pw nil)))
 
+
+(defn decode-raw-query [raw-query]
+  (str/split raw-query #"&"))
+
 (defn parse-mongo-url
   "Takes a string representing a mongod connection and returns a map
   representing the connection information.
  
-  ex. (parse-mongo-conn-info \"mongodb://foo:bar@localhost:123/zaarly\")
-  ;; => {:host \"localhost\"
-         :db \"zaarly\"
-         :port 27107
+  ex. (parse-mongo-url \"mongodb://foo:bar@localhost:123/zaarly?asdf=zxcv\")
+  ;; => {:host     \"localhost\"
+         :db       \"zaarly\"
+         :port     27107
          :username \"foo\"
-         :password \"bar\"}"
+         :password \"bar\"
+         :asdf     \"zxcv\"}"
   [mongo-url-str]
   (let [uri (java.net.URI. mongo-url-str)]
     {:host (.getHost uri)
