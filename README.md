@@ -2,6 +2,8 @@
 
 Proving ground for library code.
 
+[![Build Status](https://travis-ci.org/zkim/nsfw.png)](https://travis-ci.org/zkim/nsfw)
+
 ## License
 
 Copyright (C) 2010-2012 Zachary Kim
