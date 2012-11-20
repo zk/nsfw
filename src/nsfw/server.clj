@@ -13,7 +13,10 @@
 
 ;; # Server
 
-(def server-defaults {:port 8080 :join? false :max-threads 100 :min-threads 10})
+(def server-defaults {:port 8080
+                      :join? false
+                      :max-threads 100
+                      :min-threads 10})
 
 (defn start-server
   "Start a jetty server. Opts include:
@@ -38,3 +41,21 @@
     (.stop @server-atom)))
 
 (def restart-server start-server)
+
+(def SERVERS (atom {}))
+
+(defn restart [& opts]
+  (let [opts (apply hash-map opts)
+        name (get opts :name)
+        entry-point (get opts :entry (fn [r] {:body "Whoops, you didn't pass in an :entry when you started the server."}))
+        server (get @SERVERS
+                    name
+                    (atom nil))]
+    (swap! SERVERS assoc name (start-server server entry-point opts))))
+
+(defn stop [& name]
+  (stop-server (get @SERVERS name)))
+
+(defn stop-all []
+  (doseq [s (vals @SERVERS)]
+    (stop-server s)))
