@@ -1,19 +1,6 @@
 # nsfw
 
-Various web (and non-web) helpers and utilities.
-
-# Mongo
-
-Connection helper:
-
-    (parse-mongo-url "mongodb://foo:bar@localhost:27017/mydb")
-
-    ;; => {:username "foo"
-    ;;     :password "bar"
-    ;;     :host     "localhost"
-    ;;     :port     27107
-    ;;     :db       "mydb"}         
-
+Proving ground for library code.
 
 ## License
 
