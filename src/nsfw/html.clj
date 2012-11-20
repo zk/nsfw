@@ -1,29 +1,45 @@
 (ns nsfw.html
   (:require [hiccup.core :as hiccup]
-            [hiccup.page :as hiccup-page])
-  (:refer-clojure :exclude [meta]))
+            [hiccup.page :as hiccup-page]))
 
-(defn href [href content & opts]
+(defn href
+  "ex. (href \"http://google.com\" \"Google!\" :rel \"nofollow\")"
+  [href content & opts]
   (let [opts (apply hash-map opts)]
-    (hiccup/html [:a (merge opts {:href href})
-                  content])))
-
-(defn image-url [name]
-  (str "/images/" name))
-
-(defn image [name & opts]
-  (let [opts (apply hash-map opts)
-        opts (merge {:src (image-url name)} opts)]
-    (hiccup/html [:img opts])))
-
-(defn meta [he content]
-  (hiccup/html [:meta {:http-equiv he :content content}]))
+    [:a (merge opts {:href href})
+     content]))
 
 (defn script [path]
   [:script {:type "text/javascript" :src path}])
 
 (defn stylesheet [path]
   [:link {:rel "stylesheet" :href path}])
+
+(defn css-rule [rule]
+  (let [sels (reverse (rest (reverse rule)))
+        props (last rule)]
+    (str (apply str (interpose " " (map name sels)))
+         "{" (apply str (map #(str (name (key %))
+                                   ":"
+                                   (if (keyword? (val %))
+                                     (name (val %)))
+                                   ";") props)) "}")))
+
+(defn css
+  "ex.
+    (css [:h1 {:height :20px}] [:h2 {:height :10px}])
+    => h1{height:20px;}h2{height:10px}"
+  [& rules]
+  (apply str (map css-rule rules)))
+
+(defn embed-css
+  "Quick and dirty dsl for inline css rules, similar to hiccup.
+
+   ex. `(css [:h1 {:color \"blue\"}] [:div.content p {:text-indent \"1em\"}])`
+   => `h1 {color: blue;} div.content p {text-indent: 1em;}`"
+  [& rules]
+  [:style {:type "text/css"}
+   (apply str (map css-rule rules))])
 
 (defn html5 [& body]
   (hiccup-page/html5 body))
