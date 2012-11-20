@@ -70,26 +70,6 @@
 
 (def grid-16 (partial grid 16))
 
-(defn css [& in]
-  (apply
-   str
-   (interpose
-    " "
-    (map 
-     (fn [r]
-       (cond
-        (vector? r) (let [sels (take (- (count r) 1) r)
-              rules (first (reverse r))]
-         
-          (str (if (vector? (first sels))
-                 (apply str (interpose ", " (map #(apply str (interpose " " (map name %))) sels)))
-                 (apply str (interpose " " (map name sels))))
-               " {"
-               (apply str (map #(str (name (key %)) ":" (name (val %)) ";") rules))
-               "}"))
-        :else r))
-     in))))
-
 (defn throw-str [& args]
   (throw (Exception. (apply str args))))
 
@@ -104,7 +84,7 @@
       (str)
       (str/replace #"-" "")))
 
-(defn md5-sum
+(defn md5
   "Compute the hex MD5 sum of a string."
   [#^String str]
   (let [alg (doto (java.security.MessageDigest/getInstance "MD5")
@@ -120,7 +100,7 @@
     (let [email (->> email
                      (str/trim)
                      (str/lower-case))
-          url (str "http://gravatar.com/avatar/" (md5-sum email))]
+          url (str "http://gravatar.com/avatar/" (md5 email))]
       (if size
         (str url "?s=" size)
         url))))
@@ -137,10 +117,4 @@
 
 (defn from-json [s]
   (json/parse-string s true))
-
-(defn html5 [& content]
-  (html
-   (doctype :html5)
-   [:html
-    content]))
 
