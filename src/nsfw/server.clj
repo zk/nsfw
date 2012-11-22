@@ -53,6 +53,8 @@
                     (atom nil))]
     (swap! SERVERS assoc name (start-server server entry-point opts))))
 
+(def start restart)
+
 (defn stop [& name]
   (stop-server (get @SERVERS name)))
 
