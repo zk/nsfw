@@ -22,7 +22,8 @@
          "{" (apply str (map #(str (name (key %))
                                    ":"
                                    (if (keyword? (val %))
-                                     (name (val %)))
+                                     (name (val %))
+                                     (val %))
                                    ";") props)) "}")))
 
 (defn css

@@ -19,20 +19,20 @@
          (stylesheet "css-path"))))
 
 (deftest test-css-rule
-  (is (= "h1{foo:bar;}")
-      (css-rule [:h1 {:foo "bar"}]))
+  (is (= "h1{foo:bar;}"
+         (css-rule [:h1 {:foo "bar"}])))
 
-  (is (= "h1{foo:bar;}")
-      (css-rule [:h1 {:foo :bar}]))
+  (is (= "h1{foo:bar;}"
+         (css-rule [:h1 {:foo :bar}])))
 
-  (is (= "h1{foo:bar;baz:bap;}")
-      (css-rule [:h1 {:foo "bar" :baz "bap"}]))
+  (is (= "h1{foo:bar;baz:bap;}"
+         (css-rule [:h1 {:foo "bar" :baz "bap"}])))
 
-  (is (= "h1.foo{bar:baz;}")
-      (css-rule [:h1.foo {:bar "baz"}]))
+  (is (= "h1.foo{bar:baz;}"
+         (css-rule [:h1.foo {:bar "baz"}])))
 
-  (is (= "h1.foo bar{baz:bap;}")
-      (css-rule [:h1.foo :bar {:baz "bap"}])))
+  (is (= "h1.foo bar{baz:bap;}"
+         (css-rule [:h1.foo :bar {:baz "bap"}]))))
 
 (deftest test-css
   (is (= "h1{foo:bar;}h2{baz:bap;}"
