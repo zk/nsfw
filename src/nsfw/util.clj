@@ -6,7 +6,8 @@
             [ring.util.response :as resp]
             [cheshire.custom :as json])
   (:import [java.util Date]
-           [java.text SimpleDateFormat]))
+           [java.text SimpleDateFormat]
+           [java.net URLEncoder]))
 
 (def iso-formatter (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssZ"))
 
@@ -118,3 +119,6 @@
 (defn from-json [s]
   (json/parse-string s true))
 
+(defn url-encode [s]
+  (when s
+    (URLEncoder/encode s)))

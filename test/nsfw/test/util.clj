@@ -14,3 +14,6 @@
   (is (= 10 (from-json "10")))
   (is (= true (from-json "true")))
   (is (= nil (from-json "null"))))
+
+(deftest test-url-encode
+  (is (= "http%3A%2F%2Fgoogle.com" (url-encode "http://google.com"))))
