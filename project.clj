@@ -1,4 +1,4 @@
-(defproject nsfw "0.4.1"
+(defproject nsfw "0.4.2"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [clj-stacktrace "0.2.5"]
@@ -7,6 +7,11 @@
                  [ring "1.1.6"]
                  [net.cgrand/moustache "1.1.0"]
                  [slingshot "0.10.2"]
-                 [clj-http "0.5.8"]])
+                 [clj-http "0.5.8"]
+                 [crate "0.2.1"]]
+  :source-paths ["src/clj"]
+  :hooks [leiningen.cljsbuild]
+  :cljsbuild {:builds [{:source-path "src/cljs"
+                        :jar true}]})
 
 
