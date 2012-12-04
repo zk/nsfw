@@ -1,4 +1,0 @@
-#!/bin/sh
-NSFW_STANDALONE_LIB="/Users/zkim/napplelabs/nsfw/nsfw-1.0.0-SNAPSHOT-standalone.jar"
-
-echo $NSFW_STANDALONE_LIB
