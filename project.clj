@@ -13,5 +13,3 @@
   :hooks [leiningen.cljsbuild]
   :cljsbuild {:builds [{:source-path "src/cljs"
                         :jar true}]})
-
-
