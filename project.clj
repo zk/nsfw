@@ -11,5 +11,6 @@
                  [crate "0.2.1"]]
   :source-paths ["src/clj"]
   :hooks [leiningen.cljsbuild]
+  :jar-name "nsfw.jar"
   :cljsbuild {:builds [{:source-path "src/cljs"
                         :jar true}]})

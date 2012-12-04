@@ -1,0 +1,8 @@
+#!/bin/bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd  $SCRIPT_DIR/.. && \
+lein jar && \
+lein pom && \
+scp /Users/zkim/napplelabs/nsfw/pom.xml /Users/zkim/napplelabs/nsfw/target/nsfw.jar clojars@clojars.org:
