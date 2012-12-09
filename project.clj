@@ -1,4 +1,4 @@
-(defproject nsfw "0.4.2"
+(defproject nsfw "0.4.3"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [clj-stacktrace "0.2.5"]
@@ -10,6 +10,7 @@
                  [clj-http "0.5.8"]
                  [domina "1.0.0"]
                  [crate "0.2.1"]
+                 [joda-time/joda-time "2.1"]]
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :hooks [leiningen.cljsbuild]
