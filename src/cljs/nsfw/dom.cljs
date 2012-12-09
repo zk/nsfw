@@ -1,17 +1,52 @@
 (ns nsfw.dom
-  (:require [domina :as d]
-            [domina.css :as dc]))
+  (:use [nsfw.util :only [log clj->js]])
+  (:require [crate.core :as crate]
+            [goog.dom :as dom]
+            [goog.style :as style]
+            [goog.dom.query]))
 
-(def $ dc/sel)
+(extend-type js/NodeList
+  ISeqable
+  (-seq [array] (array-seq array 0)))
 
-(def append! d/append!)
-(def prepend! d/prepend!)
-(def add-class! d/add-class!)
-(def delete! d/delete!)
-(def style! d/set-styles!)
-(def text! d/set-text!)
-(def listen! d/listen!)
-(def capture! d/capture!)
+(extend-type js/NodeList
+  ICollection
+  (-conj [coll o]
+    (throw "Error: Can't conj onto a NodeList.")))
+
+(defn ensure-coll [el]
+  (if (coll? el)
+    el
+    [el]))
+
+(defn root []
+  (aget (dom/getElementsByTagNameAndClass "html") 0))
+
+(defn selector [s]
+  (dom/query s))
+
+(defn $ [o]
+  (cond
+   (vector? o) (crate/html o)
+   :else (selector o)))
+
+(defn wrap-content [content]
+  (cond
+   (vector? content) ($ content)
+   (string? content) ($ content)
+   :else content))
+
+(defn append [els content]
+  (let [content (wrap-content content)]
+    (doseq [el (ensure-coll els)]
+      (.appendChild el content)))
+  els)
+
+(defn style [els css-map]
+  (let [jsobj (clj->js css-map)]
+    (doseq [el (ensure-coll els)]
+      (style/setStyle el jsobj)))
+  els)
 
 (defn bind [atom function]
   (add-watch
