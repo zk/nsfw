@@ -1,0 +1,118 @@
+* {
+  padding: 0px;
+  margin: 0px;
+}
+
+html, body {
+  /* font-family: Helvetica, sans-serif; */
+  font-family: Georgia, serif;
+  overflow: hidden;
+}
+
+h1, h2, h3 {
+  font-family: "Helvetica Neue";
+}
+
+.header {
+  padding: 10px;
+  background-color: #efeffe;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  height: 40px;
+}
+
+.sidebar {
+  width: 255px;
+  top: 60px;
+  left: 0px;
+  bottom: 0px;
+  position: absolute;
+  background-color: #fafafa;
+  overflow-y: scroll;
+}
+
+.content {
+  position: absolute;
+  top: 60px;
+  left: 256px;
+  bottom: 0px;
+  right: 0px;
+  padding: 20px;
+  overflow-y: scroll;
+}
+
+.filter-wrapper {
+  padding: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.filter-wrapper input {
+  width: 95%;
+  font-size: 16px;
+}
+
+.var-overview {
+  padding: 10px;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  font-size: 14px;
+  border-bottom: solid #eee 1px;
+}
+
+.var-overview {
+  background-color: #fafffa;
+}
+
+.var-overview.fn {
+  background-color: white;
+}
+
+
+.var-overview .sym {
+  margin-right: 10px;
+  width: 120px;
+  display: inline-block;
+  line-height: 16px;
+}
+
+.var-overview .ns {
+  font-size: 12px;
+  color: #888;
+  float: right;
+  line-height: 16px;
+}
+
+.var-overview .file {
+  color: #ccc;
+}
+
+input.filter {
+  font-size: 12px;
+  padding: 4px;
+}
+
+.var {
+  margin-bottom: 30px;
+}
+
+.var h2 {
+}
+
+.var .doc {
+  margin-bottom: 10px;
+}
+
+.var .arglists {
+  margin-bottom: 10px;
+  font-family: 'Andale Mono', monospace;
+  padding: 10px;
+  background-color: #fafafa;
+  border: solid #efefef 1px;
+}
+
+.var-overviews {
+
+}

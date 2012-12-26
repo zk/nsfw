@@ -25,3 +25,9 @@
 
 (defn to-json [data]
   (.stringify js/JSON (clj->js data)))
+
+(defn timeout [f delta]
+  (js/setTimeout f delta))
+
+(defn interval [f delta]
+  (js/setInterval f delta))

@@ -1,0 +1,342 @@
+* 2012-12-17 Mon 20:55
+
+Ok, looking to make serving a clojurescript app as easy as possible,
+which means some helpers in webapp.
+
+Let's look at the steps to get a clojurescript app running:
+
+1. Modify =project.clj= to specify build parameters for the
+   clojurescript file.
+2. Establish a server, provide entry point
+3. Specify routes to handle init of clojurescript app
+
+Expanding on 3 we get:
+
+1. HTML stuff -- title, js include, body tag, anything else? Dev mode
+   for clojurescript repl?
+
+Side note, it'd be cool to have a library to transform your
+project.clj, how would this run, a bunch of shell scripts? Execute
+from a link would be nice.  A general lien bootstrapper / code runner
+would be cool, but the security implications are tough...
+
+
+* 2012-12-23 Sun 21:18
+
+Working on the frontend primitives thing.  Composable abstractions
+ftw, but which are hiding on the frontend? Certainly, there seems to
+be something about presentation / behavior.
+
+D3 provides nice abstractions on top of the dom, and makes a couple of
+things first class:
+
++ Add
++ Remove
++ Change
+
+Change seems to be implicit in it's transform system current value ->
+next value.
+
+
+Selects also seem to play an important part.
+
+It's intersting attaching data directly to the dom, mabye I'll try
+that. However, maybe clojurescript atoms will do the trick enough
+seems like it might be too much on large numbers of nodes.
+
+However, there seems to be something about storing the data and the
+change function directly on the 'node'.
+
+Entry and exit, also interesting.
+
+Attaching an atom directly to the node, as well as the function that
+defines its rendering properties? interesting.  Then future select
+functions can call the transfer function when updating.
+
+Or the atom as the update trigger mechanism. Let's start with the
+latter, because I'm closer to that.
+
+Ok, lets see the parts
+
+#+begin_src clojure
+
+;; Attempt #1
+
+(def header-val (atom "hello world"))
+
+(def h1 ($ [:h1 "hello world"]))
+
+(d/bind header-val (fn [o n]
+                     (d/text h1 n)))
+
+(d/append body h1)
+
+(defn update []
+  (reset! header-val (.random js/Math))
+  (u/timeout update 1000))
+
+(update)
+
+#+end_src
+
+Parts:
+
+1. atom represeting data
+2. dom element vis data
+3. data bind, new values updates dom based on new value and update
+   function.
+4. data change function
+
+Seems like 2 and 3 should be the core of the frontend declaration.
+
+
+
+#+begin_src clojure
+
+;; Attempt #2
+
+(def val2 (atom "hello world 2"))
+
+(def h2 ($ [:h2 @val2]))
+
+(bind-el val2 h2 (fn [from to el]
+                   (d/text el to)))
+
+(update val2)
+
+(d/append body h2)
+
+#+end_src
+
+Attempt #2 looks very similar to #1, with one important difference:
+the function passed to =bind-el= dosen't need to have the el in scope,
+decoupling the definition of the handler function from definition of
+the element. This allows us to name certain operations, like =text=,
+which will simply put the text of the updated data into the
+element.
+
+
+#+begin_src clojure
+
+(defn update-text [from to el]
+  (d/text el to))
+
+#+end_src
+
+This is still looking verbose, but we're making progress.  I think a
+more real-world use case is that we'd be binding updates to a
+sub-selection of nested clojure data structures. Better yet, can we
+use the seq abstraction to simplify and make the sematics more clear?
+
+Perhaps we can crib some of D3.
+
+The baseline is modification from -> to on el.
+
+What are the possible ops here?
+
++ replace
++ remove
++ update
+
+
+So the problem now is that the rendering and the atom have to be on
+the same 'level'.
+
+
+* 2012-12-24 Mon 09:53
+
+On the plane to honlulu.
+
+
+
+* 2012-12-25 Tue 13:12
+
+We've got some basic functionality down for the clojuredocs example. Is it readable?
+
+It's not declarative, but what are we declaring? Well, what are the parts?
+
++ HTML / CSS -- provide the visuals, although with transitions and
+  animations, css bleeds over to the action. 
+
+Should we make the firing of events a bit easier? This would help us
+decouple the input / text from what to do with it. Lets look at a text
+input that executes a function when the text changes, but has stopped
+changing for a specific time delta. Perhaps the behavior and the input
+should be decoupled as well.
+
+Hrm, maybe the event handlers should just be more and more
+sophisticated.
+
+
+#+begin_src clojure
+
+(defn filter-input [result-vars-atom all-vars]
+  (let [el ($ [:input.filter {:autofocus "autofocus"
+                              :placeholder "regex power!"}])]
+    (dom/keyup el (fn [e]
+                    (reset! atom (->> el
+                                      dom/val
+                                      (match-vars vars)
+                                      (take 20)))))
+    el))
+
+
+(defn filter-input [atom vars]
+  (-> ($ e [:input.filter {:placeholder "filter here!"
+                           :autofocus "autofocus"}])
+      (dom/val-changed (fn [_ val]
+                         (reset! atom (-> val
+                                          (match-vars vars)
+                                          (take 20)))))))
+
+
+#+end_src
+
+A bit cleaner.
+
+Something that further hurts readability is the fact that the
+functionality that determines how the matches get filtered is embedded
+in the code. Reading top-down dosen't result in a lot of
+understanding.
+
+What are the things we need to do to write webapps?
+
++ Widgets
++ CRUD
++ Layout
++ Search
++ Social Integration
++ Rerendering when representational data changes.
+
+Can we invert the chain here, we have to pass in the data atom, so can
+we invert that? Firing events might be the way to go.
+
+It seems like the code for handling that stuff should be separate,
+listening for events and reacting?
+
+Ok, lets change gears for a sec and look from the top down. How do we
+describe the general layout?
+
+It seems like the general idea should be verifyability -- as close to
+production as possible.
+
+Top down:
+
+** Entry point
+
+#+begin_src clojure
+
+(defn main []
+  (-> body
+      (dom/append header)
+      (dom/append (sidebar selected-vars))
+      (dom/append (content selected-vars))))
+
+#+end_src
+
+Pretty good readability here, given the body, we're appending header,
+sidebar and content sections.  Sidebar and content depend on the
+passed in data =selected-vars=.  Can we improve things?
+
+Making it more explicit, lets move all the state into =main=.
+
+#+begin_src clojure
+
+(defn main []
+  (let [body ($ "body")
+        vars (reader/read-string (.-functions js/window)) ; imported from page
+        selected-vars (atom vars)] ; intially all vars are selected
+    (-> body
+        (dom/append header)
+        (dom/append (sidebar selected-vars vars))
+        (dom/append (content selected-vars)))))
+
+#+end_src
+
+Now all info needed to render this page is contained in the entry
+point -- we have no state elsewhere, which is a good thing.
+
+
+I was able to simplify =sidebar= a bit.
+
+#+begin_src clojure
+
+(defn bind-render [el atom rendering-fn]
+  (dom/bind atom
+            (fn [ident old new]
+              (-> el dom/empty
+                  (dom/append (rendering-fn new)))))
+  el)
+
+(defn sidebar [vars-atom vars]
+  ($ [:div.sidebar
+      [:div.filter-wrapper (filter-input vars-atom vars)]
+      (-> ($ [:div.var-overviews
+              (map var-overview vars)])
+          (bind-render vars-atom
+                       (fn [val] (map var-overview val))))]))
+
+#+end_src
+
+
+If I wanted to be super-explicit, I could name the different parts:
+
+#+begin_src clojure
+
+(defn filter-vars [vars-atom vars]
+  ($ [:div.filter-wrapper
+      (filter-input vars-atom vars)]))
+
+(defn vars-overview [vars-atom vars]
+  (-> ($ [:div.var-overviews
+          (map var-overview vars)])
+      (bind-render vars-atom (fn [val] (map var-overview val)))))
+
+(defn sidebar [vars-atom vars]
+  ($ [:div.sidebar
+      (filter-vars vars-atom vars)
+      (vars-overview vars-atom vars)]))
+
+#+end_src
+
+
+
+Now =content=
+
+#+begin_src clojure
+
+(defn render-var [{:keys [doc name arglists ns]}]
+  ($ [:div.var
+      [:h2.name name]
+      [:div.doc doc]
+      (when arglists
+        [:div.arglists
+         (->> arglists
+              (map #(cons name %))
+              (map #(vector :div (pr-str %)))
+              (map $))])]))
+
+(defn content [vars-atom]
+  (let [el ($ [:div.content
+               (map render-var @vars-atom)])]
+    (dom/bind-el vars-atom
+                 el
+                 (fn [old new el]
+                   (-> el
+                       dom/empty
+                       (dom/append (map render-var new)))))
+    el))
+
+;; |
+;; v
+
+(defn content [vars-atom]
+  (-> ($ [:div.content (map render-var @vars-atom)])
+      (bind-render vars-atom #(map render-var %))))
+
+#+end_src
+
+
+We're starting to define somewhat of a language for describing
+widgets, we've got some state, a way to represent how that state
+should look, and how that state should behave.

@@ -10,7 +10,10 @@
                  [clj-http "0.5.8"]
                  [domina "1.0.0"]
                  [crate "0.2.1"]
-                 [joda-time/joda-time "2.1"]]
+                 [joda-time/joda-time "2.1"]
+                 [org.clojure/clojurescript "0.0-1552"
+                  :exclusions [org.apache.ant/ant]] ; Ugly workaround for http://dev.clojure.org/jira/browse/CLJS-418
+                 [org.clojure/google-closure-library-third-party "0.0-2029"]]
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :hooks [leiningen.cljsbuild]
@@ -19,4 +22,11 @@
               {:dev {:source-path "src/cljs"
                      :compiler {:output-to "resources/test-js/test.js"
                                 :optimizations :whitespace}
-                     :jar true}}})
+                     :jar true}
+               :examples {:source-path "examples/cljs"
+                          :compiler {:output-to "resources/public/js/examples.js"
+                                     :optimizations :whitespace}}
+               ;; :monitor {:source-path "examples/cljs"
+               ;;              :compiler {:output-to "resources/public/js/monitor.js"
+               ;;                         :optimizations :whitespace}}
+               }})
