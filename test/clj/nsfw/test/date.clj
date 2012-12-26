@@ -1,7 +1,7 @@
 (ns nsfw.test.date
   (:use [nsfw.date] :reload)
   (:use [clojure.test])
-  (:refer-clojure :exclude [= > < >= <=]))
+  (:refer-clojure :exclude [= > < >= <= pr]))
 
 (deftest test-comparators
   (is      (= (from :now) (from :now)))
@@ -16,9 +16,9 @@
 (deftest test-in-range
   (is ((in-range (from :yesterday)
                  (from :tomorrow)) (from :now)))
-  
+
   (is (not ((in-range (from :now)
                       (from :tomorrow)) (from :yesterday))))
-  
+
   (is (not ((in-range (from :yesterday)
                       (from :now)) (from :tomorrow)))))
