@@ -30622,8 +30622,8 @@ goog.require("nsfw.dom");
 goog.require("nsfw.util");
 nsfw.clojuredocs.match_vars = function match_vars(vars, text) {
   var pattern = cljs.core.re_pattern.call(null, text);
-  return cljs.core.filter.call(null, function(p1__71300_SHARP_) {
-    return cljs.core.re_find.call(null, pattern, (new cljs.core.Keyword("\ufdd0'name")).call(null, p1__71300_SHARP_))
+  return cljs.core.filter.call(null, function(p1__91036_SHARP_) {
+    return cljs.core.re_find.call(null, pattern, (new cljs.core.Keyword("\ufdd0'name")).call(null, p1__91036_SHARP_))
   }, vars)
 };
 nsfw.clojuredocs.ellipsis = function ellipsis(s, n) {
@@ -30635,78 +30635,68 @@ nsfw.clojuredocs.ellipsis = function ellipsis(s, n) {
 };
 nsfw.clojuredocs.filter_input = function filter_input(atom, vars) {
   return nsfw.dom.val_changed.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'input.filter", cljs.core.ObjMap.fromObject(["\ufdd0'placeholder", "\ufdd0'autofocus"], {"\ufdd0'placeholder":"filter here!", "\ufdd0'autofocus":"autofocus"})], true)), function(el, val) {
-    if(cljs.core.empty_QMARK_.call(null, val)) {
-      return null
-    }else {
-      return cljs.core.reset_BANG_.call(null, atom, cljs.core.take.call(null, 20, nsfw.clojuredocs.match_vars.call(null, vars, val)))
-    }
+    return cljs.core.reset_BANG_.call(null, atom, cljs.core.take.call(null, 20, cljs.core.empty_QMARK_.call(null, val) ? vars : nsfw.clojuredocs.match_vars.call(null, vars, val)))
   })
 };
-nsfw.clojuredocs.header = nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.header", cljs.core.PersistentVector.fromArray(["\ufdd0'h1", "ClojureDocs"], true)], true));
 nsfw.clojuredocs.fmt_arglists = function fmt_arglists(arglists) {
   return cljs.core.apply.call(null, cljs.core.str, cljs.core.interpose.call(null, " ", cljs.core.map.call(null, cljs.core.pr_str, arglists)))
 };
-nsfw.clojuredocs.var_overview = function var_overview(p__71463) {
-  var map__71465 = p__71463;
-  var map__71465__$1 = cljs.core.seq_QMARK_.call(null, map__71465) ? cljs.core.apply.call(null, cljs.core.hash_map, map__71465) : map__71465;
-  var ns = cljs.core._lookup.call(null, map__71465__$1, "\ufdd0'ns", null);
-  var arglists = cljs.core._lookup.call(null, map__71465__$1, "\ufdd0'arglists", null);
-  var file = cljs.core._lookup.call(null, map__71465__$1, "\ufdd0'file", null);
-  var line = cljs.core._lookup.call(null, map__71465__$1, "\ufdd0'line", null);
-  var added = cljs.core._lookup.call(null, map__71465__$1, "\ufdd0'added", null);
-  var name = cljs.core._lookup.call(null, map__71465__$1, "\ufdd0'name", null);
-  var doc = cljs.core._lookup.call(null, map__71465__$1, "\ufdd0'doc", null);
+nsfw.clojuredocs.var_overview = function var_overview(p__91199) {
+  var map__91201 = p__91199;
+  var map__91201__$1 = cljs.core.seq_QMARK_.call(null, map__91201) ? cljs.core.apply.call(null, cljs.core.hash_map, map__91201) : map__91201;
+  var ns = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'ns", null);
+  var arglists = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'arglists", null);
+  var file = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'file", null);
+  var line = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'line", null);
+  var added = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'added", null);
+  var name = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'name", null);
+  var doc = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'doc", null);
   return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div", cljs.core.ObjMap.fromObject(["\ufdd0'class"], {"\ufdd0'class":[cljs.core.str("var-overview"), cljs.core.str(cljs.core.truth_(arglists) ? " fn" : null)].join("")}), cljs.core.PersistentVector.fromArray(["\ufdd0'div.code", cljs.core.PersistentVector.fromArray(["\ufdd0'span.sym", name], true), cljs.core.PersistentVector.fromArray(["\ufdd0'span.ns", ns], true)], true), cljs.core.PersistentVector.fromArray(["\ufdd0'div.doc-preview", 
   nsfw.clojuredocs.ellipsis.call(null, doc, 33)], true), cljs.core.truth_(arglists) ? cljs.core.PersistentVector.fromArray(["\ufdd0'div.arglists", nsfw.clojuredocs.fmt_arglists.call(null, arglists)], true) : null], true))
 };
-nsfw.clojuredocs.bind_render = function bind_render(el, atom, rendering_fn) {
-  nsfw.dom.bind.call(null, atom, function(ident, old, new$) {
-    return nsfw.dom.append.call(null, nsfw.dom.empty.call(null, el), rendering_fn.call(null, new$))
+nsfw.clojuredocs.bind_update = function bind_update(el, atom, f) {
+  nsfw.dom.bind.call(null, atom, function(id, old, new$) {
+    return f.call(null, el, new$)
   });
   return el
-};
-nsfw.clojuredocs.sidebar = function sidebar(vars_atom, vars) {
-  return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.sidebar", cljs.core.PersistentVector.fromArray(["\ufdd0'div.filter-wrapper", nsfw.clojuredocs.filter_input.call(null, vars_atom, vars)], true), nsfw.clojuredocs.bind_render.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.var-overviews", cljs.core.map.call(null, nsfw.clojuredocs.var_overview, vars)], true)), vars_atom, function(val) {
-    return cljs.core.map.call(null, nsfw.clojuredocs.var_overview, val)
-  })], true))
 };
 nsfw.clojuredocs.filter_vars = function filter_vars(vars_atom, vars) {
   return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.filter-wrapper", nsfw.clojuredocs.filter_input.call(null, vars_atom, vars)], true))
 };
 nsfw.clojuredocs.vars_overview = function vars_overview(vars_atom, vars) {
-  return nsfw.clojuredocs.bind_render.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.var-overviews", cljs.core.map.call(null, nsfw.clojuredocs.var_overview, vars)], true)), vars_atom, function(val) {
-    return cljs.core.map.call(null, nsfw.clojuredocs.var_overview, val)
+  return nsfw.clojuredocs.bind_update.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.var-overviews", cljs.core.map.call(null, nsfw.clojuredocs.var_overview, vars)], true)), vars_atom, function(el, new$) {
+    return nsfw.dom.append.call(null, nsfw.dom.empty.call(null, el), cljs.core.map.call(null, nsfw.clojuredocs.var_overview, new$))
   })
 };
-nsfw.clojuredocs.sidebar = function sidebar(vars_atom, vars) {
-  return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.sidebar", nsfw.clojuredocs.filter_vars.call(null, vars_atom, vars), nsfw.clojuredocs.vars_overview.call(null, vars_atom, vars)], true))
-};
-nsfw.clojuredocs.render_var = function render_var(p__71468) {
-  var map__71470 = p__71468;
-  var map__71470__$1 = cljs.core.seq_QMARK_.call(null, map__71470) ? cljs.core.apply.call(null, cljs.core.hash_map, map__71470) : map__71470;
-  var ns = cljs.core._lookup.call(null, map__71470__$1, "\ufdd0'ns", null);
-  var arglists = cljs.core._lookup.call(null, map__71470__$1, "\ufdd0'arglists", null);
-  var name = cljs.core._lookup.call(null, map__71470__$1, "\ufdd0'name", null);
-  var doc = cljs.core._lookup.call(null, map__71470__$1, "\ufdd0'doc", null);
-  return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.var", cljs.core.PersistentVector.fromArray(["\ufdd0'h2.name", name], true), cljs.core.PersistentVector.fromArray(["\ufdd0'div.doc", doc], true), cljs.core.truth_(arglists) ? cljs.core.PersistentVector.fromArray(["\ufdd0'div.arglists", cljs.core.map.call(null, nsfw.dom.$, cljs.core.map.call(null, function(p1__71467_SHARP_) {
-    return cljs.core.vector.call(null, "\ufdd0'div", cljs.core.pr_str.call(null, p1__71467_SHARP_))
-  }, cljs.core.map.call(null, function(p1__71466_SHARP_) {
-    return cljs.core.cons.call(null, name, p1__71466_SHARP_)
+nsfw.clojuredocs.render_var = function render_var(p__91204) {
+  var map__91206 = p__91204;
+  var map__91206__$1 = cljs.core.seq_QMARK_.call(null, map__91206) ? cljs.core.apply.call(null, cljs.core.hash_map, map__91206) : map__91206;
+  var ns = cljs.core._lookup.call(null, map__91206__$1, "\ufdd0'ns", null);
+  var arglists = cljs.core._lookup.call(null, map__91206__$1, "\ufdd0'arglists", null);
+  var name = cljs.core._lookup.call(null, map__91206__$1, "\ufdd0'name", null);
+  var doc = cljs.core._lookup.call(null, map__91206__$1, "\ufdd0'doc", null);
+  return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.var", cljs.core.PersistentVector.fromArray(["\ufdd0'h2.name", name], true), cljs.core.PersistentVector.fromArray(["\ufdd0'div.doc", doc], true), cljs.core.truth_(arglists) ? cljs.core.PersistentVector.fromArray(["\ufdd0'div.arglists", cljs.core.map.call(null, nsfw.dom.$, cljs.core.map.call(null, function(p1__91203_SHARP_) {
+    return cljs.core.vector.call(null, "\ufdd0'div", cljs.core.pr_str.call(null, p1__91203_SHARP_))
+  }, cljs.core.map.call(null, function(p1__91202_SHARP_) {
+    return cljs.core.cons.call(null, name, p1__91202_SHARP_)
   }, arglists)))], true) : null], true))
 };
-nsfw.clojuredocs.widget = function widget(state, vis) {
-  return nsfw.clojuredocs.bind_render.call(null, vis.call(null, cljs.core.deref.call(null, state)), state, vis)
-};
 nsfw.clojuredocs.content = function content(vars_atom) {
-  return nsfw.clojuredocs.widget.call(null, vars_atom, function(p1__71471_SHARP_) {
-    return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.content", cljs.core.map.call(null, nsfw.clojuredocs.render_var, p1__71471_SHARP_)], true))
+  return nsfw.clojuredocs.bind_update.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.content", cljs.core.map.call(null, nsfw.clojuredocs.render_var, cljs.core.deref.call(null, vars_atom))], true)), vars_atom, function(el, new$) {
+    return nsfw.dom.append.call(null, nsfw.dom.empty.call(null, el), cljs.core.map.call(null, nsfw.clojuredocs.render_var, new$))
   })
+};
+nsfw.clojuredocs.results_count = function results_count(vars_atom) {
+  return nsfw.dom.style.call(null, nsfw.clojuredocs.bind_update.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'span.results-count", cljs.core.count.call(null, cljs.core.deref.call(null, vars_atom))], true)), vars_atom, function(el, new$) {
+    return nsfw.dom.text.call(null, nsfw.dom.empty.call(null, el), cljs.core.count.call(null, new$))
+  }), cljs.core.ObjMap.fromObject(["\ufdd0'position", "\ufdd0'top", "\ufdd0'right", "\ufdd0'padding"], {"\ufdd0'position":"\ufdd0'absolute", "\ufdd0'top":"\ufdd0'0px", "\ufdd0'right":"\ufdd0'0px", "\ufdd0'padding":"\ufdd0'10px"}))
 };
 nsfw.clojuredocs.main = function main() {
   var body = nsfw.dom.$.call(null, "body");
   var vars = cljs.reader.read_string.call(null, window.functions);
-  var selected_vars = cljs.core.atom.call(null, vars);
-  return nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, body, nsfw.clojuredocs.header), nsfw.clojuredocs.sidebar.call(null, selected_vars, vars)), nsfw.clojuredocs.content.call(null, selected_vars))
+  var selected_vars = cljs.core.atom.call(null, cljs.core.take.call(null, 20, vars));
+  return nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, body, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.header", cljs.core.PersistentVector.fromArray(["\ufdd0'h1", "ClojureDocs"], true), nsfw.clojuredocs.results_count.call(null, selected_vars)], true))), nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.sidebar", nsfw.clojuredocs.filter_vars.call(null, selected_vars, vars), nsfw.clojuredocs.vars_overview.call(null, 
+  selected_vars, vars)], true))), nsfw.clojuredocs.content.call(null, selected_vars))
 };
 goog.provide("nsfw.example");
 goog.require("cljs.core");
