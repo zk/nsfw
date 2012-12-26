@@ -21,15 +21,11 @@
   (-> ($ [:input.filter {:placeholder "filter here!"
                          :autofocus "autofocus"}])
       (dom/val-changed (fn [el val]
-                         (when-not (empty? val)
-                           (reset! atom (->> val
-                                             (match-vars vars)
-                                             (take 20))))))))
-
-;; State
-(def header
-  ($ [:div.header
-      [:h1 "ClojureDocs"]]))
+                         (reset! atom
+                                 (->> (if (empty? val)
+                                        vars
+                                        (match-vars vars val))
+                                      (take 20)))))))
 
 (defn fmt-arglists [arglists]
   (->> arglists
@@ -47,21 +43,9 @@
       (when arglists
         [:div.arglists (fmt-arglists arglists)])]))
 
-(defn bind-render [el atom rendering-fn]
-  (dom/bind atom
-            (fn [ident old new]
-              (-> el dom/empty
-                  (dom/append (rendering-fn new)))))
+(defn bind-update [el atom f]
+  (dom/bind atom (fn [id old new] (f el new)))
   el)
-
-
-(defn sidebar [vars-atom vars]
-  ($ [:div.sidebar
-      [:div.filter-wrapper
-       (filter-input vars-atom vars)]
-      (-> ($ [:div.var-overviews
-              (map var-overview vars)])
-          (bind-render vars-atom (fn [val] (map var-overview val))))]))
 
 (defn filter-vars [vars-atom vars]
   ($ [:div.filter-wrapper
@@ -70,12 +54,10 @@
 (defn vars-overview [vars-atom vars]
   (-> ($ [:div.var-overviews
           (map var-overview vars)])
-      (bind-render vars-atom (fn [val] (map var-overview val)))))
-
-(defn sidebar [vars-atom vars]
-  ($ [:div.sidebar
-      (filter-vars vars-atom vars)
-      (vars-overview vars-atom vars)]))
+      (bind-update vars-atom (fn [el new]
+                               (-> el
+                                   dom/empty
+                                   (dom/append (map var-overview new)))))))
 
 (defn render-var [{:keys [doc name arglists ns]}]
   ($ [:div.var
@@ -88,19 +70,33 @@
               (map #(vector :div (pr-str %)))
               (map $))])]))
 
-(defn widget [state vis]
-  (-> (vis @state)
-      (bind-render state vis)))
-
 (defn content [vars-atom]
-  (widget vars-atom
-          #($ [:div.content (map render-var %)])))
+  (-> ($ [:div.content (map render-var @vars-atom)])
+      (bind-update vars-atom
+                   (fn [el new]
+                     (-> el
+                         dom/empty
+                         (dom/append (map render-var new)))))))
+
+(defn results-count [vars-atom]
+  (-> ($ [:span.results-count (count @vars-atom)])
+      (bind-update vars-atom (fn [el new]
+                               (-> el dom/empty
+                                   (dom/text (count new)))))
+      (dom/style {:position :absolute
+                  :top :0px
+                  :right :0px
+                  :padding :10px})))
 
 (defn main []
   (let [body ($ "body")
         vars (reader/read-string (.-functions js/window)) ; imported from page
-        selected-vars (atom vars)] ; intially all vars are selected
+        selected-vars (atom (take 20 vars))] ; intially all vars are selected
     (-> body
-        (dom/append header)
-        (dom/append (sidebar selected-vars vars))
+        (dom/append ($ [:div.header
+                        [:h1 "ClojureDocs"]
+                        (results-count selected-vars)]))
+        (dom/append ($ [:div.sidebar
+                        (filter-vars selected-vars vars)
+                        (vars-overview selected-vars vars)]))
         (dom/append (content selected-vars)))))

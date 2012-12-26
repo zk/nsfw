@@ -340,3 +340,78 @@ Now =content=
 We're starting to define somewhat of a language for describing
 widgets, we've got some state, a way to represent how that state
 should look, and how that state should behave.
+
+
+Eh, debatable if this is better than wiring everything up yourself:
+
+#+begin_src clojure
+
+(defn widget [state el vis]
+  (-> ($ el)
+      dom/empty
+      (dom/append (vis @state))
+      (bind-render state vis)))
+
+(defn render-var [{:keys [doc name arglists ns]}]
+  ($ [:div.var
+      [:h2.name name]
+      [:div.doc doc]
+      (when arglists
+        [:div.arglists
+         (->> arglists
+              (map #(cons name %))
+              (map #(vector :div (pr-str %)))
+              (map $))])]))
+
+(defn content [vars-atom]
+  (widget vars-atom
+          [:div.content]
+          #(map render-var %)))
+
+#+end_src
+
+Perhaps I need to make a choice as to whether MVC is the right call
+here.
+
+Simple to complex:
+
++ html
++ html + binding
++ html + binding + events (can't have events w/o binding?)
+
+In each case you need the prev in scope, need to handle these three
+cases in a composable way.
+
+Why not couple the initial rendering to future updates? Often we want
+to initially render a component differently (such as in a loading state).
+
+#+begin_src clojure
+
+;; Html
+
+($ [:input.filter {:placeholder "filter here"}])
+
+;; Html + Binding
+
+(-> ($ [:div.name @name])
+    (bind-el-new name (fn [el new] (dom/text el new))))
+
+;; Html + Binding + Events
+
+(defn bind-text [atom]
+  (bind-el-new atom (fn [el new] (dom/text el new))))
+
+(-> ($ [:div.click-count @clicks])
+    (bind-text clicks)
+    (click #(swap! clicks inc)))
+
+#+end_src
+
+
+Seems pretty composible, lets clean this up.
+
+Seems like binding helpers are the way to go.
+
+
+Cool idea: People input parameters that will work with a function, and
+they're evaluated on the box, output is saved and shown, and rerun periodically.
