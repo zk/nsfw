@@ -32,6 +32,12 @@
    (vector? o) (crate/html o)
    :else (selector o)))
 
+(defn val
+  ([el]
+     (.-value el))
+  ([el new-value]
+     (set! (.-value el) new-value)))
+
 (defn wrap-content [content]
   (cond
    (vector? content) ($ content)
@@ -40,10 +46,11 @@
 
 (defn append [els content]
   (doseq [el (ensure-coll els)]
-    (if (coll? content)
+    (if (and (coll? content)
+             (not (keyword? (first content))))
       (doseq [c content]
-        (.appendChild el c))
-      (.appendChild el content)))
+        (.appendChild el (wrap-content c)))
+      (.appendChild el (wrap-content content))))
   els)
 
 (defn append-to [child parents]
@@ -105,13 +112,18 @@
     (events/listen el "keyup" f))
   els)
 
+(defn match-key [els key f]
+  (doseq [el (ensure-coll els)]
+    (keyup el (fn [e]
+                (let [kc (.-keyCode e)]
+                  (when (= key kc)
+                    (f el (val el)))))))
+  els)
+
 (defn text [els text]
   (doseq [el (ensure-coll els)]
     (dom/setTextContent el text))
   els)
-
-(defn val [el]
-  (.-value el))
 
 (defn val-changed [els f]
   (doseq [el (ensure-coll els)]
@@ -193,3 +205,15 @@
 (defn bind-el [atom el f]
   (bind atom (fn [ident from to]
                (f from to el))))
+
+(defn bind-update [el atom f]
+  (bind atom (fn [id old new] (f el new)))
+  el)
+
+(defn bind-render [el atom f]
+  (bind atom (fn [id old new]
+               (-> el
+                   empty
+                   (append (f new)))))
+  (append el (f @atom))
+  el)
