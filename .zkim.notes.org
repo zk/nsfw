@@ -481,3 +481,14 @@ function twice:
 
 When really (third code block) =bind-render= should call the render
 function for you.
+
+Working on shipping data back to the server -- created the
+=push-updates= function, which will watch for changes to an atom on
+the frontend, and send the updated state of the atom to the backend.
+
+This is just a first cut, additional improvments could include just
+sending diffs and error handling.  Really, it seems like I'm putting
+the cart before the horse; the low-level data transfer functions
+should be written first.
+
+
