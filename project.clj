@@ -11,9 +11,7 @@
                  [domina "1.0.0"]
                  [crate "0.2.1"]
                  [joda-time/joda-time "2.1"]
-                 [org.clojure/clojurescript "0.0-1552"
-                  :exclusions [org.apache.ant/ant]] ; Ugly workaround for http://dev.clojure.org/jira/browse/CLJS-418
-                 [org.clojure/google-closure-library-third-party "0.0-2029"]]
+                 [org.clojars.franks42/cljs-uuid-utils "0.1.3"]]
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :hooks [leiningen.cljsbuild]
