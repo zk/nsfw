@@ -22,7 +22,7 @@
 (defn web-stacktrace [e req]
   (str "<html><body>"
        "<h1>500 - " (.getMessage e) "</h1>"
-       
+
        "<pre>" (stacktrace/pst-str e) "</pre>"
 
        "<pre>" (str/replace (str req) #", " "\n") "</pre>"
@@ -75,7 +75,7 @@
   (throw (Exception. (apply str args))))
 
 (defn sha1 [obj]
-  (let [bytes (.getBytes (with-out-str (pr obj)))] 
+  (let [bytes (.getBytes (with-out-str (pr obj)))]
     (->> (.digest (java.security.MessageDigest/getInstance "SHA1") bytes)
          (map #(Integer/toHexString (bit-and % 0xff)))
          (apply str))))
