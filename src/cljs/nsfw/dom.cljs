@@ -159,7 +159,7 @@
     (doall (map #(aset out (name (first %)) (second %)) cljmap))
     out))
 
-(defn ajax [& args]
+(defn ajax [opts]
   (let [{:keys [path method data headers success error]}
         (merge
          {:path "/"
@@ -168,7 +168,7 @@
           :headers {"content-type" "application/clojure"}
           :success (fn [])
           :error (fn [])}
-         (apply hash-map args))]
+         opts)]
     (goog.net.XhrIo/send
      path
      (fn [e]
@@ -176,7 +176,9 @@
          (let [req (.-target e)]
            (if (.isSuccess req)
              ;; maybe pull js->clj
-             (success (reader/read-string (.getResponseText req)))
+             (success (let [resp (.getResponseText req)]
+                        (when-not (empty? resp)
+                          (reader/read-string ))))
              (error req)))
          (catch js/Object e
            (.error js/console (.-stack e))
