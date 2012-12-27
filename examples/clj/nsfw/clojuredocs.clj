@@ -14,13 +14,12 @@
                  (dissoc :inline :inline-arities)))
        (sort-by :name)))
 
-(first (functions))
-
 (def fns (->> (functions)
               (map #(select-keys % [:name :ns :arglists :doc]))))
 
 (server/start :entry
               (webapp/routes
-                [""] (webapp/cs :examples
-                                :entry 'nsfw.clojuredocs
-                                :data {:functions fns})))
+               [""] (webapp/cs
+                     :examples
+                     :entry 'nsfw.clojuredocs
+                     :data {:functions fns})))
