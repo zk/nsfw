@@ -414,4 +414,70 @@ Seems like binding helpers are the way to go.
 
 
 Cool idea: People input parameters that will work with a function, and
-they're evaluated on the box, output is saved and shown, and rerun periodically.
+they're evaluated on the box, output is saved and shown, and rerun
+periodically.
+
+
+* 2012-12-26 Wed 16:27
+
+Ok, onto the next example. Calling this one frowny. It's an app where
+you can input stuff that bugs you.  Something bugging you a bunch of
+time? Frowny will let you know and you can go fix it. Also you can
+tell people _how_ you fixed it, also you can see what's bugging other
+people, and how they fixed it.
+
+This would be a great larger example -- Social integration, user
+accounts, in addition to the frontend.
+
+
+Might be a good point to clean up imports, lets see how annoying they are...
+
+Ok, first pass done here: http://cl.ly/image/3b0f3v2w471R
+
+The whole process was pretty smooth, spent a lot of time dicking with
+bind-render because I didn't wrap =frowny= with a call to =dom/$=. I
+should make that method safer, maybe auto wrap.
+
+Pretty smooth sailing util I got to managing the rendering /
+rerendering of the frownies section. Turns out my assumption about the
+initial / rerendering was a bit off. Might want to take another look
+at =widget=.
+
+The essence of the problem is that I'm specifying the rendering
+function twice:
+
+#+begin_src clojure
+
+(defn show-frownies [frownies]
+  (-> (dom/$
+       [:ol.frownies
+        (if (> (count @frownies) 0)
+          (map #(frowny frownies %) @frownies)
+          [:h2 "No frownies!"])])
+      (dom/bind-render frownies
+                       (fn [fs] (map (fn [fs]
+                                       (if (> (count @frownies) 0)
+                                         (map #(frowny frownies %) @frownies)
+                                         [:h2 "No frownies!"]))
+                                     fs)))))
+
+;; |
+;; v
+
+(defn show-frownies [frownies]
+  (let [render (fn [fs] (map #(frowny frownies %) fs))]
+    (-> (dom/$ [:ol.frownies (render @frownies)])
+        (dom/bind-render frownies render))))
+
+;; |
+;; v
+
+(defn show-frownies [frownies]
+  (let [render (fn [fs] (map #(frowny frownies %) fs))]
+    (-> (dom/$ [:ol.frownies])
+        (dom/bind-render frownies render))))
+
+#+end_src
+
+When really (third code block) =bind-render= should call the render
+function for you.
