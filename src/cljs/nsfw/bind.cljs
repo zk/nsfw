@@ -30,6 +30,13 @@
      data
      (clj->js headers))))
 
+(defn bind [atom function]
+  (add-watch
+   atom
+   (gensym)
+   (fn [key identity old-value new-value]
+     (function identity old-value new-value))))
+
 (defn push-updates [atom path & [opts]]
   (bind atom
         (fn [id old new]
@@ -38,13 +45,6 @@
                   :data new
                   :method "POST"}
                  opts)))))
-
-(defn bind [atom function]
-  (add-watch
-   atom
-   (gensym)
-   (fn [key identity old-value new-value]
-     (function identity old-value new-value))))
 
 (defn change [atom key f]
   (add-watch
