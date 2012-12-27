@@ -30838,8 +30838,8 @@ nsfw.frowny.gen_id = function gen_id() {
 };
 nsfw.frowny.remove_frowny_BANG_ = function remove_frowny_BANG_(frownies, frowny) {
   return cljs.core.swap_BANG_.call(null, frownies, function(fs) {
-    return cljs.core.remove.call(null, function(p1__17622_SHARP_) {
-      return cljs.core._EQ_.call(null, frowny, p1__17622_SHARP_)
+    return cljs.core.remove.call(null, function(p1__19078_SHARP_) {
+      return cljs.core._EQ_.call(null, frowny, p1__19078_SHARP_)
     }, fs)
   })
 };
@@ -30853,14 +30853,15 @@ nsfw.frowny.new_frowny = function new_frowny(frownies) {
   })], true))
 };
 nsfw.frowny.frowny = function frowny(frownies, frowny__$1) {
-  return cljs.core.PersistentVector.fromArray(["\ufdd0'li.frowny-item", (new cljs.core.Keyword("\ufdd0'text")).call(null, frowny__$1), nsfw.dom.click.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'a", cljs.core.ObjMap.fromObject(["\ufdd0'href"], {"\ufdd0'href":"#"}), "delete"], true)), function() {
-    return nsfw.frowny.remove_frowny_BANG_.call(null, frownies, frowny__$1)
+  return cljs.core.PersistentVector.fromArray(["\ufdd0'li.frowny-item", (new cljs.core.Keyword("\ufdd0'text")).call(null, frowny__$1), nsfw.dom.click.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'a", cljs.core.ObjMap.fromObject(["\ufdd0'href"], {"\ufdd0'href":"#"}), "delete"], true)), function(e) {
+    nsfw.frowny.remove_frowny_BANG_.call(null, frownies, frowny__$1);
+    return e.preventDefault()
   })], true)
 };
 nsfw.frowny.show_frownies = function show_frownies(frownies) {
   return nsfw.dom.bind_render.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'ol.frownies"], true)), frownies, function(fs) {
-    return cljs.core.map.call(null, function(p1__17623_SHARP_) {
-      return nsfw.frowny.frowny.call(null, frownies, p1__17623_SHARP_)
+    return cljs.core.map.call(null, function(p1__19079_SHARP_) {
+      return nsfw.frowny.frowny.call(null, frownies, p1__19079_SHARP_)
     }, fs)
   })
 };
