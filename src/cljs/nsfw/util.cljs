@@ -1,4 +1,6 @@
-(ns nsfw.util)
+(ns nsfw.util
+  (:require [cljs-uuid-utils]
+            [cljs.reader :as reader]))
 
 (defn clj->js
   "Recursively transforms ClojureScript maps into Javascript objects,
@@ -31,3 +33,9 @@
 
 (defn interval [f delta]
   (js/setInterval f delta))
+
+(defn uuid []
+  (cljs-uuid-utils/make-random-uuid))
+
+(defn page-data [key]
+  (reader/read-string (aget js/window (name key))))
