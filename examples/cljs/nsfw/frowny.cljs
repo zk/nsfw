@@ -39,16 +39,15 @@
                        (fn [fs]
                          (map #(frowny frownies %) fs)))))
 
-(def frownies (atom (page-data :frownies)))
-
 (defn main []
-  (bind/push-updates frownies "/update-frownies")
-  (-> (dom/$ "body")
-      (dom/append
-       [:div.page
-        (header)
-        [:div.content
-         (new-frowny frownies)
-         (show-frownies frownies)]])
-      (dom/append [:div.watermark ":("])
-      (dom/append (repeat 100 [:br]))))
+  (let [frownies (atom (page-data :frownies))]
+    (bind/push-updates frownies "/update-frownies")
+    (-> (dom/$ "body")
+        (dom/append
+         [:div.page
+          (header)
+          [:div.content
+           (new-frowny frownies)
+           (show-frownies frownies)]])
+        (dom/append [:div.watermark ":("])
+        (dom/append (repeat 100 [:br])))))
