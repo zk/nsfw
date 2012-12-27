@@ -1,8 +1,9 @@
 (ns nsfw.clojuredocs
-  (:use [nsfw.util :only [log timeout interval]]
+  (:use [nsfw.util :only [log timeout interval page-data]]
         [nsfw.dom :only [$]])
   (:require [cljs.reader :as reader]
             [nsfw.dom :as dom]
+            [nsfw.bind :as bind]
             [clojure.string :as str]))
 
 (defn match-vars [vars text]
@@ -43,10 +44,6 @@
       (when arglists
         [:div.arglists (fmt-arglists arglists)])]))
 
-(defn bind-update [el atom f]
-  (dom/bind atom (fn [id old new] (f el new)))
-  el)
-
 (defn filter-vars [vars-atom vars]
   ($ [:div.filter-wrapper
       (filter-input vars-atom vars)]))
@@ -54,7 +51,7 @@
 (defn vars-overview [vars-atom vars]
   (-> ($ [:div.var-overviews
           (map var-overview vars)])
-      (bind-update vars-atom (fn [el new]
+      (bind/update vars-atom (fn [el new]
                                (-> el
                                    dom/empty
                                    (dom/append (map var-overview new)))))))
@@ -72,7 +69,7 @@
 
 (defn content [vars-atom]
   (-> ($ [:div.content (map render-var @vars-atom)])
-      (bind-update vars-atom
+      (bind/update vars-atom
                    (fn [el new]
                      (-> el
                          dom/empty
@@ -80,7 +77,7 @@
 
 (defn results-count [vars-atom]
   (-> ($ [:span.results-count (count @vars-atom)])
-      (bind-update vars-atom (fn [el new]
+      (bind/update vars-atom (fn [el new]
                                (-> el dom/empty
                                    (dom/text (count new)))))
       (dom/style {:position :absolute
@@ -90,7 +87,7 @@
 
 (defn main []
   (let [body ($ "body")
-        vars (reader/read-string (.-functions js/window)) ; imported from page
+        vars (page-data :functions) ; imported from page
         selected-vars (atom (take 20 vars))] ; intially all vars are selected
     (-> body
         (dom/append ($ [:div.header

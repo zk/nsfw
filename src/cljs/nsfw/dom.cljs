@@ -1,5 +1,5 @@
 (ns nsfw.dom
-  (:use [nsfw.util :only [log clj->js]])
+  (:use [nsfw.util :only [log]])
   (:require [crate.core :as crate]
             [goog.dom :as dom]
             [goog.style :as style]

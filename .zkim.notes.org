@@ -495,3 +495,8 @@ I'm pretty happy with this (d76dd77c4157d1607505ecbd27d41fded6c0ac66)
 as a first cut.
 
 https://github.com/zkim/nsfw/commit/d76dd77c4157d1607505ecbd27d41fded6c0ac66
+
+
+* 2012-12-26 Wed 22:57
+
+Revisiting the clojuredocs example to bring it up to date.
