@@ -187,6 +187,15 @@
      data
      (map->jsobj headers))))
 
+(defn push-updates [atom path & [opts]]
+  (bind atom
+        (fn [id old new]
+          (ajax (merge
+                 {:path path
+                  :data new
+                  :method "POST"}
+                 opts)))))
+
 (defn bind [atom function]
   (add-watch
    atom
