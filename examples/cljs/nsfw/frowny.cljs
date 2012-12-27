@@ -28,7 +28,9 @@
   [:li.frowny-item
    (:text frowny)
    (-> (dom/$ [:a {:href "#"} "delete"])
-       (dom/click #(remove-frowny! frownies frowny)))])
+       (dom/click (fn [e]
+                    (remove-frowny! frownies frowny)
+                    (.preventDefault e))))])
 
 (defn show-frownies [frownies]
   (-> (dom/$ [:ol.frownies])
