@@ -4,8 +4,8 @@
             [goog.dom :as dom]
             [goog.style :as style]
             [goog.events :as events]
-            [goog.dom.query]
-            [cljs.reader :as reader]))
+            [goog.dom.query])
+  (:refer-clojure :exclude [val replace remove empty]))
 
 (extend-type js/NodeList
   ISeqable
@@ -148,79 +148,3 @@
   (doseq [el (ensure-coll els)]
     (dom/removeChildren el))
   els)
-
-
-;; Binding
-
-(defn map->jsobj
-  "makes a javascript map from a clojure one"
-  [cljmap]
-  (let [out (js-obj)]
-    (doall (map #(aset out (name (first %)) (second %)) cljmap))
-    out))
-
-(defn ajax [opts]
-  (let [{:keys [path method data headers success error]}
-        (merge
-         {:path "/"
-          :method "GET"
-          :data {}
-          :headers {"content-type" "application/clojure"}
-          :success (fn [])
-          :error (fn [])}
-         opts)]
-    (goog.net.XhrIo/send
-     path
-     (fn [e]
-       (try
-         (let [req (.-target e)]
-           (if (.isSuccess req)
-             ;; maybe pull js->clj
-             (success (let [resp (.getResponseText req)]
-                        (when-not (empty? resp)
-                          (reader/read-string ))))
-             (error req)))
-         (catch js/Object e
-           (.error js/console (.-stack e))
-           (throw e))))
-     method
-     data
-     (map->jsobj headers))))
-
-(defn push-updates [atom path & [opts]]
-  (bind atom
-        (fn [id old new]
-          (ajax (merge
-                 {:path path
-                  :data new
-                  :method "POST"}
-                 opts)))))
-
-(defn bind [atom function]
-  (add-watch
-   atom
-   (gensym)
-   (fn [key identity old-value new-value]
-     (function identity old-value new-value))))
-
-(defn bind-change [atom key f]
-  (add-watch
-   atom
-   (gensym)
-   (fn [k atom old new]
-     (let [ov (get old key)
-           nv (get new key)]
-       (when (not= ov nv)
-         (f atom old new))))))
-
-(defn bind-update [el atom f]
-  (bind atom (fn [id old new] (f el new)))
-  el)
-
-(defn bind-render [el atom f]
-  (bind atom (fn [id old new]
-               (-> el
-                   empty
-                   (append (f new)))))
-  (append el (f @atom))
-  el)

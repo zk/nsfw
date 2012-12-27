@@ -1,6 +1,7 @@
 (ns nsfw.frowny
   (:use [nsfw.util :only [log uuid page-data]])
-  (:require [nsfw.dom :as dom]))
+  (:require [nsfw.dom :as dom]
+            [nsfw.bind :as bind]))
 
 (defn gen-id []
   (uuid))
@@ -34,14 +35,14 @@
 
 (defn show-frownies [frownies]
   (-> (dom/$ [:ol.frownies])
-      (dom/bind-render frownies
+      (bind/render frownies
                        (fn [fs]
                          (map #(frowny frownies %) fs)))))
 
 (def frownies (atom (page-data :frownies)))
 
 (defn main []
-  (dom/push-updates frownies "/update-frownies")
+  (bind/push-updates frownies "/update-frownies")
   (-> (dom/$ "body")
       (dom/append
        [:div.page
