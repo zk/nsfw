@@ -27748,6 +27748,27 @@ nsfw.dom.$ = function $(o) {
     }
   }
 };
+nsfw.dom.val = function() {
+  var val = null;
+  var val__1 = function(el) {
+    return el.value
+  };
+  var val__2 = function(el, new_value) {
+    return el.value = new_value
+  };
+  val = function(el, new_value) {
+    switch(arguments.length) {
+      case 1:
+        return val__1.call(this, el);
+      case 2:
+        return val__2.call(this, el, new_value)
+    }
+    throw new Error("Invalid arity: " + arguments.length);
+  };
+  val.cljs$lang$arity$1 = val__1;
+  val.cljs$lang$arity$2 = val__2;
+  return val
+}();
 nsfw.dom.wrap_content = function wrap_content(content) {
   if(cljs.core.vector_QMARK_.call(null, content)) {
     return nsfw.dom.$.call(null, content)
@@ -27764,28 +27785,35 @@ nsfw.dom.wrap_content = function wrap_content(content) {
   }
 };
 nsfw.dom.append = function append(els, content) {
-  var G__43648_43650 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35496_35498 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43648_43650) {
-      var el_43651 = cljs.core.first.call(null, G__43648_43650);
-      if(cljs.core.coll_QMARK_.call(null, content)) {
-        var G__43649_43652 = cljs.core.seq.call(null, content);
+    if(G__35496_35498) {
+      var el_35499 = cljs.core.first.call(null, G__35496_35498);
+      if(function() {
+        var and__3822__auto__ = cljs.core.coll_QMARK_.call(null, content);
+        if(and__3822__auto__) {
+          return!cljs.core.keyword_QMARK_.call(null, cljs.core.first.call(null, content))
+        }else {
+          return and__3822__auto__
+        }
+      }()) {
+        var G__35497_35500 = cljs.core.seq.call(null, content);
         while(true) {
-          if(G__43649_43652) {
-            var c_43653 = cljs.core.first.call(null, G__43649_43652);
-            el_43651.appendChild(c_43653);
-            var G__43654 = cljs.core.next.call(null, G__43649_43652);
-            G__43649_43652 = G__43654;
+          if(G__35497_35500) {
+            var c_35501 = cljs.core.first.call(null, G__35497_35500);
+            el_35499.appendChild(nsfw.dom.wrap_content.call(null, c_35501));
+            var G__35502 = cljs.core.next.call(null, G__35497_35500);
+            G__35497_35500 = G__35502;
             continue
           }else {
           }
           break
         }
       }else {
-        el_43651.appendChild(content)
+        el_35499.appendChild(nsfw.dom.wrap_content.call(null, content))
       }
-      var G__43655 = cljs.core.next.call(null, G__43648_43650);
-      G__43648_43650 = G__43655;
+      var G__35503 = cljs.core.next.call(null, G__35496_35498);
+      G__35496_35498 = G__35503;
       continue
     }else {
     }
@@ -27794,13 +27822,13 @@ nsfw.dom.append = function append(els, content) {
   return els
 };
 nsfw.dom.append_to = function append_to(child, parents) {
-  var G__43657_43658 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, parents));
+  var G__35505_35506 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, parents));
   while(true) {
-    if(G__43657_43658) {
-      var el_43659 = cljs.core.first.call(null, G__43657_43658);
-      nsfw.dom.append.call(null, el_43659, child);
-      var G__43660 = cljs.core.next.call(null, G__43657_43658);
-      G__43657_43658 = G__43660;
+    if(G__35505_35506) {
+      var el_35507 = cljs.core.first.call(null, G__35505_35506);
+      nsfw.dom.append.call(null, el_35507, child);
+      var G__35508 = cljs.core.next.call(null, G__35505_35506);
+      G__35505_35506 = G__35508;
       continue
     }else {
     }
@@ -27809,14 +27837,14 @@ nsfw.dom.append_to = function append_to(child, parents) {
   return child
 };
 nsfw.dom.style = function style(els, css_map) {
-  var jsobj_43663 = nsfw.util.clj__GT_js.call(null, css_map);
-  var G__43662_43664 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var jsobj_35511 = nsfw.util.clj__GT_js.call(null, css_map);
+  var G__35510_35512 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43662_43664) {
-      var el_43665 = cljs.core.first.call(null, G__43662_43664);
-      goog.style.setStyle(el_43665, jsobj_43663);
-      var G__43666 = cljs.core.next.call(null, G__43662_43664);
-      G__43662_43664 = G__43666;
+    if(G__35510_35512) {
+      var el_35513 = cljs.core.first.call(null, G__35510_35512);
+      goog.style.setStyle(el_35513, jsobj_35511);
+      var G__35514 = cljs.core.next.call(null, G__35510_35512);
+      G__35510_35512 = G__35514;
       continue
     }else {
     }
@@ -27828,24 +27856,24 @@ nsfw.dom.size = function size(el) {
   return goog.style.getSize(el)
 };
 nsfw.dom.attrs = function attrs(els, m) {
-  var G__43669_43671 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35517_35519 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43669_43671) {
-      var el_43672 = cljs.core.first.call(null, G__43669_43671);
-      var G__43670_43673 = cljs.core.seq.call(null, cljs.core.keys.call(null, m));
+    if(G__35517_35519) {
+      var el_35520 = cljs.core.first.call(null, G__35517_35519);
+      var G__35518_35521 = cljs.core.seq.call(null, cljs.core.keys.call(null, m));
       while(true) {
-        if(G__43670_43673) {
-          var key_43674 = cljs.core.first.call(null, G__43670_43673);
-          el_43672.setAttribute(cljs.core.name.call(null, key_43674), cljs.core._lookup.call(null, m, key_43674, null));
-          var G__43675 = cljs.core.next.call(null, G__43670_43673);
-          G__43670_43673 = G__43675;
+        if(G__35518_35521) {
+          var key_35522 = cljs.core.first.call(null, G__35518_35521);
+          el_35520.setAttribute(cljs.core.name.call(null, key_35522), cljs.core._lookup.call(null, m, key_35522, null));
+          var G__35523 = cljs.core.next.call(null, G__35518_35521);
+          G__35518_35521 = G__35523;
           continue
         }else {
         }
         break
       }
-      var G__43676 = cljs.core.next.call(null, G__43669_43671);
-      G__43669_43671 = G__43676;
+      var G__35524 = cljs.core.next.call(null, G__35517_35519);
+      G__35517_35519 = G__35524;
       continue
     }else {
     }
@@ -27857,13 +27885,13 @@ nsfw.dom.onload = function onload(f) {
   return window.onload = f
 };
 nsfw.dom.click = function click(els, f) {
-  var G__43678_43679 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35526_35527 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43678_43679) {
-      var el_43680 = cljs.core.first.call(null, G__43678_43679);
-      goog.events.listen(el_43680, "click", f);
-      var G__43681 = cljs.core.next.call(null, G__43678_43679);
-      G__43678_43679 = G__43681;
+    if(G__35526_35527) {
+      var el_35528 = cljs.core.first.call(null, G__35526_35527);
+      goog.events.listen(el_35528, "click", f);
+      var G__35529 = cljs.core.next.call(null, G__35526_35527);
+      G__35526_35527 = G__35529;
       continue
     }else {
     }
@@ -27872,13 +27900,13 @@ nsfw.dom.click = function click(els, f) {
   return els
 };
 nsfw.dom.mousedown = function mousedown(els, f) {
-  var G__43683 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35531 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43683) {
-      var el = cljs.core.first.call(null, G__43683);
+    if(G__35531) {
+      var el = cljs.core.first.call(null, G__35531);
       goog.events.listen(el, "mousedown", f);
-      var G__43684 = cljs.core.next.call(null, G__43683);
-      G__43683 = G__43684;
+      var G__35532 = cljs.core.next.call(null, G__35531);
+      G__35531 = G__35532;
       continue
     }else {
       return null
@@ -27887,13 +27915,13 @@ nsfw.dom.mousedown = function mousedown(els, f) {
   }
 };
 nsfw.dom.mouseup = function mouseup(els, f) {
-  var G__43686 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35534 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43686) {
-      var el = cljs.core.first.call(null, G__43686);
+    if(G__35534) {
+      var el = cljs.core.first.call(null, G__35534);
       goog.events.listen(el, "mouseup", f);
-      var G__43687 = cljs.core.next.call(null, G__43686);
-      G__43686 = G__43687;
+      var G__35535 = cljs.core.next.call(null, G__35534);
+      G__35534 = G__35535;
       continue
     }else {
       return null
@@ -27902,13 +27930,13 @@ nsfw.dom.mouseup = function mouseup(els, f) {
   }
 };
 nsfw.dom.mousemove = function mousemove(els, f) {
-  var G__43689 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35537 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43689) {
-      var el = cljs.core.first.call(null, G__43689);
+    if(G__35537) {
+      var el = cljs.core.first.call(null, G__35537);
       goog.events.listen(el, "mousemove", f);
-      var G__43690 = cljs.core.next.call(null, G__43689);
-      G__43689 = G__43690;
+      var G__35538 = cljs.core.next.call(null, G__35537);
+      G__35537 = G__35538;
       continue
     }else {
       return null
@@ -27917,13 +27945,13 @@ nsfw.dom.mousemove = function mousemove(els, f) {
   }
 };
 nsfw.dom.mouseover = function mouseover(els, f) {
-  var G__43692 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35540 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43692) {
-      var el = cljs.core.first.call(null, G__43692);
+    if(G__35540) {
+      var el = cljs.core.first.call(null, G__35540);
       goog.events.listen(el, "mouseover", f);
-      var G__43693 = cljs.core.next.call(null, G__43692);
-      G__43692 = G__43693;
+      var G__35541 = cljs.core.next.call(null, G__35540);
+      G__35540 = G__35541;
       continue
     }else {
       return null
@@ -27932,13 +27960,13 @@ nsfw.dom.mouseover = function mouseover(els, f) {
   }
 };
 nsfw.dom.mouseout = function mouseout(els, f) {
-  var G__43695 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35543 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43695) {
-      var el = cljs.core.first.call(null, G__43695);
+    if(G__35543) {
+      var el = cljs.core.first.call(null, G__35543);
       goog.events.listen(el, "mouseout", f);
-      var G__43696 = cljs.core.next.call(null, G__43695);
-      G__43695 = G__43696;
+      var G__35544 = cljs.core.next.call(null, G__35543);
+      G__35543 = G__35544;
       continue
     }else {
       return null
@@ -27947,13 +27975,13 @@ nsfw.dom.mouseout = function mouseout(els, f) {
   }
 };
 nsfw.dom.keydown = function keydown(els, f) {
-  var G__43698_43699 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35546_35547 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43698_43699) {
-      var el_43700 = cljs.core.first.call(null, G__43698_43699);
-      goog.events.listen(el_43700, "keydown", f);
-      var G__43701 = cljs.core.next.call(null, G__43698_43699);
-      G__43698_43699 = G__43701;
+    if(G__35546_35547) {
+      var el_35548 = cljs.core.first.call(null, G__35546_35547);
+      goog.events.listen(el_35548, "keydown", f);
+      var G__35549 = cljs.core.next.call(null, G__35546_35547);
+      G__35546_35547 = G__35549;
       continue
     }else {
     }
@@ -27962,13 +27990,37 @@ nsfw.dom.keydown = function keydown(els, f) {
   return els
 };
 nsfw.dom.keyup = function keyup(els, f) {
-  var G__43703_43704 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35551_35552 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43703_43704) {
-      var el_43705 = cljs.core.first.call(null, G__43703_43704);
-      goog.events.listen(el_43705, "keyup", f);
-      var G__43706 = cljs.core.next.call(null, G__43703_43704);
-      G__43703_43704 = G__43706;
+    if(G__35551_35552) {
+      var el_35553 = cljs.core.first.call(null, G__35551_35552);
+      goog.events.listen(el_35553, "keyup", f);
+      var G__35554 = cljs.core.next.call(null, G__35551_35552);
+      G__35551_35552 = G__35554;
+      continue
+    }else {
+    }
+    break
+  }
+  return els
+};
+nsfw.dom.match_key = function match_key(els, key, f) {
+  var G__35556_35557 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  while(true) {
+    if(G__35556_35557) {
+      var el_35558 = cljs.core.first.call(null, G__35556_35557);
+      nsfw.dom.keyup.call(null, el_35558, function(G__35556_35557, el_35558) {
+        return function(e) {
+          var kc = e.keyCode;
+          if(cljs.core._EQ_.call(null, key, kc)) {
+            return f.call(null, el_35558, nsfw.dom.val.call(null, el_35558))
+          }else {
+            return null
+          }
+        }
+      }(G__35556_35557, el_35558));
+      var G__35559 = cljs.core.next.call(null, G__35556_35557);
+      G__35556_35557 = G__35559;
       continue
     }else {
     }
@@ -27977,13 +28029,13 @@ nsfw.dom.keyup = function keyup(els, f) {
   return els
 };
 nsfw.dom.text = function text(els, text__$1) {
-  var G__43708_43709 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35561_35562 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43708_43709) {
-      var el_43710 = cljs.core.first.call(null, G__43708_43709);
-      goog.dom.setTextContent(el_43710, text__$1);
-      var G__43711 = cljs.core.next.call(null, G__43708_43709);
-      G__43708_43709 = G__43711;
+    if(G__35561_35562) {
+      var el_35563 = cljs.core.first.call(null, G__35561_35562);
+      goog.dom.setTextContent(el_35563, text__$1);
+      var G__35564 = cljs.core.next.call(null, G__35561_35562);
+      G__35561_35562 = G__35564;
       continue
     }else {
     }
@@ -27991,21 +28043,18 @@ nsfw.dom.text = function text(els, text__$1) {
   }
   return els
 };
-nsfw.dom.val = function val(el) {
-  return el.value
-};
 nsfw.dom.val_changed = function val_changed(els, f) {
-  var G__43713_43714 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35566_35567 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43713_43714) {
-      var el_43715 = cljs.core.first.call(null, G__43713_43714);
-      nsfw.dom.keyup.call(null, el_43715, function(G__43713_43714, el_43715) {
+    if(G__35566_35567) {
+      var el_35568 = cljs.core.first.call(null, G__35566_35567);
+      nsfw.dom.keyup.call(null, el_35568, function(G__35566_35567, el_35568) {
         return function(e) {
-          return f.call(null, el_43715, nsfw.dom.val.call(null, el_43715))
+          return f.call(null, el_35568, nsfw.dom.val.call(null, el_35568))
         }
-      }(G__43713_43714, el_43715));
-      var G__43716 = cljs.core.next.call(null, G__43713_43714);
-      G__43713_43714 = G__43716;
+      }(G__35566_35567, el_35568));
+      var G__35569 = cljs.core.next.call(null, G__35566_35567);
+      G__35566_35567 = G__35569;
       continue
     }else {
     }
@@ -28018,13 +28067,13 @@ nsfw.dom.focus = function focus(el) {
   return el
 };
 nsfw.dom.replace = function replace(els, content) {
-  var G__43718 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35571 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43718) {
-      var el = cljs.core.first.call(null, G__43718);
+    if(G__35571) {
+      var el = cljs.core.first.call(null, G__35571);
       goog.dom.replaceNode(content, el);
-      var G__43719 = cljs.core.next.call(null, G__43718);
-      G__43718 = G__43719;
+      var G__35572 = cljs.core.next.call(null, G__35571);
+      G__35571 = G__35572;
       continue
     }else {
       return null
@@ -28033,13 +28082,13 @@ nsfw.dom.replace = function replace(els, content) {
   }
 };
 nsfw.dom.remove = function remove(els) {
-  var G__43721 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35574 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43721) {
-      var el = cljs.core.first.call(null, G__43721);
+    if(G__35574) {
+      var el = cljs.core.first.call(null, G__35574);
       goog.dom.removeNode(el);
-      var G__43722 = cljs.core.next.call(null, G__43721);
-      G__43721 = G__43722;
+      var G__35575 = cljs.core.next.call(null, G__35574);
+      G__35574 = G__35575;
       continue
     }else {
       return null
@@ -28048,13 +28097,13 @@ nsfw.dom.remove = function remove(els) {
   }
 };
 nsfw.dom.empty = function empty(els) {
-  var G__43725_43726 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
+  var G__35578_35579 = cljs.core.seq.call(null, nsfw.dom.ensure_coll.call(null, els));
   while(true) {
-    if(G__43725_43726) {
-      var el_43727 = cljs.core.first.call(null, G__43725_43726);
-      goog.dom.removeChildren(el_43727);
-      var G__43728 = cljs.core.next.call(null, G__43725_43726);
-      G__43725_43726 = G__43728;
+    if(G__35578_35579) {
+      var el_35580 = cljs.core.first.call(null, G__35578_35579);
+      goog.dom.removeChildren(el_35580);
+      var G__35581 = cljs.core.next.call(null, G__35578_35579);
+      G__35578_35579 = G__35581;
       continue
     }else {
     }
@@ -28064,25 +28113,25 @@ nsfw.dom.empty = function empty(els) {
 };
 nsfw.dom.map__GT_jsobj = function map__GT_jsobj(cljmap) {
   var out = {};
-  cljs.core.doall.call(null, cljs.core.map.call(null, function(p1__43723_SHARP_) {
-    return out[cljs.core.name.call(null, cljs.core.first.call(null, p1__43723_SHARP_))] = cljs.core.second.call(null, p1__43723_SHARP_)
+  cljs.core.doall.call(null, cljs.core.map.call(null, function(p1__35576_SHARP_) {
+    return out[cljs.core.name.call(null, cljs.core.first.call(null, p1__35576_SHARP_))] = cljs.core.second.call(null, p1__35576_SHARP_)
   }, cljmap));
   return out
 };
 nsfw.dom.ajax = function() {
   var ajax__delegate = function(args) {
-    var map__43731 = cljs.core.merge.call(null, cljs.core.ObjMap.fromObject(["\ufdd0'path", "\ufdd0'method", "\ufdd0'data", "\ufdd0'headers", "\ufdd0'success", "\ufdd0'error"], {"\ufdd0'path":"/", "\ufdd0'method":"GET", "\ufdd0'data":cljs.core.ObjMap.EMPTY, "\ufdd0'headers":cljs.core.ObjMap.fromObject(["content-type"], {"content-type":"application/clojure"}), "\ufdd0'success":function() {
+    var map__35584 = cljs.core.merge.call(null, cljs.core.ObjMap.fromObject(["\ufdd0'path", "\ufdd0'method", "\ufdd0'data", "\ufdd0'headers", "\ufdd0'success", "\ufdd0'error"], {"\ufdd0'path":"/", "\ufdd0'method":"GET", "\ufdd0'data":cljs.core.ObjMap.EMPTY, "\ufdd0'headers":cljs.core.ObjMap.fromObject(["content-type"], {"content-type":"application/clojure"}), "\ufdd0'success":function() {
       return null
     }, "\ufdd0'error":function() {
       return null
     }}), cljs.core.apply.call(null, cljs.core.hash_map, args));
-    var map__43731__$1 = cljs.core.seq_QMARK_.call(null, map__43731) ? cljs.core.apply.call(null, cljs.core.hash_map, map__43731) : map__43731;
-    var error = cljs.core._lookup.call(null, map__43731__$1, "\ufdd0'error", null);
-    var success = cljs.core._lookup.call(null, map__43731__$1, "\ufdd0'success", null);
-    var headers = cljs.core._lookup.call(null, map__43731__$1, "\ufdd0'headers", null);
-    var data = cljs.core._lookup.call(null, map__43731__$1, "\ufdd0'data", null);
-    var method = cljs.core._lookup.call(null, map__43731__$1, "\ufdd0'method", null);
-    var path = cljs.core._lookup.call(null, map__43731__$1, "\ufdd0'path", null);
+    var map__35584__$1 = cljs.core.seq_QMARK_.call(null, map__35584) ? cljs.core.apply.call(null, cljs.core.hash_map, map__35584) : map__35584;
+    var error = cljs.core._lookup.call(null, map__35584__$1, "\ufdd0'error", null);
+    var success = cljs.core._lookup.call(null, map__35584__$1, "\ufdd0'success", null);
+    var headers = cljs.core._lookup.call(null, map__35584__$1, "\ufdd0'headers", null);
+    var data = cljs.core._lookup.call(null, map__35584__$1, "\ufdd0'data", null);
+    var method = cljs.core._lookup.call(null, map__35584__$1, "\ufdd0'method", null);
+    var path = cljs.core._lookup.call(null, map__35584__$1, "\ufdd0'path", null);
     return goog.net.XhrIo.send(path, function(e) {
       try {
         var req = e.target;
@@ -28091,14 +28140,14 @@ nsfw.dom.ajax = function() {
         }else {
           return error.call(null, req)
         }
-      }catch(e43732) {
-        if(cljs.core.instance_QMARK_.call(null, Object, e43732)) {
-          var e__$1 = e43732;
+      }catch(e35585) {
+        if(cljs.core.instance_QMARK_.call(null, Object, e35585)) {
+          var e__$1 = e35585;
           console.error(e__$1.stack);
           throw e__$1;
         }else {
           if("\ufdd0'else") {
-            throw e43732;
+            throw e35585;
           }else {
             return null
           }
@@ -28114,8 +28163,8 @@ nsfw.dom.ajax = function() {
     return ajax__delegate.call(this, args)
   };
   ajax.cljs$lang$maxFixedArity = 0;
-  ajax.cljs$lang$applyTo = function(arglist__43733) {
-    var args = cljs.core.seq(arglist__43733);
+  ajax.cljs$lang$applyTo = function(arglist__35586) {
+    var args = cljs.core.seq(arglist__35586);
     return ajax__delegate(args)
   };
   ajax.cljs$lang$arity$variadic = ajax__delegate;
@@ -28141,6 +28190,19 @@ nsfw.dom.bind_el = function bind_el(atom, el, f) {
   return nsfw.dom.bind.call(null, atom, function(ident, from, to) {
     return f.call(null, from, to, el)
   })
+};
+nsfw.dom.bind_update = function bind_update(el, atom, f) {
+  nsfw.dom.bind.call(null, atom, function(id, old, new$) {
+    return f.call(null, el, new$)
+  });
+  return el
+};
+nsfw.dom.bind_render = function bind_render(el, atom, f) {
+  nsfw.dom.bind.call(null, atom, function(id, old, new$) {
+    return nsfw.dom.append.call(null, nsfw.dom.empty.call(null, el), f.call(null, new$))
+  });
+  nsfw.dom.append.call(null, el, f.call(null, cljs.core.deref.call(null, atom)));
+  return el
 };
 goog.provide("goog.events.EventTarget");
 goog.require("goog.Disposable");
@@ -30622,8 +30684,8 @@ goog.require("nsfw.dom");
 goog.require("nsfw.util");
 nsfw.clojuredocs.match_vars = function match_vars(vars, text) {
   var pattern = cljs.core.re_pattern.call(null, text);
-  return cljs.core.filter.call(null, function(p1__91036_SHARP_) {
-    return cljs.core.re_find.call(null, pattern, (new cljs.core.Keyword("\ufdd0'name")).call(null, p1__91036_SHARP_))
+  return cljs.core.filter.call(null, function(p1__91401_SHARP_) {
+    return cljs.core.re_find.call(null, pattern, (new cljs.core.Keyword("\ufdd0'name")).call(null, p1__91401_SHARP_))
   }, vars)
 };
 nsfw.clojuredocs.ellipsis = function ellipsis(s, n) {
@@ -30641,16 +30703,16 @@ nsfw.clojuredocs.filter_input = function filter_input(atom, vars) {
 nsfw.clojuredocs.fmt_arglists = function fmt_arglists(arglists) {
   return cljs.core.apply.call(null, cljs.core.str, cljs.core.interpose.call(null, " ", cljs.core.map.call(null, cljs.core.pr_str, arglists)))
 };
-nsfw.clojuredocs.var_overview = function var_overview(p__91199) {
-  var map__91201 = p__91199;
-  var map__91201__$1 = cljs.core.seq_QMARK_.call(null, map__91201) ? cljs.core.apply.call(null, cljs.core.hash_map, map__91201) : map__91201;
-  var ns = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'ns", null);
-  var arglists = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'arglists", null);
-  var file = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'file", null);
-  var line = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'line", null);
-  var added = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'added", null);
-  var name = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'name", null);
-  var doc = cljs.core._lookup.call(null, map__91201__$1, "\ufdd0'doc", null);
+nsfw.clojuredocs.var_overview = function var_overview(p__91564) {
+  var map__91566 = p__91564;
+  var map__91566__$1 = cljs.core.seq_QMARK_.call(null, map__91566) ? cljs.core.apply.call(null, cljs.core.hash_map, map__91566) : map__91566;
+  var ns = cljs.core._lookup.call(null, map__91566__$1, "\ufdd0'ns", null);
+  var arglists = cljs.core._lookup.call(null, map__91566__$1, "\ufdd0'arglists", null);
+  var file = cljs.core._lookup.call(null, map__91566__$1, "\ufdd0'file", null);
+  var line = cljs.core._lookup.call(null, map__91566__$1, "\ufdd0'line", null);
+  var added = cljs.core._lookup.call(null, map__91566__$1, "\ufdd0'added", null);
+  var name = cljs.core._lookup.call(null, map__91566__$1, "\ufdd0'name", null);
+  var doc = cljs.core._lookup.call(null, map__91566__$1, "\ufdd0'doc", null);
   return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div", cljs.core.ObjMap.fromObject(["\ufdd0'class"], {"\ufdd0'class":[cljs.core.str("var-overview"), cljs.core.str(cljs.core.truth_(arglists) ? " fn" : null)].join("")}), cljs.core.PersistentVector.fromArray(["\ufdd0'div.code", cljs.core.PersistentVector.fromArray(["\ufdd0'span.sym", name], true), cljs.core.PersistentVector.fromArray(["\ufdd0'span.ns", ns], true)], true), cljs.core.PersistentVector.fromArray(["\ufdd0'div.doc-preview", 
   nsfw.clojuredocs.ellipsis.call(null, doc, 33)], true), cljs.core.truth_(arglists) ? cljs.core.PersistentVector.fromArray(["\ufdd0'div.arglists", nsfw.clojuredocs.fmt_arglists.call(null, arglists)], true) : null], true))
 };
@@ -30668,17 +30730,17 @@ nsfw.clojuredocs.vars_overview = function vars_overview(vars_atom, vars) {
     return nsfw.dom.append.call(null, nsfw.dom.empty.call(null, el), cljs.core.map.call(null, nsfw.clojuredocs.var_overview, new$))
   })
 };
-nsfw.clojuredocs.render_var = function render_var(p__91204) {
-  var map__91206 = p__91204;
-  var map__91206__$1 = cljs.core.seq_QMARK_.call(null, map__91206) ? cljs.core.apply.call(null, cljs.core.hash_map, map__91206) : map__91206;
-  var ns = cljs.core._lookup.call(null, map__91206__$1, "\ufdd0'ns", null);
-  var arglists = cljs.core._lookup.call(null, map__91206__$1, "\ufdd0'arglists", null);
-  var name = cljs.core._lookup.call(null, map__91206__$1, "\ufdd0'name", null);
-  var doc = cljs.core._lookup.call(null, map__91206__$1, "\ufdd0'doc", null);
-  return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.var", cljs.core.PersistentVector.fromArray(["\ufdd0'h2.name", name], true), cljs.core.PersistentVector.fromArray(["\ufdd0'div.doc", doc], true), cljs.core.truth_(arglists) ? cljs.core.PersistentVector.fromArray(["\ufdd0'div.arglists", cljs.core.map.call(null, nsfw.dom.$, cljs.core.map.call(null, function(p1__91203_SHARP_) {
-    return cljs.core.vector.call(null, "\ufdd0'div", cljs.core.pr_str.call(null, p1__91203_SHARP_))
-  }, cljs.core.map.call(null, function(p1__91202_SHARP_) {
-    return cljs.core.cons.call(null, name, p1__91202_SHARP_)
+nsfw.clojuredocs.render_var = function render_var(p__91569) {
+  var map__91571 = p__91569;
+  var map__91571__$1 = cljs.core.seq_QMARK_.call(null, map__91571) ? cljs.core.apply.call(null, cljs.core.hash_map, map__91571) : map__91571;
+  var ns = cljs.core._lookup.call(null, map__91571__$1, "\ufdd0'ns", null);
+  var arglists = cljs.core._lookup.call(null, map__91571__$1, "\ufdd0'arglists", null);
+  var name = cljs.core._lookup.call(null, map__91571__$1, "\ufdd0'name", null);
+  var doc = cljs.core._lookup.call(null, map__91571__$1, "\ufdd0'doc", null);
+  return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.var", cljs.core.PersistentVector.fromArray(["\ufdd0'h2.name", name], true), cljs.core.PersistentVector.fromArray(["\ufdd0'div.doc", doc], true), cljs.core.truth_(arglists) ? cljs.core.PersistentVector.fromArray(["\ufdd0'div.arglists", cljs.core.map.call(null, nsfw.dom.$, cljs.core.map.call(null, function(p1__91568_SHARP_) {
+    return cljs.core.vector.call(null, "\ufdd0'div", cljs.core.pr_str.call(null, p1__91568_SHARP_))
+  }, cljs.core.map.call(null, function(p1__91567_SHARP_) {
+    return cljs.core.cons.call(null, name, p1__91567_SHARP_)
   }, arglists)))], true) : null], true))
 };
 nsfw.clojuredocs.content = function content(vars_atom) {
@@ -30705,3 +30767,44 @@ goog.require("nsfw.dom");
 goog.require("nsfw.dom");
 goog.require("nsfw.util");
 goog.require("nsfw.dom");
+goog.provide("nsfw.frowny");
+goog.require("cljs.core");
+goog.require("nsfw.util");
+goog.require("nsfw.dom");
+goog.require("nsfw.util");
+nsfw.frowny.gen_id = function gen_id() {
+  return cljs.core.name.call(null, cljs.core.gensym.call(null))
+};
+nsfw.frowny.remove_frowny_BANG_ = function remove_frowny_BANG_(frownies, frowny) {
+  return cljs.core.swap_BANG_.call(null, frownies, function(fs) {
+    return cljs.core.remove.call(null, function(p1__36304_SHARP_) {
+      return cljs.core._EQ_.call(null, frowny, p1__36304_SHARP_)
+    }, fs)
+  })
+};
+nsfw.frowny.header = function header() {
+  return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.header", cljs.core.PersistentVector.fromArray(["\ufdd0'h1", "Frowny"], true)], true))
+};
+nsfw.frowny.new_frowny = function new_frowny(frownies) {
+  return nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.new-frowny", nsfw.dom.match_key.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'input.frowny-text-input", cljs.core.ObjMap.fromObject(["\ufdd0'autofocus"], {"\ufdd0'autofocus":"autofocus"})], true)), 13, function(el, val) {
+    cljs.core.swap_BANG_.call(null, frownies, cljs.core.conj, cljs.core.ObjMap.fromObject(["\ufdd0'id", "\ufdd0'text"], {"\ufdd0'id":nsfw.frowny.gen_id.call(null), "\ufdd0'text":val}));
+    return nsfw.dom.val.call(null, el, "")
+  })], true))
+};
+nsfw.frowny.frowny = function frowny(frownies, frowny__$1) {
+  return cljs.core.PersistentVector.fromArray(["\ufdd0'li.frowny-item", (new cljs.core.Keyword("\ufdd0'text")).call(null, frowny__$1), nsfw.dom.click.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'a", cljs.core.ObjMap.fromObject(["\ufdd0'href"], {"\ufdd0'href":"#"}), "delete"], true)), function() {
+    return nsfw.frowny.remove_frowny_BANG_.call(null, frownies, frowny__$1)
+  })], true)
+};
+nsfw.frowny.show_frownies = function show_frownies(frownies) {
+  return nsfw.dom.bind_render.call(null, nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'ol.frownies"], true)), frownies, function(fs) {
+    return cljs.core.map.call(null, function(p1__36305_SHARP_) {
+      return nsfw.frowny.frowny.call(null, frownies, p1__36305_SHARP_)
+    }, fs)
+  })
+};
+nsfw.frowny.main = function main() {
+  var frownies = cljs.core.atom.call(null, cljs.core.PersistentVector.fromArray([cljs.core.ObjMap.fromObject(["\ufdd0'id", "\ufdd0'text"], {"\ufdd0'id":nsfw.frowny.gen_id.call(null), "\ufdd0'text":"foo bar"}), cljs.core.ObjMap.fromObject(["\ufdd0'id", "\ufdd0'text"], {"\ufdd0'id":nsfw.frowny.gen_id.call(null), "\ufdd0'text":"baz"}), cljs.core.ObjMap.fromObject(["\ufdd0'id", "\ufdd0'text"], {"\ufdd0'id":nsfw.frowny.gen_id.call(null), "\ufdd0'text":"bap"})], true));
+  return nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.$.call(null, "body"), cljs.core.PersistentVector.fromArray(["\ufdd0'div.page", nsfw.frowny.header.call(null), cljs.core.PersistentVector.fromArray(["\ufdd0'div.content", nsfw.frowny.new_frowny.call(null, frownies), nsfw.frowny.show_frownies.call(null, frownies)], true)], true)), cljs.core.PersistentVector.fromArray(["\ufdd0'div.watermark", ":("], true)), cljs.core.repeat.call(null, 100, cljs.core.PersistentVector.fromArray(["\ufdd0'br"], 
+  true)))
+};
