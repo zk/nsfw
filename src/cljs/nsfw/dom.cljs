@@ -204,10 +204,6 @@
        (when (not= ov nv)
          (f atom old new))))))
 
-(defn bind-el [atom el f]
-  (bind atom (fn [ident from to]
-               (f from to el))))
-
 (defn bind-update [el atom f]
   (bind atom (fn [id old new] (f el new)))
   el)
