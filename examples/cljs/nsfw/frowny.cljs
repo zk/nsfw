@@ -1,13 +1,14 @@
 (ns nsfw.frowny
-  (:use [nsfw.util :only [log]])
+  (:use [nsfw.util :only [log uuid page-data]])
   (:require [nsfw.dom :as dom]))
 
 (defn gen-id []
-  (name (gensym)))
+  (uuid))
 
 (defn remove-frowny! [frownies frowny]
-  (swap! frownies (fn [fs]
-                    (remove #(= frowny %) fs))))
+  (swap! frownies
+         (fn [fs]
+           (remove #(= frowny %) fs))))
 
 (defn header []
   (dom/$
@@ -35,16 +36,16 @@
                        (fn [fs]
                          (map #(frowny frownies %) fs)))))
 
+(def frownies (atom (page-data :frownies)))
+
 (defn main []
-  (let [frownies (atom [{:id (gen-id) :text "foo bar"}
-                        {:id (gen-id) :text "baz"}
-                        {:id (gen-id) :text "bap"}])]
-    (-> (dom/$ "body")
-        (dom/append
-         [:div.page
-          (header)
-          [:div.content
-           (new-frowny frownies)
-           (show-frownies frownies)]])
-        (dom/append [:div.watermark ":("])
-        (dom/append (repeat 100 [:br])))))
+  (dom/push-updates frownies "/update-frownies")
+  (-> (dom/$ "body")
+      (dom/append
+       [:div.page
+        (header)
+        [:div.content
+         (new-frowny frownies)
+         (show-frownies frownies)]])
+      (dom/append [:div.watermark ":("])
+      (dom/append (repeat 100 [:br]))))
