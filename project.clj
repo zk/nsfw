@@ -25,8 +25,4 @@
                      :jar true}
                :examples {:source-path "examples/cljs"
                           :compiler {:output-to "resources/public/js/examples.js"
-                                     :optimizations :whitespace}}
-               ;; :monitor {:source-path "examples/cljs"
-               ;;              :compiler {:output-to "resources/public/js/monitor.js"
-               ;;                         :optimizations :whitespace}}
-               }})
+                                     :optimizations :whitespace}}}})
