@@ -28142,18 +28142,18 @@ goog.require("nsfw.util");
 goog.require("nsfw.dom");
 goog.require("nsfw.util");
 nsfw.bind.ajax = function ajax(opts) {
-  var map__27161 = cljs.core.merge.call(null, cljs.core.ObjMap.fromObject(["\ufdd0'path", "\ufdd0'method", "\ufdd0'data", "\ufdd0'headers", "\ufdd0'success", "\ufdd0'error"], {"\ufdd0'path":"/", "\ufdd0'method":"GET", "\ufdd0'data":cljs.core.ObjMap.EMPTY, "\ufdd0'headers":cljs.core.ObjMap.fromObject(["content-type"], {"content-type":"application/clojure"}), "\ufdd0'success":function() {
+  var map__27515 = cljs.core.merge.call(null, cljs.core.ObjMap.fromObject(["\ufdd0'path", "\ufdd0'method", "\ufdd0'data", "\ufdd0'headers", "\ufdd0'success", "\ufdd0'error"], {"\ufdd0'path":"/", "\ufdd0'method":"GET", "\ufdd0'data":cljs.core.ObjMap.EMPTY, "\ufdd0'headers":cljs.core.ObjMap.fromObject(["content-type"], {"content-type":"application/clojure"}), "\ufdd0'success":function() {
     return null
   }, "\ufdd0'error":function() {
     return null
   }}), opts);
-  var map__27161__$1 = cljs.core.seq_QMARK_.call(null, map__27161) ? cljs.core.apply.call(null, cljs.core.hash_map, map__27161) : map__27161;
-  var error = cljs.core._lookup.call(null, map__27161__$1, "\ufdd0'error", null);
-  var success = cljs.core._lookup.call(null, map__27161__$1, "\ufdd0'success", null);
-  var headers = cljs.core._lookup.call(null, map__27161__$1, "\ufdd0'headers", null);
-  var data = cljs.core._lookup.call(null, map__27161__$1, "\ufdd0'data", null);
-  var method = cljs.core._lookup.call(null, map__27161__$1, "\ufdd0'method", null);
-  var path = cljs.core._lookup.call(null, map__27161__$1, "\ufdd0'path", null);
+  var map__27515__$1 = cljs.core.seq_QMARK_.call(null, map__27515) ? cljs.core.apply.call(null, cljs.core.hash_map, map__27515) : map__27515;
+  var error = cljs.core._lookup.call(null, map__27515__$1, "\ufdd0'error", null);
+  var success = cljs.core._lookup.call(null, map__27515__$1, "\ufdd0'success", null);
+  var headers = cljs.core._lookup.call(null, map__27515__$1, "\ufdd0'headers", null);
+  var data = cljs.core._lookup.call(null, map__27515__$1, "\ufdd0'data", null);
+  var method = cljs.core._lookup.call(null, map__27515__$1, "\ufdd0'method", null);
+  var path = cljs.core._lookup.call(null, map__27515__$1, "\ufdd0'path", null);
   return goog.net.XhrIo.send(path, function(e) {
     try {
       var req = e.target;
@@ -28169,14 +28169,14 @@ nsfw.bind.ajax = function ajax(opts) {
       }else {
         return error.call(null, req)
       }
-    }catch(e27162) {
-      if(cljs.core.instance_QMARK_.call(null, Object, e27162)) {
-        var e__$1 = e27162;
+    }catch(e27516) {
+      if(cljs.core.instance_QMARK_.call(null, Object, e27516)) {
+        var e__$1 = e27516;
         console.error(e__$1.stack);
         throw e__$1;
       }else {
         if("\ufdd0'else") {
-          throw e27162;
+          throw e27516;
         }else {
           return null
         }
@@ -28184,36 +28184,36 @@ nsfw.bind.ajax = function ajax(opts) {
     }
   }, method, data, cljs.core.clj__GT_js.call(null, headers))
 };
-nsfw.bind.push_updates = function() {
-  var push_updates__delegate = function(atom, path, p__27163) {
-    var vec__27165 = p__27163;
-    var opts = cljs.core.nth.call(null, vec__27165, 0, null);
-    return nsfw.bind.bind.call(null, atom, function(id, old, new$) {
-      return nsfw.bind.ajax.call(null, cljs.core.merge.call(null, cljs.core.ObjMap.fromObject(["\ufdd0'path", "\ufdd0'data", "\ufdd0'method"], {"\ufdd0'path":path, "\ufdd0'data":new$, "\ufdd0'method":"POST"}), opts))
-    })
-  };
-  var push_updates = function(atom, path, var_args) {
-    var p__27163 = null;
-    if(goog.isDef(var_args)) {
-      p__27163 = cljs.core.array_seq(Array.prototype.slice.call(arguments, 2), 0)
-    }
-    return push_updates__delegate.call(this, atom, path, p__27163)
-  };
-  push_updates.cljs$lang$maxFixedArity = 2;
-  push_updates.cljs$lang$applyTo = function(arglist__27166) {
-    var atom = cljs.core.first(arglist__27166);
-    var path = cljs.core.first(cljs.core.next(arglist__27166));
-    var p__27163 = cljs.core.rest(cljs.core.next(arglist__27166));
-    return push_updates__delegate(atom, path, p__27163)
-  };
-  push_updates.cljs$lang$arity$variadic = push_updates__delegate;
-  return push_updates
-}();
 nsfw.bind.bind = function bind(atom, function$) {
   return cljs.core.add_watch.call(null, atom, cljs.core.gensym.call(null), function(key, identity, old_value, new_value) {
     return function$.call(null, identity, old_value, new_value)
   })
 };
+nsfw.bind.push_updates = function() {
+  var push_updates__delegate = function(atom, path, p__27517) {
+    var vec__27519 = p__27517;
+    var opts = cljs.core.nth.call(null, vec__27519, 0, null);
+    return nsfw.bind.bind.call(null, atom, function(id, old, new$) {
+      return nsfw.bind.ajax.call(null, cljs.core.merge.call(null, cljs.core.ObjMap.fromObject(["\ufdd0'path", "\ufdd0'data", "\ufdd0'method"], {"\ufdd0'path":path, "\ufdd0'data":new$, "\ufdd0'method":"POST"}), opts))
+    })
+  };
+  var push_updates = function(atom, path, var_args) {
+    var p__27517 = null;
+    if(goog.isDef(var_args)) {
+      p__27517 = cljs.core.array_seq(Array.prototype.slice.call(arguments, 2), 0)
+    }
+    return push_updates__delegate.call(this, atom, path, p__27517)
+  };
+  push_updates.cljs$lang$maxFixedArity = 2;
+  push_updates.cljs$lang$applyTo = function(arglist__27520) {
+    var atom = cljs.core.first(arglist__27520);
+    var path = cljs.core.first(cljs.core.next(arglist__27520));
+    var p__27517 = cljs.core.rest(cljs.core.next(arglist__27520));
+    return push_updates__delegate(atom, path, p__27517)
+  };
+  push_updates.cljs$lang$arity$variadic = push_updates__delegate;
+  return push_updates
+}();
 nsfw.bind.change = function change(atom, key, f) {
   return cljs.core.add_watch.call(null, atom, cljs.core.gensym.call(null), function(k, atom__$1, old, new$) {
     var ov = cljs.core._lookup.call(null, old, key, null);
