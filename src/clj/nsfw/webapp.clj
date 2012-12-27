@@ -11,17 +11,22 @@
     ~@body))
 
 (defn cs
-  "Provies a route helper to set up a clojurescript app."
+  "Provies a route helper to set up a clojurescript app.
+
+   (webapp/cs :examples ; name of js file
+              :entry 'nsfw.foo ; runs nsfw.foo.main()
+              :data {:functions fns}) ; embeds `fns` as
+                                      ; `var functions = ...`"
   [script & ops]
   (fn [r]
-    (let [{:keys [entry title data]}
+    (let [{:keys [entry title data css]}
           (apply hash-map ops)]
       {:headers {"Content-Type" "text/html"}
        :body (html/html5
                [:head
                 (when title
                   [:title title])
-                (html/stylesheet (str "/css/" (name script) ".css"))]
+                (html/stylesheet (str "/css/" (name (or css script)) ".css"))]
                [:body
                 (when data
                   [:script {:type "text/javascript"}
