@@ -51,10 +51,8 @@
 (defn vars-overview [vars-atom vars]
   (-> ($ [:div.var-overviews
           (map var-overview vars)])
-      (bind/update vars-atom (fn [el new]
-                               (-> el
-                                   dom/empty
-                                   (dom/append (map var-overview new)))))))
+      (bind/render vars-atom
+                   #(map var-overview %))))
 
 (defn render-var [{:keys [doc name arglists ns]}]
   ($ [:div.var
@@ -69,17 +67,11 @@
 
 (defn content [vars-atom]
   (-> ($ [:div.content (map render-var @vars-atom)])
-      (bind/update vars-atom
-                   (fn [el new]
-                     (-> el
-                         dom/empty
-                         (dom/append (map render-var new)))))))
+      (bind/render vars-atom #(map render-var %))))
 
 (defn results-count [vars-atom]
   (-> ($ [:span.results-count (count @vars-atom)])
-      (bind/update vars-atom (fn [el new]
-                               (-> el dom/empty
-                                   (dom/text (count new)))))
+      (bind/text vars-atom #(count %))
       (dom/style {:position :absolute
                   :top :0px
                   :right :0px
