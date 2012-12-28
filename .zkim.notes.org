@@ -577,3 +577,9 @@ numbers of parameters required on the passed function.
 
 #+end_src
 
+
+The =bind/render= also initially calls the render
+function. It's convient, but might be a gotcha. Maybe that should be
+moved to another function.
+
+

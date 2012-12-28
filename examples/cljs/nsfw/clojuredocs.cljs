@@ -49,10 +49,8 @@
       (filter-input vars-atom vars)]))
 
 (defn vars-overview [vars-atom vars]
-  (-> ($ [:div.var-overviews
-          (map var-overview vars)])
-      (bind/render vars-atom
-                   #(map var-overview %))))
+  (-> ($ [:div.var-overviews])
+      (bind/render vars-atom #(map var-overview %))))
 
 (defn render-var [{:keys [doc name arglists ns]}]
   ($ [:div.var
@@ -66,7 +64,7 @@
               (map $))])]))
 
 (defn content [vars-atom]
-  (-> ($ [:div.content (map render-var @vars-atom)])
+  (-> ($ [:div.content])
       (bind/render vars-atom #(map render-var %))))
 
 (defn results-count [vars-atom]
