@@ -57,13 +57,19 @@
          (f atom old new))))))
 
 (defn update [el atom f]
-  (bind atom (fn [id old new] (f el new)))
+  (bind atom (fn [id old new] (f new old el)))
   el)
 
 (defn render [el atom f]
   (bind atom (fn [id old new]
                (-> el
                    dom/empty
-                   (dom/append (f new)))))
+                   (dom/append (f new old el)))))
   (dom/append el (f @atom))
   el)
+
+(defn text [el atom f]
+  (update el atom (fn [new old el]
+                    (-> el
+                        dom/empty
+                        (dom/text (f new old el))))))
