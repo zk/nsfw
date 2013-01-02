@@ -23,7 +23,7 @@
    {:port        8080
     :join?       false  ; Join server thread?
     :max-threads 100    ; Request thredpool cap.
-    :min-threads 10}   
+    :min-threads 10}
 "
   [server-atom entry-point & [opts]]
   (let [opts (merge server-defaults opts)]
@@ -44,7 +44,7 @@
 
 (def SERVERS (atom {}))
 
-(defn restart [& opts]
+(defn start [& opts]
   (let [opts (apply hash-map opts)
         name (get opts :name)
         entry-point (get opts :entry (fn [r] {:body "Whoops, you didn't pass in an :entry when you started the server."}))
@@ -53,7 +53,7 @@
                     (atom nil))]
     (swap! SERVERS assoc name (start-server server entry-point opts))))
 
-(def start restart)
+(def restart start)
 
 (defn stop [& name]
   (stop-server (get @SERVERS name)))
