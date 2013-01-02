@@ -1,5 +1,5 @@
 (ns nsfw.util
-  (:require [cljs-uuid-utils]
+  (:require #_[cljs-uuid-utils :as uu]
             [cljs.reader :as reader]))
 
 (defn log [& args]
@@ -20,7 +20,8 @@
   (js/setInterval f delta))
 
 (defn uuid []
-  (cljs-uuid-utils/make-random-uuid))
+  #_(cljs-uuid-utils/make-random-uuid)
+  (gensym))
 
 (defn page-data [key]
   (reader/read-string (aget js/window (name key))))

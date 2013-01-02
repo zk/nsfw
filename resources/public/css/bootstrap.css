@@ -1,0 +1,219 @@
+/* bootstrap */
+
+.clear { clear: both; }
+
+.full-bleed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  background-repat: "no-repeat";
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  background-color: #222;
+}
+
+.bleed-box-content {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.bleed-box {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: table;
+}
+
+.bleed-box .navbar {
+  background-color: black;
+  color: white;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+}
+
+.navbar {
+  padding: 10px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  padding: 0;
+  margin: 0;
+}
+
+/* end bootstrap */
+
+
+
+
+* {
+  margin: 0px;
+  padding: 0px;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+
+a {
+
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+}
+
+.hero-content {
+  padding: 40px;
+  background-color: rgba(0,0,0,0.8);
+  width: 40%;
+  float: right;
+  color: white;
+}
+
+.hero-content h1,
+.hero-content h2,
+.hero-content h3
+{
+  font-weight: normal
+}
+
+.hero-content h1 {
+  margin-bottom: 20px;
+}
+
+.hero-content .do-it {
+  font-size: 30px;
+  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border: solid #ccc 1px;
+  display: inline-block;
+  text-decoration: none;
+  color: black;
+  background-color: #ccc;
+}
+
+.hero-content p {
+  margin-bottom: 15px;
+  line-height: 160%;
+  max-width: 500px;
+}
+
+.hero-content {
+}
+
+.sign-in-twitter {
+  display: inline-block;
+  padding: 10px;
+  border: solid #555 1px;
+  line-height: 30px;
+  cursor: pointer;
+  background-color: #222;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.sign-in-twitter:hover {
+  background-color: #444;
+}
+
+.sign-in-twitter:active {
+  background-color: #666;
+}
+
+.sign-in-twitter img {
+  width: 30px;
+  height: 30px;
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: -9px;
+}
+
+.post-bleed-banner {
+  padding: 20px;
+  text-align: center;
+  border-top: solid #ccc 1px;
+  border-bottom: solid #ccc 1px;
+  background-color: #eee;
+  margin-bottom: 20px;
+}
+
+.navbar h1 {
+  font-weight: normal;
+  letter-spacing: 8px;
+}
+
+.icon-overview {
+}
+
+.glyph {
+  padding: 0px;
+  margin: 0px;
+  display: inline-block;
+  text-align: center;
+}
+
+.xl.glyph {
+  font-size: 72px;
+  width: 96px;
+  height: 96px;
+}
+
+.large.glyph {
+  font-size: 46px;
+  width: 62px;
+  height: 62px;
+}
+
+.med.glyph {
+  font-size: 32px;
+  
+}
+
+.small.glyph {
+  font-size: 18px;
+}
+
+.tiny.glyph {
+  font-size: 12px;
+}
+
+.icon-cubby {
+  text-align: center;
+  float: left;
+  list-style-type: none;
+  padding: 20px;
+  margin: 20px;
+  width: 160px;
+  border: solid #ccc 1px;
+}
+
+.icons {
+  width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 20px;
+}
+
+.icons h2 {
+  font-size: 30px;
+}
+
+.nsfw-icon {
+  font-size: 42px;
+  margin-right: 7px;
+  padding: 0px;
+  line-height: 30px;
+  display: inline-block;
+  margin-bottom: 1px;
+}
