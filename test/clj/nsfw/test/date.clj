@@ -4,7 +4,6 @@
   (:refer-clojure :exclude [= > < >= <= pr]))
 
 (deftest test-comparators
-  (is      (= (from :now) (from :now)))
   (is (not (= (from :now) (from :yesterday))))
 
   (is      (> (from :now) (from :yesterday)))
