@@ -24,7 +24,8 @@
   (google.maps.Map. el (clj->js
                         {:zoom 2
                          :mapTypeId google.maps.MapTypeId.ROADMAP
-                         :center (google.maps.LatLng. 37.7750 -122.4183)})))
+                         :center (google.maps.LatLng. 37.7750 -122.4183)
+                         :scrollwheel false})))
 
 
 (defn center-on [map lat lng]
