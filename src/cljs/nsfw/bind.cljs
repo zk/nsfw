@@ -1,6 +1,7 @@
 (ns nsfw.bind
   (:use [nsfw.util :only [log]])
-  (:require [nsfw.dom :as dom]))
+  (:require [nsfw.dom :as dom]
+            [cljs.reader :as reader]))
 
 (defn ajax [opts]
   (let [{:keys [path method data headers success error]}
@@ -21,7 +22,7 @@
              ;; maybe pull js->clj
              (success (let [resp (.getResponseText req)]
                         (when-not (empty? resp)
-                          (reader/read-string ))))
+                          (reader/read-string resp))))
              (error req)))
          (catch js/Object e
            (.error js/console (.-stack e))
@@ -60,12 +61,17 @@
   (bind atom (fn [id old new] (f new old el)))
   el)
 
+(defn append-or-text [el res]
+  (cond
+   (string? res) (dom/text el res)
+   :else         (dom/append el res)))
+
 (defn render [el atom f]
   (bind atom (fn [id old new]
                (-> el
                    dom/empty
-                   (dom/append (f new old el)))))
-  (dom/append el (f @atom))
+                   (append-or-text (f new old el)))))
+  (append-or-text el (f @atom @atom el))
   el)
 
 (defn text [el atom f]

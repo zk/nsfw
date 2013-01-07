@@ -11,16 +11,19 @@
                  [domina "1.0.0"]
                  [crate "0.2.1"]
                  [joda-time/joda-time "2.1"]
-                 [org.clojars.franks42/cljs-uuid-utils "0.1.3"]]
+                 [org.clojars.franks42/cljs-uuid-utils "0.1.3"]
+                 [oauth-clj "0.1.1"]
+                 [org.clojure/google-closure-library "0.0-2029"]
+                 [org.clojure/google-closure-library-third-party "0.0-2029"]]
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :hooks [leiningen.cljsbuild]
   :jar-name "nsfw.jar"
   :cljsbuild {:builds
-              {:dev {:source-path "src/cljs"
-                     :compiler {:output-to "resources/test-js/test.js"
-                                :optimizations :whitespace}
-                     :jar true}
-               :examples {:source-path "examples/cljs"
-                          :compiler {:output-to "resources/public/js/examples.js"
-                                     :optimizations :whitespace}}}})
+              [{:source-path "src/cljs"
+                :compiler {:output-to "resources/test-js/test.js"
+                           :optimizations :whitespace}
+                :jar true}
+               {:source-path "examples/cljs"
+                :compiler {:output-to "resources/public/js/examples.js"
+                           :optimizations :whitespace}}]})

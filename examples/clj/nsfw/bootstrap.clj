@@ -4,5 +4,8 @@
 
 (server/start :entry (webapp/routes
                        [""] (webapp/cs :examples
-                                       :css :bootstrap
+                                       :css [:bootstrap.min
+                                             :bootstrap-responsive.min
+                                             :nsfw-components
+                                             :bootstrap]
                                        :entry :nsfw.bootstrap)))

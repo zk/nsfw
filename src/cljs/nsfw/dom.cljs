@@ -2,6 +2,7 @@
   (:use [nsfw.util :only [log]])
   (:require [crate.core :as crate]
             [goog.dom :as dom]
+            [goog.dom.classes :as classes]
             [goog.style :as style]
             [goog.events :as events]
             [goog.dom.query])
@@ -52,6 +53,8 @@
         (.appendChild el (wrap-content c)))
       (.appendChild el (wrap-content content))))
   els)
+
+(def apd append)
 
 (defn append-to [child parents]
   (doseq [el (ensure-coll parents)]
@@ -112,6 +115,11 @@
     (events/listen el "keyup" f))
   els)
 
+(defn change [els f]
+  (doseq [el (ensure-coll els)]
+    (events/listen el "change" f))
+  els)
+
 (defn match-key [els key f]
   (doseq [el (ensure-coll els)]
     (keyup el (fn [e]
@@ -122,14 +130,24 @@
 
 (defn text [els text]
   (doseq [el (ensure-coll els)]
-    (dom/setTextContent el text))
+    (dom/setTextContent el (str text)))
   els)
 
 (defn val-changed [els f]
   (doseq [el (ensure-coll els)]
-    (keyup el
-           (fn [e]
-             (f el (val el)))))
+    (let [f (fn [e]
+              (f el (val el)))]
+      (keyup el f)
+      (change el f)))
+  els)
+
+(defn on-enter [els f]
+  (doseq [el (ensure-coll els)]
+    (keydown el (fn [e]
+                  (when (= 13 (.-keyCode e))
+                    (.stopPropagation e)
+                    (.preventDefault e)
+                    (f e)))))
   els)
 
 (defn focus [el]
@@ -148,3 +166,13 @@
   (doseq [el (ensure-coll els)]
     (dom/removeChildren el))
   els)
+
+(defn add-class [els cls]
+  (doseq [el (ensure-coll els)]
+    (classes/add el (name cls))))
+
+(defn rem-class [els cls]
+  (doseq [el (ensure-coll els)]
+    (classes/remove el (name cls))))
+
+(def body ($ "body"))
