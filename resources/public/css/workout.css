@@ -2,3 +2,51 @@
   padding: 0;
   margin: 0;
 }
+
+body, html {
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+.navbar .brand {
+  margin-left: 10px;
+}
+
+ul.nav {
+  text-align: right;
+  float: right;
+}
+
+.nav li {
+  float: right;
+}
+
+.header {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  border: solid #ccc 1px;
+}
+
+.header {
+  padding: 5px;
+  background-color: #f7f7f7;
+}
+
+.header .brand {
+  font-size: 30px;
+  margin-left: 5px;
+}
+
+.header .nav {
+  float: right;
+  margin-right: 10px;
+}
+
+.nav a {
+  line-height: 34px;
+}
