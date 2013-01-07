@@ -13,6 +13,10 @@ body, html {
   font-family: "Helvetica Neue", Helvetica, sans-serif;
 }
 
+body {
+  background-color: #fefefe;
+}
+
 .clear { clear: both; }
 
 /* end bootstrap */
@@ -20,7 +24,7 @@ body, html {
 
 .hero-content {
   padding: 40px;
-  background-color: rgba(0,0,0,0.8);
+  background-color: rgba(0,0,0,0.9);
   width: 40%;
   float: right;
   color: white;
@@ -296,4 +300,25 @@ input#my-key {
 
 .error {
   background-color: #fcc;
+}
+
+.geoloc-example {
+}
+
+.geoloc-example .map {
+  height: 300px;
+  border: solid #ccc 1px;
+  margin-bottom: 10px;
+}
+
+.geoloc-example a.btn {
+  display: block;
+}
+
+.bleed-box-example {
+  background-color: rgba(255,255,255,0.8);
+}
+
+.bleed-box-example pre {
+  margin: 0px;
 }

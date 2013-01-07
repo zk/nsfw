@@ -8,4 +8,5 @@
                                              :bootstrap-responsive.min
                                              :nsfw-components
                                              :bootstrap]
+                                       :google-maps true
                                        :entry :nsfw.bootstrap)))

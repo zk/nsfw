@@ -19,6 +19,13 @@ body, html {
   background-color: #222;
 }
 
+video.full-bleed {
+  z-index: -10;
+  min-width: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
 .bleed-box-content {
   display: table-cell;
   vertical-align: middle;
@@ -29,6 +36,7 @@ body, html {
   height: 100%;
   position: relative;
   display: table;
+  overflow: hidden;
 }
 
 .bleed-box .navbar {

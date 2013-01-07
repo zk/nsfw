@@ -3,6 +3,7 @@
   (:require [nsfw.dom :as dom]
             [nsfw.bind :as bind]
             [nsfw.storage :as storage]
+            [nsfw.geo :as geo]
             [cljs.reader :as reader]))
 
 (def icon-chars
@@ -41,10 +42,28 @@
     :comet ☄
     :alembic ⚗})
 
-(defn bleed-box [opts & content]
+(defn image-bleed-box [opts content]
   (dom/$ [:div.bleed-box
           [:div.full-bleed {:style (format "background-image: url(%s);" (:img opts))}]
           [:div.bleed-box-content content]]))
+
+(defn video-bleed-box [{:keys [poster mp4 webm]} content]
+  (dom/$ [:div.bleed-box
+          [:video.full-bleed {:poster poster
+                              :autoplay "autoplay"
+                              :loop "loop"}
+           (when mp4
+             [:source {:src mp4
+                       :type "video/mp4; codecs=\"avc1.4D401E, mp4a.40.2\""}])
+           (when webm
+             [:source {:src webm
+                       :type "video/webm; codecs=\"vp8.0, vorbis\""}])]
+          [:div.bleed-box-content content]]))
+
+(defn bleed-box [opts & content]
+  (if (:img opts)
+    (image-bleed-box opts content)
+    (video-bleed-box opts content)))
 
 (def $body (dom/$ "body"))
 
@@ -194,51 +213,14 @@
       output
       " (last value)"]]))
 
-(defn indexdb-example []
-  [:div.row
-   [:div.span12
-    [:h3""]]
-   ])
-
 (def html5-storage
-  [:div
+  [:div.container
    [:div.row
     [:div.span12
-     [:h3 "Storage"]]]
+     [:h2 "Local Storage"]]]
    [:div.row
     [:div.span6
-     [:p
-      "NSFW provides a simple set of local storage helpers. More information on "
-      "HTML5 local storage can be found "
-      [:a {:href "http://diveintohtml5.info/storage.html"}
-       "here"]
-      " and "
-      [:a {:href "http://www.html5rocks.com/en/features/storage"} "here"]
-      "."]
-     [:p
-      "There are three ways to store and access data locally: a "
-      [:em "key-value store"]
-      ", a flat-file database with "
-      [:em "heirarchical key-value persistence and basic indexing"]
-      ", and a full-featured "
-      [:em "SQL storage and query engine"]
-      "."]
-     [:p "Unfortunately, at the time of this writing, support for the IndexedDB and the SQL engine is dicey across browser vendors, so we haven't made support a priority."]]
-    [:div.span6
-     [:div.example
-      [:pre
-       ";; Local Storage"
-       \newline
-       "(:my-key storage/local) => \"foo\""
-       \newline \newline]]]]
-   [:div.row
-    [:div.span12
-     [:h3 "Local Storage"]]]
-   [:div.row
-    [:div.span6
-     [:p
-      "Require "
-      [:code "[nsfw.storage :as storage]"]]
+     [:p "Require " [:code "[nsfw.storage :as storage]"]]
      [:p "Local storage persistent key-value database, providing the get / set interfaces. Keys can be strings, and values can be any JavaScript value type."]
      [:p "NSFW extends the JS "
       [:code "Storage"]
@@ -247,35 +229,78 @@
       ", so you can access local storage like you would a Clojure Map."
       "However, keys are set on local storage using a specific setter, as local "
       "storage is mutable."]
-
      [:p "Notice the value you enter for "
       [:code "my-key"]
-      " persists through page reloads."]
+      [:em " persists through page reloads"]
+      "."]
      [:p "HTML5 local storage only allows you to store serializable JS objects, meaning most clojure data structures are turned into strings when stored natively. Therefore, NSFW storage helpers use "
       [:code "pr-str"]
       " and "
       [:code "read-string"]
       " to store and retreive values respectively."]]
     [:div.span6
-     (local-storage-example)]]
-   [:div.row
-    [:div.span12
-     [:h3 "IndexDB"]]]
-   [:div.row
-    [:div.span6
-     [:p "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat."]]]])
+     (local-storage-example)]]])
 
-(def html5-specific
+(def html5-geoloc
   [:div.container
    [:div.row
-    [:div.span10
-     [:h2 "HTML5 Helpers"]]]
-   html5-storage])
+    [:div.span12
+     [:h2 "Mapping / Geolocation"]]]
+   [:div.row
+    [:div.span6
+     [:p "Require " [:code "[nsfw.geo :as geo]"]]
+     [:p "Geolocation provides locaiton data for your users."]
+     [:pre
+      ";; Define Map Div"
+      "\n\n"
+      "[:div.geoloc-example.example
+  (geo/map)
+  [:a.btn \"Zoom To My Location\"]]"]]
+    [:div.span6
+     (let [map-el (dom/$ [:div.map "MAP"])
+           map (geo/map map-el)]
+       [:div.geoloc-example.example
+        map-el
+        [:div
+         (-> (dom/$ [:a.btn "Zoom To My Location"])
+             (dom/click (fn [e]
+                          (geo/get-pos
+                           (fn [{:keys [lat lng]}]
+                             (geo/center-on map lat lng)
+                             (geo/zoom map 10))))))]])]]])
+
+(def bleed-box-example
+  (bleed-box
+   {:poster "http://f.cl.ly/items/2m2n0i0K2b0z1P1e2q2G/Screen%20Shot%202013-01-07%20at%202.29.11%20AM.png"
+    :mp4 "http://f.cl.ly/items/3D3G2t3B1h3X0f3m2M2g/flarez.mp4"
+    :webm "http://cl.ly/0j1j1E461Q1e/flarez.webm"}
+   [:div.example.bleed-box-example
+    [:div.container
+     [:div.row
+      [:div.span6
+       [:h2 "Bleed Box"]
+       [:p "Full-bleed background images or video."]]
+      [:div.span6
+       [:div.example
+        [:pre
+         ";; Image Bleed Box"
+         "\n"
+         "(bleed-box\n"
+         "  {:img \"/path/to/image.jpg\"}\n"
+         "  [:h1 \"Bleed Box Content\"])"
+         "\n\n"
+         ";; Video Bleed Box\n"
+         "(bleed-box\n"
+         "  {:poster \"/path/to/poster.jpg\"\n"
+         "   :mp4 \"/path/to.mp4\"}\n"
+         "  [:h1 \"Bleed Box Content\"])"]]]]]]))
 
 (defn main []
   (-> $body
       (dom/append hero)
       (dom/append banner)
       (dom/append basic-structure)
-      (dom/append html5-specific)
+      (dom/append html5-storage)
+      (dom/append html5-geoloc)
+      (dom/append bleed-box-example)
       (dom/append [:div (repeat 10 [:br])])))

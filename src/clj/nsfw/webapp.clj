@@ -19,7 +19,7 @@
                                       ; `var functions = ...`"
   [script & ops]
   (fn [r]
-    (let [{:keys [entry title data css]}
+    (let [{:keys [entry title data css google-maps]}
           (apply hash-map ops)
           css (if (coll? css)
                 css
@@ -33,6 +33,9 @@
                  (map #(html/stylesheet (str "/css/" (name %) ".css")) css)
                  (html/stylesheet (str "/css/" (name script) ".css")))]
               [:body
+               (when google-maps
+                 [:script {:type "text/javascript"
+                           :src "http://maps.googleapis.com/maps/api/js?sensor=false"}])
                (when data
                  [:script {:type "text/javascript"}
                   (str
