@@ -83,9 +83,9 @@
                     "Divider!"]))
 
 
-(defn data-input [atom]
+(defn data-input [atom & [initial-value]]
   (let [textarea   (dom/$ [:textarea {:spellcheck "false" :rows 5}
-                           (pr-str @atom)])
+                           (or initial-value (pr-str @atom))])
         el         (dom/$ [:div.data-input textarea])
         on-change  (fn [v]
                      (try
@@ -131,12 +131,12 @@
           [:div.err "Couldn't parse html."])))))
 
 (def html-section
-  (let [a (atom [:div
-                 [:h3 "hello world"]
+  (let [a (atom [:div#my-div
+                 [:h3.banner "hello world"]
                  [:ol
-                  [:li "foo"]
-                  [:li "bar"]
-                  [:li "baz"]]])]
+                  [:li "baz"]
+                  [:li "bar"]]
+                 [:input {:type "text" :placeholder "text here!"}]])]
     [:div.row
      [:div.span10
       [:h3 "HTML"]]]
@@ -153,7 +153,7 @@
        "(def $body (dom/$ \"body\"))"
        "\n\n"
        "(dom/append $body [:div
-                    [:h3 \"hello world\"]
+                    [:h3.banner \"hello world\"]
                     [:ol
                       [:li \"foo\"]
                       [:li \"bar\"]
@@ -168,7 +168,12 @@
        ", etc."]]
      [:div.span6
       [:div.example.html-example
-       (data-input a)
+       (data-input a "[:div#my-div
+  [:h3.banner \"hello world\"]
+  [:ol
+    [:li \"baz\"]
+    [:li \"bar\"]]
+  [:input {:type \"text\" :placeholder \"text here!\"}]]")
        (html-atom-vis a)]]]))
 
 (def basic-structure
