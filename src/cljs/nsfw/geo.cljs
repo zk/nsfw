@@ -3,7 +3,7 @@
   (:require [nsfw.dom :as dom])
   (:refer-clojure :exclude [map]))
 
-(def geoloc (.-geolocation js/navigator))
+(def -geolocation (.-geolocation js/navigator))
 
 (defn geoloc->map [g]
   (let [c (.-coords g)]
@@ -12,25 +12,32 @@
      :altitude (.-altitude c)
      :altitude-accuracy (.-altitudeAccuracy c)
      :heading (.-heading c)
-     :lat (.-latitude c)
-     :lng (.-longitude c)
+     :latlng [(.-latitude c) (.-longitude c)]
      :speed (.-speed c)}))
 
-(defn get-pos [callback]
-  (.getCurrentPosition geoloc
+(defn pos [callback]
+  (.getCurrentPosition -geolocation
                        (fn [geoloc]
                          (callback (geoloc->map geoloc)))))
 
 (defn map [el & [opts]]
-  (google.maps.Map. el (clj->js
-                        {:zoom 2
-                         :mapTypeId google.maps.MapTypeId.ROADMAP
-                         :center (google.maps.LatLng. 37.7750 -122.4183)
-                         :scrollwheel false})))
+  (let [opts (assoc opts :center
+                    (if (:center opts)
+                      (google.maps.LatLng. (first (:center opts)) (second (:center opts)))
+                      (google.maps.LatLng. 37.7750 -122.4183)))]
+    (google.maps.Map. el (clj->js
+                          (merge {:zoom 2
+                                  :mapTypeId google.maps.MapTypeId.ROADMAP
+                                  :scrollwheel false}
+                                 opts)))))
 
 
-(defn center-on [map lat lng]
-  (.setCenter map (google.maps.LatLng. lat lng)))
+(defn center
+  ([map]
+     (let [center (.getCenter map)]
+       [(.lat center) (.lng center)]))
+  ([map [lat lng]]
+     (.setCenter map (google.maps.LatLng. lat lng))))
 
 (defn zoom [map level]
   (.setZoom map level))

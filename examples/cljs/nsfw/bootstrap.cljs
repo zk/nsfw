@@ -44,6 +44,8 @@
     :comet ☄
     :alembic ⚗})
 
+(def supported-versions {:safari "Safari 1.0"})
+
 
 (def $body (dom/$ "body"))
 
@@ -55,10 +57,24 @@
               (:alembic icon-chars)]
              "NSFW"]]
            [:div.hero-content
-            [:h3 "Get stuff done with Clojure."]
+            [:h3 "Get web stuff done with Clojure"]
             [:p "NSFW is a collection of tasty Clojure bits."]
             [:p "We aim to make the hard stuff easy, and we've got everything from date math, to one-line webservers, to a bunch of random (but eminently useful) one-offs."]
             [:p "NSFW is built on many, many great libraries. Check out the project.clj for more info."]
+            #_[:ul.supported-browsers
+               [:li
+                [:img {:src "/img/chrome-icon.png"
+                       :width 75
+                       :height 75}]
+                [:div.caption "Chrome 23+"]]
+               [:li
+                [:img {:src "/img/safari-icon.png"
+                       :width 75
+                       :height 75}]
+                [:div.caption "Safari 6+"]]
+               [:li
+                [:img {:src "/img/firefox-icon.png"}]
+                [:div.caption "Firefox 17+"]]]
             #_[:div.sign-in-twitter
                [:img {:src "https://twitter.com/images/resources/twitter-bird-dark-bgs.png"}]
                "Sign in with Twitter"]]))
@@ -221,6 +237,8 @@
     [:div.span6
      (local-storage-example)]]])
 
+
+
 (def html5-geoloc
   [:div.container
    [:div.row
@@ -231,22 +249,27 @@
      [:p "Require " [:code "[nsfw.geo :as geo]"]]
      [:p "Geolocation provides locaiton data for your users."]
      [:pre
-      ";; Define Map Div"
+      ";; Define Map Div\n"
+      "(def $map (dom/$ [:div#map]))"
       "\n\n"
-      "[:div.geoloc-example.example
-  (geo/map)
-  [:a.btn \"Zoom To My Location\"]]"]]
+      ""
+      "(def map (geo/map $map\n"
+      "                  {:zoom 3\n"
+      "                   :center [39 -98]}))"
+      "\n\n"
+      "(geo/pos (fn [{:keys [latlng]}]\n"
+      "           (geo/center map latlng))"]]
     [:div.span6
-     (let [map-el (dom/$ [:div.map "MAP"])
-           map (geo/map map-el)]
+     (let [$map (dom/$ [:div.map "MAP"])
+           map (geo/map $map {:zoom 3 :center [39 -98]})]
        [:div.geoloc-example.example
-        map-el
+        $map
         [:div
          (-> (dom/$ [:a.btn "Zoom To My Location"])
              (dom/click (fn [e]
-                          (geo/get-pos
-                           (fn [{:keys [lat lng]}]
-                             (geo/center-on map lat lng)
+                          (geo/pos
+                           (fn [{:keys [latlng]}]
+                             (geo/center map latlng)
                              (geo/zoom map 10))))))]])]]])
 
 (def bleed-box-example
@@ -259,7 +282,7 @@
      [:div.row
       [:div.span6
        [:h2 "Bleed Box"]
-       [:p "Require " [:code "[nsfw.components :as comp]"] "."]
+       [:p "Require " [:code "[nsfw.components :as comp]"]]
        [:p "Full-bleed background images or video."]]
       [:div.span6
        [:div.example
@@ -275,14 +298,25 @@
          "  {:poster \"/path/to/poster.jpg\"\n"
          "   :mp4 \"/path/to.mp4\"\n"
          "   :webm \"/path/to.webm\"\n"
-         "   :ogv \"/path/to.ogv\"}\n"
+         "   :ogv \"/path/to.ogv\"\n"
+         "   :delay 2000}\n"
          "  [:h1 \"Bleed Box Content\"])"]]]]]]))
+
+(def event-binding
+  (dom/$ [:div.container
+          [:div.row
+           [:div.span12
+            [:h2 "Event Binding"]]]
+          [:div.row
+           [:div.span6
+            [:p "Require " [:code "[nsfw.dom :as dom]"]]]]]))
 
 (defn main []
   (-> $body
       (dom/append hero)
       (dom/append banner)
       (dom/append basic-structure)
+      (dom/append event-binding)
       (dom/append html5-storage)
       (dom/append html5-geoloc)
       (dom/append bleed-box-example)

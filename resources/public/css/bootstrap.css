@@ -322,3 +322,20 @@ input#my-key {
 .bleed-box-example pre {
   margin: 0px;
 }
+
+.supported-browsers {
+  margin-top: 50px;
+  text-align: center;
+  margin-right: 60px;
+}
+
+.supported-browsers li {
+  display: inline-block;
+  list-style-type: none;
+  margin-right: 30px;
+  margin-bottom: 20px;
+}
+
+.supported-browsers li img {
+  margin-bottom: 5px;
+}
