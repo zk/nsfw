@@ -1,6 +1,7 @@
 (ns nsfw.geo
   (:use [nsfw.util :only [log]])
-  (:require [nsfw.dom :as dom]))
+  (:require [nsfw.dom :as dom])
+  (:refer-clojure :exclude [map]))
 
 (def geoloc (.-geolocation js/navigator))
 
