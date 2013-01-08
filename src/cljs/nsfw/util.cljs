@@ -19,6 +19,9 @@
 (defn interval [f delta]
   (js/setInterval f delta))
 
+(defn clear-timeout [timeout]
+  (js/clearTimeout timeout))
+
 (defn uuid []
   #_(cljs-uuid-utils/make-random-uuid)
   (gensym))
