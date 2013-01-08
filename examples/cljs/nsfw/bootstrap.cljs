@@ -4,6 +4,8 @@
             [nsfw.bind :as bind]
             [nsfw.storage :as storage]
             [nsfw.geo :as geo]
+            [nsfw.components :as comp]
+            [nsfw.util :as u]
             [cljs.reader :as reader]))
 
 (def icon-chars
@@ -42,32 +44,10 @@
     :comet ☄
     :alembic ⚗})
 
-(defn image-bleed-box [opts content]
-  (dom/$ [:div.bleed-box
-          [:div.full-bleed {:style (format "background-image: url(%s);" (:img opts))}]
-          [:div.bleed-box-content content]]))
-
-(defn video-bleed-box [{:keys [poster mp4 webm]} content]
-  (dom/$ [:div.bleed-box
-          [:video.full-bleed {:poster poster
-                              :autoplay "autoplay"
-                              :loop "loop"}
-           (when mp4
-             [:source {:src mp4
-                       :type "video/mp4; codecs=\"avc1.4D401E, mp4a.40.2\""}])
-           (when webm
-             [:source {:src webm
-                       :type "video/webm; codecs=\"vp8.0, vorbis\""}])]
-          [:div.bleed-box-content content]]))
-
-(defn bleed-box [opts & content]
-  (if (:img opts)
-    (image-bleed-box opts content)
-    (video-bleed-box opts content)))
 
 (def $body (dom/$ "body"))
 
-(def hero (bleed-box
+(def hero (comp/bleed-box
            {:img "/img/dog3.jpg"}
            [:div.navbar
             [:h1
@@ -270,29 +250,32 @@
                              (geo/zoom map 10))))))]])]]])
 
 (def bleed-box-example
-  (bleed-box
-   {:poster "http://f.cl.ly/items/2m2n0i0K2b0z1P1e2q2G/Screen%20Shot%202013-01-07%20at%202.29.11%20AM.png"
-    :mp4 "http://f.cl.ly/items/3D3G2t3B1h3X0f3m2M2g/flarez.mp4"
-    :webm "http://cl.ly/0j1j1E461Q1e/flarez.webm"}
+  (comp/bleed-box
+   {:mp4 "/vid/flarez.mp4"
+    :webm "/vid/flarez.webm"
+    :ogv "/vid/flarez.ogv"}
    [:div.example.bleed-box-example
     [:div.container
      [:div.row
       [:div.span6
        [:h2 "Bleed Box"]
+       [:p "Require " [:code "[nsfw.components :as comp]"] "."]
        [:p "Full-bleed background images or video."]]
       [:div.span6
        [:div.example
         [:pre
          ";; Image Bleed Box"
          "\n"
-         "(bleed-box\n"
+         "(comp/bleed-box\n"
          "  {:img \"/path/to/image.jpg\"}\n"
          "  [:h1 \"Bleed Box Content\"])"
          "\n\n"
          ";; Video Bleed Box\n"
-         "(bleed-box\n"
+         "(comp/bleed-box\n"
          "  {:poster \"/path/to/poster.jpg\"\n"
-         "   :mp4 \"/path/to.mp4\"}\n"
+         "   :mp4 \"/path/to.mp4\"\n"
+         "   :webm \"/path/to.webm\"\n"
+         "   :ogv \"/path/to.ogv\"}\n"
          "  [:h1 \"Bleed Box Content\"])"]]]]]]))
 
 (defn main []
