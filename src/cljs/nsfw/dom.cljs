@@ -80,6 +80,11 @@
 (defn onload [f]
   (set! (.-onload js/window) f))
 
+(defn listen [els evt f]
+  (doseq [el (ensure-coll els)]
+    (events/listen el evt f))
+  els)
+
 (defn click [els f]
   (doseq [el (ensure-coll els)]
     (events/listen el "click" f))
