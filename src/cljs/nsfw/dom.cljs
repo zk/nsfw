@@ -5,7 +5,8 @@
             [goog.dom.classes :as classes]
             [goog.style :as style]
             [goog.events :as events]
-            [goog.dom.query])
+            [goog.dom.query]
+            [nsfw.util :as util])
   (:refer-clojure :exclude [val replace remove empty]))
 
 (extend-type js/NodeList
@@ -153,6 +154,16 @@
                     (.stopPropagation e)
                     (.preventDefault e)
                     (f e)))))
+  els)
+
+(defn scroll-end [els f]
+  (doseq [el (ensure-coll els)]
+    (let [timer (atom -1)]
+      (listen js/window "scroll"
+              (fn [e]
+                (when (> @timer -1)
+                  (util/clear-timeout @timer))
+                (reset! timer (util/timeout #(f e) 150))))))
   els)
 
 (defn focus [el]
