@@ -20,7 +20,9 @@
                        (fn [geoloc]
                          (callback (geoloc->map geoloc)))))
 
-(defn map [el & [opts]]
+(defn map
+  "Map options, see http://goo.gl/IlBC8 for full list."
+  [el & [opts]]
   (let [opts (assoc opts :center
                     (if (:center opts)
                       (google.maps.LatLng. (first (:center opts)) (second (:center opts)))
@@ -28,9 +30,14 @@
     (google.maps.Map. el (clj->js
                           (merge {:zoom 2
                                   :mapTypeId google.maps.MapTypeId.ROADMAP
-                                  :scrollwheel false}
+                                  :scrollwheel false
+                                  :panControl false
+                                  :zoomControl true
+                                  :mapTypeControl false
+                                  :scaleControl false
+                                  :streetViewControl false
+                                  :overviewMapControl false}
                                  opts)))))
-
 
 (defn center
   ([map]
