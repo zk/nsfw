@@ -582,3 +582,15 @@ The =bind/render= also initially calls the render
 function. It's convient, but might be a gotcha. Maybe that should be
 moved to another function.
 
+
+* 2013-01-08 Tue 20:36
+
+Been making a lot of unfocused commits to NSFW. Neat stuff, but I
+think I need to focus.  How about making NSFW a great environment to
+build clojure webapps in?
+
++ Easy to get started
++ Ground-up library, piecemeal
+
+I'll look to tackle the first one now.
+
