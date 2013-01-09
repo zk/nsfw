@@ -196,7 +196,7 @@
                               (throw e)))))
     [:div.example.local-storage-example
      [:pre
-      ";; Local storage acts like a map / hash / dict."
+      ";; Local storage acts like a map / hash."
       "\n\n"
       "(storage/lset! :my-key \"foo\")"
       "\n\n"
