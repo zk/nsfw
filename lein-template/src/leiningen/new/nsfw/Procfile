@@ -1,0 +1,3 @@
+server: lein run -m {{name}}.run
+cljs: lein cljsbuild auto
+refresher: lein run -m nsfw.refresher

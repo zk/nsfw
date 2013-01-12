@@ -9,8 +9,9 @@
   (let [data {:name name
               :sanitized (name-to-path name)}]
     (->files data
+             ["Procfile" (render "Procfile" data)]
              ["project.clj" (render "project.clj" data)]
-             ["src/clj/{{sanitized}}/server.clj" (render "server.clj" data)]
+             ["src/clj/{{sanitized}}/run.clj" (render "run.clj" data)]
              ["src/cljs/{{sanitized}}/app.cljs" (render "app.cljs" data)]
              ["resources/public/js/app.js" ""]
              ["resources/public/css/app.css" (render "app.css" data)]
