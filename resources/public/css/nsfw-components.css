@@ -56,3 +56,47 @@ h1, h2, h3, h4, h5, h6 {
   padding: 0;
   margin: 0;
 }
+
+.btn {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+.btn.before {
+  margin-left: -10px;
+  margin-right: 10px;
+  width: 0px;
+}
+
+/* Loading Indicators */
+
+.btn-large.loading:before {
+  margin-top: -1px;
+  margin-bottom: 1px;
+}
+
+.btn-small.loading:before,
+.btn-mini.loading:before {
+  margin-top: 1px;
+  margin-bottom: -1px;
+}
+
+.btn.loading:before {
+  content: url('/img/button-loader.gif');
+  position: absolute;
+  margin-left: -13px;
+  top: auto;
+  right: auto;
+}
+
+.loading {
+  position: relative;
+}
+
+.loading:before {
+  content: url('/img/button-loader.gif');
+  position: absolute;
+  top: 0px;
+  right: 5px;
+  z-index: 1;
+}

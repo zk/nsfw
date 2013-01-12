@@ -59,8 +59,10 @@
            [:div.hero-content
             [:h3 "Get web stuff done with Clojure"]
             [:p "NSFW is a collection of tasty Clojure bits."]
-            [:p "We aim to make the hard stuff easy, and we've got everything from date math, to one-line webservers, to a bunch of random (but eminently useful) one-offs."]
-            [:p "NSFW is built on many, many great libraries. Check out the project.clj for more info."]
+            [:p
+             "We aim to make the hard stuff easy, and we've got everything "
+             "from date math, to one-line webservers, to a bunch of random "
+             "(but eminently useful) one-offs."]
             #_[:ul.supported-browsers
                [:li
                 [:img {:src "/img/chrome-icon.png"
@@ -200,11 +202,12 @@
       "\n\n"
       "(storage/lset! :my-key \"foo\")"
       "\n\n"
-      "(:my-key storage/local) ;;=> \"foo\""
+      "(:my-key storage/local) ;=> \"foo\""
       "\n\n"
-      "(storage/lget! :my-key) ;;=> \"foo\""
+      "(storage/lget! :my-key) ;=> \"foo\""
       "\n\n"
-      "(storage/lget! :none \"default\") ;;=> \"default\""
+      "(storage/lget! :none \"default\")\n"
+      ";=> \"default\""
       ]
      [:form.form-inline
       [:label.control-label {:for "my-key"} "my-key"]
@@ -270,12 +273,19 @@
        [:div.geoloc-example.example
         $map
         [:div
-         (-> (dom/$ [:a.btn "Zoom To My Location"])
-             (dom/click (fn [e]
-                          (geo/pos
-                           (fn [{:keys [latlng]}]
-                             (geo/center map latlng)
-                             (geo/zoom map 10))))))]])]]])
+         (let [btn (dom/$ [:a.btn "Zoom To My Location"])]
+           (dom/click btn (fn [e]
+                            (dom/add-class btn :loading)
+                            (geo/pos
+                             (fn [{:keys [latlng]}]
+                               (dom/rem-class btn :loading)
+                               (geo/center map latlng)
+                               (geo/zoom map 10))
+                             (fn [err]
+                               (log "err")
+                               (dom/rem-class btn :loading))))))]])]]])
+
+
 
 (def bleed-box-example
   (comp/bleed-box
@@ -288,7 +298,7 @@
       [:div.span6
        [:h2 "Bleed Box"]
        [:p "Require " [:code "[nsfw.components :as comp]"]]
-       [:p "Full-bleed background images or video."]]
+       [:p "Full-bleed background images or video!!!"]]
       [:div.span6
        [:div.example
         [:pre
@@ -316,10 +326,49 @@
            [:div.span6
             [:p "Require " [:code "[nsfw.dom :as dom]"]]]]]))
 
+(defn button-example [cls]
+  (let [button (dom/$ [:a {:class (str "btn loading " cls)}
+                       "Click Me!"])
+        el (dom/$ [:div.button-row
+                   [:label (str ".btn." cls ".loading")]
+                   button])]
+    (dom/click button (fn [e]
+                        (.preventDefault e)
+                        (dom/rem-class button :loading)
+                        (u/timeout #(dom/add-class button :loading) 2000)))
+    el))
+
+(def loading-indicators
+  (dom/$ [:div.container
+          [:div.row
+           [:div.span12
+            [:h2 "Loading Indicators"]]]
+          [:div.row
+           [:div.span6
+            [:p "Enable a loading state by adding a "
+             [:code "loading"]
+             " css class to many nsfw components."]
+            [:p "Loading is supported by buttons, and most block-level elements."]]
+           [:div.span6
+            [:div.example.loading-example
+             (map button-example ["btn-large" "btn" "btn-small" "btn-mini"])
+             [:div.button-row
+              (-> (dom/$ [:a.btn.btn-block.loading ".btn.btn-block.loading"])
+                  (dom/click (fn [e el]
+                               (dom/rem-class el :loading)
+                               (.preventDefault e)
+                               (u/timeout #(dom/add-class el :loading) 2000))))]
+             [:div.div-loading.loading
+              [:code "[:div.loading]"]]
+             [:textarea.loading
+              "[:textarea.loading]"]]]]]))
+
+
 (defn main []
   (-> $body
       (dom/append hero)
       (dom/append banner)
+      (dom/append loading-indicators)
       (dom/append basic-structure)
       (dom/append event-binding)
       (dom/append html5-storage)
