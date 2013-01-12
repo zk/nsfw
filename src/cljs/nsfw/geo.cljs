@@ -15,10 +15,13 @@
      :latlng [(.-latitude c) (.-longitude c)]
      :speed (.-speed c)}))
 
-(defn pos [callback]
+(defn pos [success & [failure]]
   (.getCurrentPosition -geolocation
                        (fn [geoloc]
-                         (callback (geoloc->map geoloc)))))
+                         (success (geoloc->map geoloc)))
+                       (fn [err]
+                         (when failure
+                           (failure err)))))
 
 (defn map
   "Map options, see http://goo.gl/IlBC8 for full list."
