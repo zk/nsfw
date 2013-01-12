@@ -594,3 +594,36 @@ build clojure webapps in?
 
 I'll look to tackle the first one now.
 
+
+* 2013-01-11 Fri 00:59
+
+Need an option for reloading, what are the dev concerns?
+
++ Reload page when resources change
++ Reload code when clj files change
+
+* 2013-01-12 Sat 12:19
+
+Phases for working on NSFW
+
++ Generative structure.
+  + Add / remove / modify files in lein-template folder
+  + Test by =lein install=, =lein new nsfw <proj name>=
++ clj code
+  + CRUD 
+  + testing
+  + nrepl
++ cljs code
+  + CRUD
+  + automated testing
+  + refresher
+
++ code
++ tests (automated / manual)
+
+
+** Gen
+
++ <proj>.run
+  + Entry point for app, sets up lifecycle stuff, server, imports
+    config, etc.
