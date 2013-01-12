@@ -9,16 +9,9 @@
 
 (def request-token (tw/oauth-request-token tw-key tw-secret))
 
-(println (tw/oauth-authorization-url (:oauth-token request-token)))
-
-
 (defn auth-url [opts]
   (let [{:keys [callback token]}
         opts]
     (str (tw/oauth-authorization-url token)
          "&oauth_callback="
          (nu/url-encode callback))))
-
-(println
- (auth-url {:callback "http://localhost:8080"
-            :token (:oauth-token request-token)}))
