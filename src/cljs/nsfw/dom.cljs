@@ -88,7 +88,7 @@
 
 (defn click [els f]
   (doseq [el (ensure-coll els)]
-    (events/listen el "click" f))
+    (events/listen el "click" (fn [e] (f e el))))
   els)
 
 (defn mousedown [els f]
