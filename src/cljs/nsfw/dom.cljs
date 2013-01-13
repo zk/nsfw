@@ -7,7 +7,7 @@
             [goog.events :as events]
             [goog.dom.query]
             [nsfw.util :as util])
-  (:refer-clojure :exclude [val replace remove empty]))
+  (:refer-clojure :exclude [val replace remove empty drop]))
 
 (extend-type js/NodeList
   ISeqable
@@ -114,50 +114,59 @@
 
 (defn listen [els evt f]
   (doseq [el (ensure-coll els)]
-    (events/listen el evt f))
+    (events/listen el evt #(f (ge->map %) el)))
   els)
 
-(defn click [els f]
-  (doseq [el (ensure-coll els)]
-    (events/listen
-     el "click" (fn [e]
-                  (f (ge->map e) el))))
-  els)
+(defn handler [evt]
+  (fn [els f]
+    (listen els (name evt) f)))
 
-(defn mousedown [els f]
-  (doseq [el (ensure-coll els)]
-    (events/listen el "mousedown" f)))
+(def click (handler :click))
+(def dblclick (handler :dblclick))
 
-(defn mouseup [els f]
-  (doseq [el (ensure-coll els)]
-    (events/listen el "mouseup" f)))
+(def mousedown (handler :mousedown))
+(def mouseup (handler :mouseup))
+(def mouseover (handler :mouseover))
+(def mouseout (handler :mouseout))
+(def mousemove (handler :mousemove))
+(def selectstart (handler :selectstart))
 
-(defn mousemove [els f]
-  (doseq [el (ensure-coll els)]
-    (events/listen el "mousemove" f)))
+(def keypress (handler :keypress))
+(def keydown (handler :keydown))
+(def keyup (handler :keyup))
+(def blur (handler :blur))
+(def focus (handler :focus))
 
-(defn mouseover [els f]
-  (doseq [el (ensure-coll els)]
-    (events/listen el "mouseover" f)))
+(def change (handler :change))
+(def select (handler :select))
+(def submit (handler :submit))
+(def input (handler :input))
 
-(defn mouseout [els f]
-  (doseq [el (ensure-coll els)]
-    (events/listen el "mouseout" f)))
+(def dragstart (handler :dragstart))
+(def dragenter (handler :dragenter))
+(def dragover (handler :dragover))
+(def dragleave (handler :dragleave))
+(def drop (handler :drop))
 
-(defn keydown [els f]
-  (doseq [el (ensure-coll els)]
-    (events/listen el "keydown" f))
-  els)
+(def touchstart (handler :touchstart))
+(def touchmove (handler :touchmove))
+(def touchend (handler :touchend))
+(def touchcancel (handler :touchcancel))
 
-(defn keyup [els f]
-  (doseq [el (ensure-coll els)]
-    (events/listen el "keyup" f))
-  els)
+(def contextmenu (handler :contextmenu))
+(def error (handler :error))
+(def help (handler :help))
+(def load (handler :load))
+(def losecapture (handler :losecapture))
+(def readstatechange (handler :readstatechange))
+(def resize (handler :resize))
+(def scroll (handler :scroll))
+(def unload (handler :unload))
 
-(defn change [els f]
-  (doseq [el (ensure-coll els)]
-    (events/listen el "change" f))
-  els)
+(def hashchange (handler :hashchange))
+(def pagehide (handler :pagehide))
+(def pageshow (handler :pageshow))
+(def popstate (handler :popstate))
 
 (defn match-key [els key f]
   (doseq [el (ensure-coll els)]
