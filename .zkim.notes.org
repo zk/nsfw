@@ -621,9 +621,12 @@ Phases for working on NSFW
 + code
 + tests (automated / manual)
 
+Need to move google maps thing later, maybe move actual routes out to
+reloadable namespace.
 
 ** Gen
 
 + <proj>.run
   + Entry point for app, sets up lifecycle stuff, server, imports
     config, etc.
+

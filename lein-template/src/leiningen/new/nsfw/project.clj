@@ -5,7 +5,6 @@
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :plugins [[lein-cljsbuild "0.2.10"]]
-  :hooks [leiningen.cljsbuild]
   :cljsbuild {:builds
               [{:source-path "src/cljs"
                 :compiler {:output-to "resources/public/js/app.js"
