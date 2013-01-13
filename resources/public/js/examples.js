@@ -31183,12 +31183,12 @@ nsfw.bootstrap.icon_chars = cljs.core.hash_map("\ufdd0'white-square", "\ufdd1'\u
 nsfw.bootstrap.supported_versions = cljs.core.ObjMap.fromObject(["\ufdd0'safari"], {"\ufdd0'safari":"Safari 1.0"});
 nsfw.bootstrap.$body = nsfw.dom.$.call(null, "body");
 nsfw.bootstrap.hero = nsfw.components.bleed_box.call(null, cljs.core.ObjMap.fromObject(["\ufdd0'img"], {"\ufdd0'img":"/img/dog3.jpg"}), cljs.core.PersistentVector.fromArray(["\ufdd0'div.navbar", cljs.core.PersistentVector.fromArray(["\ufdd0'h1", cljs.core.PersistentVector.fromArray(["\ufdd0'span.nsfw-icon", (new cljs.core.Keyword("\ufdd0'alembic")).call(null, nsfw.bootstrap.icon_chars)], true), "NSFW"], true)], true), cljs.core.PersistentVector.fromArray(["\ufdd0'div.hero-content", cljs.core.PersistentVector.fromArray(["\ufdd0'h3", 
-"Get web stuff done with Clojure"], true), cljs.core.PersistentVector.fromArray(["\ufdd0'p", "NSFW is a collection of tasty Clojure bits."], true), cljs.core.PersistentVector.fromArray(["\ufdd0'p", "We aim to make the hard stuff easy, and we've got everything ", "from date math, to one-line webservers, to a bunch of random ", "(but eminently useful) one-offs."], true)], true));
+"Get web stuff done with Clojure"], true), cljs.core.PersistentVector.fromArray(["\ufdd0'p", "(yey)"], true)], true));
 nsfw.bootstrap.banner = nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.post-bleed-banner", "Divider!"], true));
 nsfw.bootstrap.data_input = function() {
-  var data_input__delegate = function(atom, p__2989) {
-    var vec__2992 = p__2989;
-    var initial_value = cljs.core.nth.call(null, vec__2992, 0, null);
+  var data_input__delegate = function(atom, p__4177) {
+    var vec__4180 = p__4177;
+    var initial_value = cljs.core.nth.call(null, vec__4180, 0, null);
     var textarea = nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'textarea", cljs.core.ObjMap.fromObject(["\ufdd0'spellcheck", "\ufdd0'rows"], {"\ufdd0'spellcheck":"false", "\ufdd0'rows":5}), function() {
       var or__3824__auto__ = initial_value;
       if(cljs.core.truth_(or__3824__auto__)) {
@@ -31202,13 +31202,13 @@ nsfw.bootstrap.data_input = function() {
       try {
         cljs.core.reset_BANG_.call(null, atom, cljs.reader.read_string.call(null, nsfw.dom.val.call(null, textarea)));
         return nsfw.dom.rem_class.call(null, textarea, "\ufdd0'error")
-      }catch(e2993) {
-        if(cljs.core.instance_QMARK_.call(null, Error, e2993)) {
-          var e = e2993;
+      }catch(e4181) {
+        if(cljs.core.instance_QMARK_.call(null, Error, e4181)) {
+          var e = e4181;
           return nsfw.dom.add_class.call(null, textarea, "\ufdd0'error")
         }else {
           if("\ufdd0'else") {
-            throw e2993;
+            throw e4181;
           }else {
             return null
           }
@@ -31219,25 +31219,25 @@ nsfw.bootstrap.data_input = function() {
     return el
   };
   var data_input = function(atom, var_args) {
-    var p__2989 = null;
+    var p__4177 = null;
     if(goog.isDef(var_args)) {
-      p__2989 = cljs.core.array_seq(Array.prototype.slice.call(arguments, 1), 0)
+      p__4177 = cljs.core.array_seq(Array.prototype.slice.call(arguments, 1), 0)
     }
-    return data_input__delegate.call(this, atom, p__2989)
+    return data_input__delegate.call(this, atom, p__4177)
   };
   data_input.cljs$lang$maxFixedArity = 1;
-  data_input.cljs$lang$applyTo = function(arglist__2994) {
-    var atom = cljs.core.first(arglist__2994);
-    var p__2989 = cljs.core.rest(arglist__2994);
-    return data_input__delegate(atom, p__2989)
+  data_input.cljs$lang$applyTo = function(arglist__4182) {
+    var atom = cljs.core.first(arglist__4182);
+    var p__4177 = cljs.core.rest(arglist__4182);
+    return data_input__delegate(atom, p__4177)
   };
   data_input.cljs$lang$arity$variadic = data_input__delegate;
   return data_input
 }();
-nsfw.bootstrap.icons = nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.icons", cljs.core.PersistentVector.fromArray(["\ufdd0'h2", "Icons"], true), cljs.core.PersistentVector.fromArray(["\ufdd0'ul.icon-overview", cljs.core.map.call(null, function(p__2995) {
-  var vec__2996 = p__2995;
-  var k = cljs.core.nth.call(null, vec__2996, 0, null);
-  var v = cljs.core.nth.call(null, vec__2996, 1, null);
+nsfw.bootstrap.icons = nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'div.icons", cljs.core.PersistentVector.fromArray(["\ufdd0'h2", "Icons"], true), cljs.core.PersistentVector.fromArray(["\ufdd0'ul.icon-overview", cljs.core.map.call(null, function(p__4183) {
+  var vec__4184 = p__4183;
+  var k = cljs.core.nth.call(null, vec__4184, 0, null);
+  var v = cljs.core.nth.call(null, vec__4184, 1, null);
   var name = cljs.core.name.call(null, k);
   return cljs.core.PersistentVector.fromArray(["\ufdd0'li.icon-cubby", cljs.core.PersistentVector.fromArray(["\ufdd0'span.glyph", [cljs.core.str(v)].join("")], true), cljs.core.PersistentVector.fromArray(["\ufdd0'br"], true), " ", name], true)
 }, cljs.core.sort_by.call(null, cljs.core.first, nsfw.bootstrap.icon_chars))], true), cljs.core.PersistentVector.fromArray(["\ufdd0'div.clear"], true)], true));
@@ -31273,14 +31273,14 @@ nsfw.bootstrap.local_storage_example = function local_storage_example() {
       nsfw.storage.lset_BANG_.call(null, "\ufdd0'my-key", cljs.reader.read_string.call(null, nsfw.dom.val.call(null, input)));
       nsfw.dom.text.call(null, output, cljs.core.pr_str.call(null, (new cljs.core.Keyword("\ufdd0'my-key")).call(null, nsfw.storage.local)));
       return nsfw.dom.rem_class.call(null, input, "\ufdd0'error")
-    }catch(e2998) {
-      if(cljs.core.instance_QMARK_.call(null, Object, e2998)) {
-        var e = e2998;
+    }catch(e4186) {
+      if(cljs.core.instance_QMARK_.call(null, Object, e4186)) {
+        var e = e4186;
         nsfw.dom.add_class.call(null, input, "\ufdd0'error");
         throw e;
       }else {
         if("\ufdd0'else") {
-          throw e2998;
+          throw e4186;
         }else {
           return null
         }
@@ -31304,10 +31304,10 @@ function() {
     var btn = nsfw.dom.$.call(null, cljs.core.PersistentVector.fromArray(["\ufdd0'a.btn", "Zoom To My Location"], true));
     return nsfw.dom.click.call(null, btn, function(e) {
       nsfw.dom.add_class.call(null, btn, "\ufdd0'loading");
-      return nsfw.geo.pos.call(null, function(p__2999) {
-        var map__3000 = p__2999;
-        var map__3000__$1 = cljs.core.seq_QMARK_.call(null, map__3000) ? cljs.core.apply.call(null, cljs.core.hash_map, map__3000) : map__3000;
-        var latlng = cljs.core._lookup.call(null, map__3000__$1, "\ufdd0'latlng", null);
+      return nsfw.geo.pos.call(null, function(p__4187) {
+        var map__4188 = p__4187;
+        var map__4188__$1 = cljs.core.seq_QMARK_.call(null, map__4188) ? cljs.core.apply.call(null, cljs.core.hash_map, map__4188) : map__4188;
+        var latlng = cljs.core._lookup.call(null, map__4188__$1, "\ufdd0'latlng", null);
         nsfw.dom.rem_class.call(null, btn, "\ufdd0'loading");
         nsfw.geo.center.call(null, map, latlng);
         return nsfw.geo.zoom.call(null, map, 10)
@@ -31345,7 +31345,7 @@ cljs.core.PersistentVector.fromArray(["\ufdd0'code", "loading"], true), " css cl
   }, 2E3)
 })], true), cljs.core.PersistentVector.fromArray(["\ufdd0'div.div-loading.loading", cljs.core.PersistentVector.fromArray(["\ufdd0'code", "[:div.loading]"], true)], true), cljs.core.PersistentVector.fromArray(["\ufdd0'textarea.loading", "[:textarea.loading]"], true)], true)], true)], true)], true));
 nsfw.bootstrap.main = function main() {
-  return nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.bootstrap.$body, nsfw.bootstrap.hero), nsfw.bootstrap.banner), nsfw.bootstrap.loading_indicators), nsfw.bootstrap.basic_structure), nsfw.bootstrap.event_binding), nsfw.bootstrap.html5_storage), nsfw.bootstrap.html5_geoloc), nsfw.bootstrap.bleed_box_example), 
+  return nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.dom.append.call(null, nsfw.bootstrap.$body, nsfw.bootstrap.hero), nsfw.bootstrap.banner), nsfw.bootstrap.basic_structure), nsfw.bootstrap.event_binding), nsfw.bootstrap.loading_indicators), nsfw.bootstrap.html5_storage), nsfw.bootstrap.html5_geoloc), nsfw.bootstrap.bleed_box_example), 
   cljs.core.PersistentVector.fromArray(["\ufdd0'div", cljs.core.repeat.call(null, 10, cljs.core.PersistentVector.fromArray(["\ufdd0'br"], true))], true))
 };
 goog.provide("nsfw.frowny");
