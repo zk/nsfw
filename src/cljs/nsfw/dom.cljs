@@ -43,16 +43,13 @@
    :state (.-state e)
    :event e})
 
-(defn prevent [e]
-  (.preventDefault (:event e)))
-
-(defn stop-prop [e]
-  (.stopPropagation (:event e)))
-
 (defn ensure-coll [el]
   (if (coll? el)
     el
     [el]))
+
+
+;; Dom
 
 (defn root []
   (aget (dom/getElementsByTagNameAndClass "html") 0))
@@ -109,12 +106,49 @@
       (.setAttribute el (name key) (get m key))))
   els)
 
+(defn text [els text]
+  (doseq [el (ensure-coll els)]
+    (dom/setTextContent el (str text)))
+  els)
+
+(defn replace [els content]
+  (doseq [el (ensure-coll els)]
+    (dom/replaceNode content el)))
+
+(defn remove [els]
+  (doseq [el (ensure-coll els)]
+    (dom/removeNode el)))
+
+(defn empty [els]
+  (doseq [el (ensure-coll els)]
+    (dom/removeChildren el))
+  els)
+
+(defn add-class [els cls]
+  (doseq [el (ensure-coll els)]
+    (classes/add el (name cls))))
+
+(defn rem-class [els cls]
+  (doseq [el (ensure-coll els)]
+    (classes/remove el (name cls))))
+
+(def body ($ "body"))
+
+;; Events
+
+(defn prevent [e]
+  (.preventDefault (:event e)))
+
+(defn stop-prop [e]
+  (.stopPropagation (:event e)))
+
+
 (defn onload [f]
   (set! (.-onload js/window) f))
 
 (defn listen [els evt f]
   (doseq [el (ensure-coll els)]
-    (events/listen el evt #(f (ge->map %) el)))
+    (events/listen el (name evt) #(f (ge->map %) el)))
   els)
 
 (defn handler [evt]
@@ -135,7 +169,6 @@
 (def keydown (handler :keydown))
 (def keyup (handler :keyup))
 (def blur (handler :blur))
-(def focus (handler :focus))
 
 (def change (handler :change))
 (def select (handler :select))
@@ -168,17 +201,19 @@
 (def pageshow (handler :pageshow))
 (def popstate (handler :popstate))
 
+(defn focus
+  ([el]
+     (.focus el)
+     el)
+  ([els f]
+     (listen els :focus f)))
+
 (defn match-key [els key f]
   (doseq [el (ensure-coll els)]
     (keyup el (fn [e]
                 (let [kc (.-keyCode e)]
                   (when (= key kc)
                     (f el (val el)))))))
-  els)
-
-(defn text [els text]
-  (doseq [el (ensure-coll els)]
-    (dom/setTextContent el (str text)))
   els)
 
 (defn val-changed [els f]
@@ -207,30 +242,3 @@
                   (util/clear-timeout @timer))
                 (reset! timer (util/timeout #(f e) 150))))))
   els)
-
-(defn focus [el]
-  (.focus el)
-  el)
-
-(defn replace [els content]
-  (doseq [el (ensure-coll els)]
-    (dom/replaceNode content el)))
-
-(defn remove [els]
-  (doseq [el (ensure-coll els)]
-    (dom/removeNode el)))
-
-(defn empty [els]
-  (doseq [el (ensure-coll els)]
-    (dom/removeChildren el))
-  els)
-
-(defn add-class [els cls]
-  (doseq [el (ensure-coll els)]
-    (classes/add el (name cls))))
-
-(defn rem-class [els cls]
-  (doseq [el (ensure-coll els)]
-    (classes/remove el (name cls))))
-
-(def body ($ "body"))
