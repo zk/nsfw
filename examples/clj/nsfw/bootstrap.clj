@@ -1,15 +1,14 @@
 (ns nsfw.bootstrap
   (:require [nsfw.server :as server]
-            [nsfw.webapp :as webapp]
             [nsfw.refresher :as refresher]
-            [ring.middleware.reload :as reload]))
+            [nsfw.bootstrap-entry :as entry]
+            [ring.middleware.reload-modified :as reload]))
+
+(def root-entry
+  (-> #'entry/routes
+      (reload/wrap-reload-modified ["examples" "src"])))
 
 (defn -main [& args]
-  (server/start :entry (webapp/routes
-                        [""] (webapp/cs :examples
-                                        :css [:bootstrap.min
-                                              :bootstrap-responsive.min
-                                              :nsfw-components
-                                              :bootstrap]
-                                        :google-maps true
-                                        :entry :nsfw.bootstrap))))
+  (server/start :entry root-entry))
+
+(-main)

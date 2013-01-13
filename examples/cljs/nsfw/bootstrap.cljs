@@ -58,8 +58,9 @@
              "NSFW"]]
            [:div.hero-content
             [:h3 "Get web stuff done with Clojure"]
-            [:p "NSFW is a collection of tasty Clojure bits."]
-            [:p
+            [:p "(yey)"]
+            #_[:p "NSFW is a collection of tasty Clojure bits."]
+            #_[:p
              "We aim to make the hard stuff easy, and we've got everything "
              "from date math, to one-line webservers, to a bunch of random "
              "(but eminently useful) one-offs."]
@@ -368,9 +369,9 @@
   (-> $body
       (dom/append hero)
       (dom/append banner)
-      (dom/append loading-indicators)
       (dom/append basic-structure)
       (dom/append event-binding)
+      (dom/append loading-indicators)
       (dom/append html5-storage)
       (dom/append html5-geoloc)
       (dom/append bleed-box-example)
