@@ -645,4 +645,12 @@ Just finished deploy to heroku, steps:
 
 Can cut out the chmod, but feels really good.
 
+Now that I've got a basis to work off of, time to clean up the
+examples.
 
+Wonder if I can symlink the clj and cljs dirs. Might provide a cleaner
+interface to working on the docs site while not having to reinstall
+the nsfw dep every time something changes.
+
+i.e. this would provide separation between the doc site and nsfw
+proper, but still provide for working on clj / cljs code.
