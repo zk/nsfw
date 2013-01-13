@@ -10,7 +10,9 @@
               :sanitized (name-to-path name)}]
     (->files data
              ["Procfile" (render "Procfile" data)]
+             ["bin/build" (render "build" data)]
              ["project.clj" (render "project.clj" data)]
+             [".gitignore" (render ".gitignore" data)]
              ["src/clj/{{sanitized}}/run.clj" (render "run.clj" data)]
              ["src/clj/{{sanitized}}/entry.clj" (render "entry.clj" data)]
              ["src/cljs/{{sanitized}}/app.cljs" (render "app.cljs" data)]
