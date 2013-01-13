@@ -18,6 +18,37 @@
   (-conj [coll o]
     (throw "Error: Can't conj onto a NodeList.")))
 
+(defn ge->map
+  "Turns a google closure event into a map.
+   See http://goo.gl/87L84 for more info."
+  [e]
+  {:type (.-type e)
+   :timestamp (.-timestamp e)
+   :target (.-target e)
+   :current-target (.-currentTarget e)
+   :related-target (.-relatedTarget e)
+   :offset-x (.-offsetX e)
+   :offset-y (.-offsetY e)
+   :client-x (.-clientX e)
+   :client-y (.-clientY e)
+   :screen-x (.-screenX e)
+   :screen-y (.-screenY e)
+   :button (.-button e)
+   :key-code (.-keyCode e)
+   :ctrl-key (.-ctrlKey e)
+   :alt-key (.-altKey e)
+   :shift-key (.-shiftKey e)
+   :meta-key (.-metaKey e)
+   :default-prevented (.-defaultPrevented e)
+   :state (.-state e)
+   :event e})
+
+(defn prevent [e]
+  (.preventDefault (:event e)))
+
+(defn stop-prop [e]
+  (.stopPropagation (:event e)))
+
 (defn ensure-coll [el]
   (if (coll? el)
     el
@@ -88,7 +119,9 @@
 
 (defn click [els f]
   (doseq [el (ensure-coll els)]
-    (events/listen el "click" (fn [e] (f e el))))
+    (events/listen
+     el "click" (fn [e]
+                  (f (ge->map e) el))))
   els)
 
 (defn mousedown [els f]
