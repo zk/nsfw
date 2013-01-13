@@ -628,5 +628,21 @@ reloadable namespace.
 
 + <proj>.run
   + Entry point for app, sets up lifecycle stuff, server, imports
-    config, etc.
+    config, etc
+
+
+* 2013-01-12 Sat 20:53
+
+Just finished deploy to heroku, steps:
+
+1. =lein new nsfw nt=
+2. =cd nt=
+3. =git init=
+4. =chmod u+x ./bin/build=
+5. =git add -a -m 'initial'=
+6. =heroku create nsfwtest=
+7. =git push heroku master=
+
+Can cut out the chmod, but feels really good.
+
 
