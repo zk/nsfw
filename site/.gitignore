@@ -1,0 +1,9 @@
+pom.xml
+*jar
+lib
+classes
+.DS_Store
+/.lein-deps-sum
+/.lein-failures
+/.lein-cljsbuild*
+target

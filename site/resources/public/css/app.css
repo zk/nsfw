@@ -1,0 +1,364 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  letter-spacing: 1px;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  font-family: "Helvetica Neue", Helvetica, sans-serif;
+  font-weight: normal;
+}
+
+body {
+  background-color: #fefefe;
+}
+
+.clear { clear: both; }
+
+/* end bootstrap */
+
+
+.hero-content {
+  padding: 40px;
+  background-color: rgba(0,0,0,0.9);
+  width: 40%;
+  float: right;
+  color: white;
+}
+
+.hero-content h1,
+.hero-content h2,
+.hero-content h3
+{
+  margin-top: 0;
+  font-weight: normal;
+}
+
+.navbar h1 {
+  font-weight: normal;
+  letter-spacing: 8px;
+  font-size: 32px;
+}
+
+.hero-content .do-it {
+  font-size: 30px;
+  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border: solid #ccc 1px;
+  display: inline-block;
+  text-decoration: none;
+  color: black;
+  background-color: #ccc;
+}
+
+.hero-content p {
+  line-height: 160%;
+  max-width: 500px;
+}
+
+.hero-content {
+}
+
+.sign-in-twitter {
+  display: inline-block;
+  padding: 10px;
+  border: solid #555 1px;
+  line-height: 30px;
+  cursor: pointer;
+  background-color: #222;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+
+.sign-in-twitter:hover {
+  background-color: #444;
+}
+
+.sign-in-twitter:active {
+  background-color: #666;
+}
+
+.sign-in-twitter img {
+  width: 30px;
+  height: 30px;
+  padding: 0px;
+  margin: 0px;
+  margin-bottom: -9px;
+}
+
+.post-bleed-banner {
+  padding: 20px;
+  text-align: center;
+  border-top: solid #ccc 1px;
+  border-bottom: solid #ccc 1px;
+  background-color: #eee;
+  margin-bottom: 30px;
+}
+
+.navbar h1 {
+  font-weight: normal;
+}
+
+.icon-overview {
+}
+
+.glyph {
+  padding: 0px;
+  margin: 0px;
+  display: inline-block;
+  text-align: center;
+}
+
+.xl.glyph {
+  font-size: 72px;
+  width: 96px;
+  height: 96px;
+}
+
+.large.glyph {
+  font-size: 46px;
+  width: 62px;
+  height: 62px;
+}
+
+.med.glyph {
+  font-size: 32px;
+  
+}
+
+.small.glyph {
+  font-size: 18px;
+}
+
+.tiny.glyph {
+  font-size: 12px;
+}
+
+.icon-cubby {
+  text-align: center;
+  float: left;
+  list-style-type: none;
+  padding: 20px;
+  margin: 20px;
+  width: 160px;
+  border: solid #ccc 1px;
+  font-size: 10px;
+  height: 60px;
+}
+
+.icon-cubby .glyph {
+  font-size: 40px;
+}
+
+.icons {
+  width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 20px;
+}
+
+.icons h2 {
+  font-size: 30px;
+}
+
+.nsfw-icon {
+  font-size: 42px;
+  margin-right: 7px;
+  padding: 0px;
+  line-height: 30px;
+  display: inline-block;
+  margin-bottom: 1px;
+}
+
+.data-input {
+  width: 100%;
+  height: 50%;
+  position: relative;
+}
+
+.data-input textarea {
+  resize: none;
+  padding: 10px;
+  width: 100%;
+  width: calc(100% - 20px);
+  width: -webkit-calc(100% - 20px);
+  width: -moz-calc(100% - 20px);
+
+  height: 100%;
+  height: calc(100% - 20px);
+  height: -webkit-calc(100% - 20px);
+  height: -moz-calc(100% - 20px);
+
+}
+
+.data-input-error {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+}
+
+.html-vis {
+  background-color: white;
+  width: 100%;
+  width: calc(100% - 20px);
+  width: -webkit-calc(100% - 20px);
+  width: -moz-calc(100% - 20px);
+
+  margin-top: 20px;
+  height: 50%;
+  height: calc(50% - 40px);
+  height: -webkit-calc(50% - 40px);
+  height: -moz-calc(50% - 40px);
+  padding: 10px;
+
+  border: dotted #e8e8e8 1px;
+}
+
+
+.html-vis li {
+}
+
+.example {
+  background-color: #fafafa;
+  padding: 20px;
+}
+
+div.html-example {
+  height: 350px;
+}
+
+h2, h3, h4 {
+  margin-bottom: 10px;
+}
+
+h2 {
+  margin-top: 30px;
+}
+
+h3 {
+  margin-top: 20px;
+}
+
+p {
+  margin-bottom: 10px;
+}
+
+pre,
+code,
+textarea,
+input[type="text"] {
+  border-raidus: 0px;
+  -webkit-border-radius: 0px;
+  -moz-border-radius: 0px;
+  border: solid #e8e8e8 1px;
+}
+
+code {
+  padding-top: 1px;
+  padding-bottom: 1px;
+}
+
+.container {
+  margin-bottom: 40px;
+}
+
+em {
+  font-weight: bold;
+  font-style: normal;
+}
+
+.example h1,
+.example h2,
+.example h3,
+.example h4,
+.example h5,
+.example h6 {
+  margin: 0; 
+  padding: 0;
+}
+
+input#my-key {
+  width: 120px;
+}
+
+.local-storage-example pre {
+  margin-bottom: 20px;
+}
+
+.local-storage-example form {
+  background-color: white;
+  padding: 10px;
+  border: solid #e8e8e8 1px;
+  margin: 0;
+  border: dotted #e8e8e8 1px;
+}
+
+.error {
+  background-color: #fcc;
+}
+
+.geoloc-example {
+}
+
+.geoloc-example .map {
+  height: 300px;
+  border: solid #ccc 1px;
+  margin-bottom: 10px;
+}
+
+.geoloc-example a.btn {
+  display: block;
+}
+
+.bleed-box-example {
+  background-color: rgba(255,255,255,0.8);
+}
+
+.bleed-box-example pre {
+  margin: 0px;
+}
+
+.supported-browsers {
+  margin-top: 50px;
+  text-align: center;
+  margin-right: 60px;
+}
+
+.supported-browsers li {
+  display: inline-block;
+  list-style-type: none;
+  margin-right: 30px;
+  margin-bottom: 20px;
+}
+
+.supported-browsers li img {
+  margin-bottom: 5px;
+}
+
+.loading-example label {
+  display: inline-block;
+  width: 170px;
+  text-align: right;
+  margin-right: 20px;
+}
+
+.loading-example .button-row {
+  margin-bottom: 10px;
+}
+
+.div-loading {
+  padding: 20px;
+  border: solid #ccc 1px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.loading-example textarea {
+  width: 300px;
+  height: 130px;
+}

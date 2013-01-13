@@ -1,0 +1,4 @@
+#!/bin/sh
+
+lein cljsbuild once
+lein with-profile production compile :all
