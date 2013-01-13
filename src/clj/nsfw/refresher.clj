@@ -19,7 +19,7 @@
        (apply sh/sh)))
 
 (defn refresh-safari-on-js-change []
-  (wt/watcher "resources/public"
+  (wt/watcher ["resources/public" "src/clj"]
               (wt/rate 100)
               (wt/on-change (fn [& args]
                               (println (->> args
@@ -28,5 +28,5 @@
                                        "changed, refreshing safari")
                               (refresh-safari "localhost")))))
 
-(defn -main [& args]
+(defn -main [& dirs]
   (refresh-safari-on-js-change))
