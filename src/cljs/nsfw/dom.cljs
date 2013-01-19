@@ -126,11 +126,13 @@
 
 (defn add-class [els cls]
   (doseq [el (ensure-coll els)]
-    (classes/add el (name cls))))
+    (classes/add el (name cls)))
+  els)
 
 (defn rem-class [els cls]
   (doseq [el (ensure-coll els)]
-    (classes/remove el (name cls))))
+    (classes/remove el (name cls)))
+  els)
 
 (def body ($ "body"))
 
@@ -227,9 +229,9 @@
 (defn on-enter [els f]
   (doseq [el (ensure-coll els)]
     (keydown el (fn [e]
-                  (when (= 13 (.-keyCode e))
-                    (.stopPropagation e)
-                    (.preventDefault e)
+                  (when (= 13 (:key-code e))
+                    (prevent e)
+                    (stop-prop e)
                     (f e)))))
   els)
 
