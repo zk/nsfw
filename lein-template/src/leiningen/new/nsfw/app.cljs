@@ -6,4 +6,11 @@
 
 (def $body (dom/$ "body"))
 
-(dom/append $body [:h1 "Hello NSFW"])
+(dom/append
+ $body
+ [:div
+  [:h1 "Hello NSFW"]
+  [:p
+   "This file can be found at " [:code "src/cljs/<project name>/app.cljs"] ". "
+   "Any changes to this file (and any other cljs files) will automatically be "
+   "reloaded in your browser."]])
