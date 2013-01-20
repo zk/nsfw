@@ -6,4 +6,5 @@ REPO=$SCRIPT_DIR/..
 cd  $SCRIPT_DIR/.. && \
 lein jar && \
 lein pom && \
-scp $REPO/pom.xml $REPO/target/nsfw.jar clojars@clojars.org:
+scp $REPO/pom.xml $REPO/target/nsfw.jar clojars@clojars.org: && \
+lein install
