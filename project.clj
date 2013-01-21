@@ -24,6 +24,6 @@
   :jar-name "nsfw.jar"
   :cljsbuild {:builds
               [{:source-path "src/cljs"
-                :compiler {:output-to "resources/test-js/test.js"
+                :compiler {:output-to "resources/test.js"
                            :optimizations :whitespace}
                 :jar true}]})
