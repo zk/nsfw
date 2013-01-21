@@ -26,7 +26,4 @@
               [{:source-path "src/cljs"
                 :compiler {:output-to "resources/test-js/test.js"
                            :optimizations :whitespace}
-                :jar true}
-               {:source-path "examples/cljs"
-                :compiler {:output-to "resources/public/js/examples.js"
-                           :optimizations :whitespace}}]})
+                :jar true}]})
