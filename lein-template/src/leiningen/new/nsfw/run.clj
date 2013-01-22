@@ -13,6 +13,7 @@
       (reload/wrap-reload-modified ["src/clj"])))
 
 (defn -main [& args]
-  (start-repl (env/int :repl-port 7888))
+  (when-let [repl-port (env/int :repl-port)]
+    (start-repl repl-port))
   (server/start :entry root-entry
                 :port (env/int :port 8080)))
