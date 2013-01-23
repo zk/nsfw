@@ -2,18 +2,10 @@
   (:require [clojure.java.shell :as sh]
             [watchtower.core :as wt]))
 
-(defn refresh-safari [url-str-match]
+(defn refresh-safari []
   (->> ["osascript"
-        "tell application \"Safari\""
-        "set windowList to every window"
-        "repeat with aWindow in windowList"
-        "set tabList to every tab of aWindow"
-        "repeat with atab in tabList"
-        (format "if (URL of atab contains \"%s\") then" url-str-match)
-        "tell atab to do javascript \"window.location.reload()\""
-        "end if"
-        "end repeat"
-        "end repeat"
+        "tell application \"Safari\" to tell its first document"
+        "set its URL to (get its URL)"
         "end tell"]
        (interpose "-e")
        (apply sh/sh)))
