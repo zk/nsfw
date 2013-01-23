@@ -1,7 +1,9 @@
 (ns nsfw.bind
   (:use [nsfw.util :only [log]])
   (:require [nsfw.dom :as dom]
-            [cljs.reader :as reader]))
+            [nsfw.util :as util]
+            [cljs.reader :as reader]
+            [goog.net.XhrIo]))
 
 (defn ajax [opts]
   (let [{:keys [path method data headers success error]}
@@ -31,12 +33,19 @@
      data
      (clj->js headers))))
 
-(defn bind [atom function]
+(defn bind [atom f]
   (add-watch
    atom
    (gensym)
    (fn [key identity old-value new-value]
-     (function identity old-value new-value))))
+     (f identity old-value new-value))))
+
+(defn bind-change [atom f]
+  (bind
+   atom
+   (fn [id old new]
+     (when-not (= old new)
+       (f id old new)))))
 
 (defn push-updates [atom path & [opts]]
   (bind atom
@@ -46,6 +55,24 @@
                   :data new
                   :method "POST"}
                  opts)))))
+
+(defn server [a path success error & [opts]]
+  (let [last-response (atom @a)]
+    (bind-change
+     a
+     (fn [id old new]
+       (when (not= @last-response new)
+         (ajax (merge
+                {:path path
+                 :method "POST"
+                 :data new
+                 :success (fn [data]
+                            (when-let [res (success data)]
+                              (reset! last-response res)
+                              (when (not= res new)
+                                (reset! a res))))
+                 :error (fn [e] (error old new e))}
+                opts)))))))
 
 (defn change [atom key f]
   (add-watch
@@ -67,10 +94,10 @@
    :else         (dom/append el res)))
 
 (defn render [el atom f]
-  (bind atom (fn [id old new]
-               (-> el
-                   dom/empty
-                   (append-or-text (f new old el)))))
+  (bind-change atom (fn [id old new]
+                      (-> el
+                          dom/empty
+                          (append-or-text (f new old el)))))
   (append-or-text el (f @atom @atom el))
   el)
 
