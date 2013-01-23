@@ -658,4 +658,73 @@ proper, but still provide for working on clj / cljs code.
 
 * 2013-01-18 Fri 12:38
 
-SCSS is source code, not assets.
+SCSS is source code, not assets
+
+
+* 2013-01-21 Mon 19:58
+
+Well, shit. Just spent a bunch of time reversing the direction of the
+submodule include (nsfw containing nsfw-site to nsfw-site containing
+nsfw), and it turns out it was cleaner the first time. Oh well,
+sometimes you don't know til you go do something.
+
+The good news is that it's super easy to get up and running.
+
+It think the data transfer primitives are going to be a good core part
+of NSFW. Push, pull and symetric.
+
+Need to handle error cases on bind/push-updates
+
+Maybe push-updates is premature. A more basic prim needs to follow the
+http request / response cycle:
+
++ Client updates atom
++ Atom state is pushed to server
++ Atom state is optionally modified by response
+
+
+View -> Server -> View -> Server
+
+View -> Server -> View
+
+Server -> View -> Server
+
+Server -> View
+
+View -> Server
+
+
+Client -> Server
+
+Server -> Client
+
+Can the change be rejected on both?
+
+Client -> Server -> Client
+
+Server -> Client
+
+I think c -> s is the major interaction mode we need to handle
+
+c -> s -> c
+
+c -> s : http fail (status), response fail (content)
+
+Server state needs to be tracked as to not ship changes back to the
+server.
+
+c -> s
+
+s -> c
+
+c -> s -> c
+
+s -> c -> s
+
+Whatever it is, it's state tracked on the backend.
+
+** Client-server interaction Rubrik
+
++ Client -> Server, aka Fire and Forget
+
+
