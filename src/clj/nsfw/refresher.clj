@@ -32,6 +32,6 @@
 
 (defn -main [& [browser]]
   (condp = browser
-    "safari" (refresh-on-change #(refresh-safari "localhost"))
+    "safari" (refresh-on-change refresh-safari)
     (refresh-on-change refresh-chrome) ; default to chrome
     ))
