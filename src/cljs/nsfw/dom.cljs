@@ -232,7 +232,7 @@
                   (when (= 13 (:key-code e))
                     (prevent e)
                     (stop-prop e)
-                    (f e)))))
+                    (f e el)))))
   els)
 
 (defn scroll-end [els f]
