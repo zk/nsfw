@@ -723,8 +723,23 @@ s -> c -> s
 
 Whatever it is, it's state tracked on the backend.
 
-** Client-server interaction Rubrik
-
 + Client -> Server, aka Fire and Forget
 
+Need a way to support saved state on server. Maybe client-server
+interaction should be more fine-grained on the atom side.
 
+Maybe serialized is the way to go
+
+Checking serialization is neat, but need to close the gap somehow,
+need to supply a callback for dirty / clean state
+
+Dirty / Saved / Loading
+
+
+Client  Server   Client
+----------------------
+Dirty | Saving | Saved
+
+Can this be stored as metadata?
+
+Client side stores state
