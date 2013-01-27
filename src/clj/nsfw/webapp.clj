@@ -41,9 +41,10 @@
                   (str
                    (->> data
                         (map #(str "window."
-                                   (name (key %))
+                                   (str/replace (name (key %)) #"-" "_")
                                    " = "
                                    (-> % val pr-str nu/to-json)))
+                        (interpose ";")
                         (apply str))
                    ";")])
                (html/script (str "/js/" (name script) ".js"))
