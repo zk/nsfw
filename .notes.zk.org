@@ -760,3 +760,15 @@ property change
 old new el
 
 change predicate
+
+
+* 2013-01-27 Sun 13:29
+
+render2 now takes functions as values for the el opts map, and for
+html content. So when the backing atom's value changes, everything
+gets rerendered automatically. It's a nice way to support static &
+dynamic content & mix-and-match.
+
+feels really fucking good
+
+
