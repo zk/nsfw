@@ -104,12 +104,36 @@
 
 (defn render [el atom f]
   (let [el (dom/wrap-content el)]
-    (bind-change atom (fn [id old new]
-                        (-> el
-                            dom/empty
-                            (append-or-text (f new old el)))))
+    (change atom
+            (fn [id old new]
+              (-> el
+                  dom/empty
+                  (append-or-text (f new old el)))))
     (append-or-text el (f @atom @atom el))
     el))
+
+(defn render-struct [atom struct]
+  (let [contents-or-fns (if (map? (second struct))
+                          (drop 2 struct)
+                          (drop 1 struct))
+        contents (map (fn [content-or-fn]
+                        (cond
+                         (string? content-or-fn) content-or-fn
+                         (coll? content-or-fn) (render-struct atom content-or-fn)
+                         (ifn? content-or-fn) (content-or-fn @atom @atom)
+                         :else content-or-fn))
+                      contents-or-fns)]
+    (dom/$ (vec (if (map? (second struct))
+                  (concat [(first struct) (second struct)] contents)
+                  (concat [(first struct)] contents))))))
+
+(defn render2 [!state struct]
+  (let [!el (atom (render-struct !state struct))]
+    (change !state (fn [id old new]
+                     (let [new-el (render-struct !state struct)]
+                       (dom/replace @!el new-el)
+                       (reset! !el new-el))))
+    @!el))
 
 (defn text [el atom f]
   (update el atom (fn [new old el]
