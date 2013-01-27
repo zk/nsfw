@@ -15,3 +15,5 @@
     (str (tw/oauth-authorization-url token)
          "&oauth_callback="
          (nu/url-encode callback))))
+
+(pprint (auth-url {:callback "http://localhost:5000" :token tw-key}))
