@@ -6,7 +6,8 @@
            [org.joda.time.format
             DateTimeFormatter
             ISODateTimeFormat
-            DateTimeFormat])
+            DateTimeFormat]
+           [java.util Date])
   (:refer-clojure :exclude [= > < >= <= pr]))
 
 (def iso-parser (ISODateTimeFormat/dateTimeParser))
@@ -16,6 +17,7 @@
 (defn from [o]
   (cond
    (cc/= DateTime (class o)) o
+   (cc/= Date (class o)) (DateTime. o)
    (cc/= :now o) (DateTime.)
    (cc/= :yesterday o) (.minusDays (DateTime.) 1)
    (cc/= :tomorrow o) (.plusDays (DateTime.) 1)
@@ -24,6 +26,7 @@
 
 (defn to-iso [dt]
   (cond
+   (cc/= nil dt) nil
    (cc/= DateTime (class dt)) (.print iso-formatter dt)
    :else (to-iso (from dt))))
 
