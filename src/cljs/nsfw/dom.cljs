@@ -255,3 +255,8 @@
      :height (.-height b)
      :left (.-left b)
      :top (.-top b)}))
+
+(defn scroll-to
+  [el]
+  (.scrollIntoView el true)
+  (util/log (dom/getDocumentScroll)))
