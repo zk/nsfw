@@ -6,6 +6,10 @@
 (defn log [& args]
   (.log js/console (if args (.-a args) nil)))
 
+(defn log-pass [res]
+  (log res)
+  res)
+
 (defn ensure-coll [el]
   (if (coll? el)
     el
