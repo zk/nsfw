@@ -59,7 +59,7 @@
 
 (defn $ [o]
   (cond
-   (vector? o) (crate/html o)
+   (coll? o) (crate/html o)
    :else (selector o)))
 
 (defn val
@@ -70,7 +70,8 @@
 
 (defn wrap-content [content]
   (cond
-   (vector? content) ($ content)
+   (and (coll? content)
+        (keyword? (first content))) ($ content)
    (string? content) ($ content)
    :else content))
 
