@@ -74,6 +74,25 @@
                  :error (fn [e] (error old new e))}
                 opts)))))))
 
+#_(defn server [a path serialize]
+  (let [last-response (atom (serialize @a))]
+    (bind-change
+     a
+     (fn [id old new]
+       (let [serialized (serialize new)]
+         (when (not= @last-response serialized)
+           (ajax (merge
+                  {:path path
+                   :method "POST"
+                   :data serialized
+                   :success (fn [data]
+                              (when data
+                                (reset! last-response data)
+                                (when (not= res serialized)
+                                  (swap! a #(merge % data)))))
+                   :error (fn [e] (error old new e))}
+                  opts))))))))
+
 (defn change [atom key f]
   (add-watch
    atom
@@ -94,12 +113,13 @@
    :else         (dom/append el res)))
 
 (defn render [el atom f]
-  (bind-change atom (fn [id old new]
-                      (-> el
-                          dom/empty
-                          (append-or-text (f new old el)))))
-  (append-or-text el (f @atom @atom el))
-  el)
+  (let [el (dom/wrap-content el)]
+    (bind-change atom (fn [id old new]
+                        (-> el
+                            dom/empty
+                            (append-or-text (f new old el)))))
+    (append-or-text el (f @atom @atom el))
+    el))
 
 (defn text [el atom f]
   (update el atom (fn [new old el]
