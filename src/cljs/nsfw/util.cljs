@@ -1,6 +1,7 @@
 (ns nsfw.util
   (:require #_[cljs-uuid-utils :as uu]
-            [cljs.reader :as reader]))
+            [cljs.reader :as reader]
+            [clojure.string :as str]))
 
 (defn log [& args]
   (.log js/console (if args (.-a args) nil)))
@@ -27,4 +28,4 @@
   (gensym))
 
 (defn page-data [key]
-  (reader/read-string (aget js/window (name key))))
+  (reader/read-string (aget js/window (str/replace (name key) #"-" "_"))))
