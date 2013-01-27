@@ -144,7 +144,6 @@
 (defn stop-prop [e]
   (.stopPropagation (:event e)))
 
-
 (defn onload [f]
   (set! (.-onload js/window) f))
 
@@ -244,3 +243,15 @@
                   (util/clear-timeout @timer))
                 (reset! timer (util/timeout #(f e) 150))))))
   els)
+
+(defn viewport-size []
+  (let [vp (dom/getViewportSize)]
+    [(.-width vp)
+     (.-height vp)]))
+
+(defn bounds [el]
+  (let [b (style/getBounds el)]
+    {:width (.-width b)
+     :height (.-height b)
+     :left (.-left b)
+     :top (.-top b)}))
