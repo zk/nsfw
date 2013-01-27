@@ -1,11 +1,13 @@
 (ns nsfw.dom
   (:use [nsfw.util :only [log]])
   (:require [crate.core :as crate]
+            [dommy.template :as template]
             [goog.dom :as dom]
             [goog.dom.classes :as classes]
             [goog.style :as style]
             [goog.events :as events]
             [goog.dom.query]
+            [cljs.core :as cc]
             [nsfw.util :as util])
   (:refer-clojure :exclude [val replace remove empty drop]))
 
@@ -59,7 +61,7 @@
 
 (defn $ [o]
   (cond
-   (coll? o) (crate/html o)
+   (coll? o) (template/node o)
    :else (selector o)))
 
 (defn val
@@ -68,7 +70,8 @@
   ([el new-value]
      (set! (.-value el) new-value)))
 
-(defn wrap-content [content]
+(defn wrap-content
+  [content]
   (cond
    (and (coll? content)
         (keyword? (first content))) ($ content)
@@ -114,7 +117,8 @@
 
 (defn replace [els content]
   (doseq [el (ensure-coll els)]
-    (dom/replaceNode content el)))
+    (dom/replaceNode content el))
+  els)
 
 (defn remove [els]
   (doseq [el (ensure-coll els)]
