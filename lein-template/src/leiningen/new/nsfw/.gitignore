@@ -7,3 +7,4 @@ classes
 /.lein-failures
 /.lein-cljsbuild*
 target
+.sass-cache
