@@ -112,25 +112,34 @@
     (append-or-text el (f @atom @atom el))
     el))
 
-(defn render-struct [atom struct]
+(defn render-struct [new old struct]
   (let [contents-or-fns (if (map? (second struct))
                           (drop 2 struct)
                           (drop 1 struct))
         contents (map (fn [content-or-fn]
                         (cond
                          (string? content-or-fn) content-or-fn
-                         (coll? content-or-fn) (render-struct atom content-or-fn)
-                         (ifn? content-or-fn) (content-or-fn @atom @atom)
+                         (coll? content-or-fn) (render-struct new old content-or-fn)
+                         (ifn? content-or-fn) (content-or-fn new old)
                          :else content-or-fn))
-                      contents-or-fns)]
-    (dom/$ (vec (if (map? (second struct))
-                  (concat [(first struct) (second struct)] contents)
+                      contents-or-fns)
+        opts (when (map? (second struct))
+               (reduce (fn [m [k v]]
+                         (assoc m k (cond
+                                     (string? v) v
+                                     (coll? v) v
+                                     (ifn? v) (v new old)
+                                     :else v)))
+                       {}
+                       (second struct)))]
+    (dom/$ (vec (if opts
+                  (concat [(first struct) opts] contents)
                   (concat [(first struct)] contents))))))
 
 (defn render2 [!state struct]
-  (let [!el (atom (render-struct !state struct))]
+  (let [!el (atom (render-struct @!state @!state struct))]
     (change !state (fn [id old new]
-                     (let [new-el (render-struct !state struct)]
+                     (let [new-el (render-struct new old struct)]
                        (dom/replace @!el new-el)
                        (reset! !el new-el))))
     @!el))
