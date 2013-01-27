@@ -122,3 +122,14 @@
 (defn url-encode [s]
   (when s
     (URLEncoder/encode s)))
+
+(defn read-body
+  "Turn a HttpInputStream into a string."
+  [request]
+  (if (string? (:body request))
+    (:body request)
+    (when (and (:content-length request)
+               (> (:content-length request) 0))
+      (let [buf (byte-array (:content-length request))]
+        (.read (:body request) buf 0 (:content-length request))
+        (String. buf)))))
