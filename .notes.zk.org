@@ -743,3 +743,20 @@ Dirty | Saving | Saved
 Can this be stored as metadata?
 
 Client side stores state
+
+
+* 2013-01-27 Sun 01:57
+
+Working on bigboard, there's got to be a better way to structure the
+view stuff. Essentially the following are all mixed together:
+
++ physical structure
++ event reaction
++ data binding
++ ui state
+
+property change
+
+old new el
+
+change predicate
