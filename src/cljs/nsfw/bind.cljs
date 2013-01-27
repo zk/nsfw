@@ -40,7 +40,7 @@
    (fn [key identity old-value new-value]
      (f identity old-value new-value))))
 
-(defn bind-change [atom f]
+(defn change [atom f]
   (bind
    atom
    (fn [id old new]
@@ -58,7 +58,7 @@
 
 (defn server [a path success error & [opts]]
   (let [last-response (atom @a)]
-    (bind-change
+    (change
      a
      (fn [id old new]
        (when (not= @last-response new)
@@ -76,7 +76,7 @@
 
 #_(defn server [a path serialize]
   (let [last-response (atom (serialize @a))]
-    (bind-change
+    (change
      a
      (fn [id old new]
        (let [serialized (serialize new)]
@@ -92,16 +92,6 @@
                                   (swap! a #(merge % data)))))
                    :error (fn [e] (error old new e))}
                   opts))))))))
-
-(defn change [atom key f]
-  (add-watch
-   atom
-   (gensym)
-   (fn [k atom old new]
-     (let [ov (get old key)
-           nv (get new key)]
-       (when (not= ov nv)
-         (f atom old new))))))
 
 (defn update [el atom f]
   (bind atom (fn [id old new] (f new old el)))
