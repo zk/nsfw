@@ -1,8 +1,7 @@
 (ns nsfw.test.dom
   (:use [nsfw.util :only [log]]
         [nsfw.dom :only [$]])
-  (:require [crate.core :as crate]
-            [nsfw.dom :as d]))
+  (:require [nsfw.dom :as d]))
 
 (def $t (-> ($ [:table])
             (d/style {:width :500px

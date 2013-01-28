@@ -771,4 +771,63 @@ dynamic content & mix-and-match.
 
 feels really fucking good
 
+#+begin_src clojure
+
+(defn render-item [!item]
+  (bind/render
+   (dom/$ [:li])
+   !item
+   (fn [{:keys [selected title editing
+                body closed_at labels]}
+        _ el]
+     (when selected
+       (dom/scroll-to el))
+     (let [cls (if selected "selected" "")]
+       [:div {:class (str "issue " cls)}
+        [:h3.issue-title
+         {:class (str "issue-title "
+                      (if closed_at "closed" "open")
+                      (if (> (count labels) 0) " has-labels"))}
+         " "
+         title]
+        [:div.labels
+         (if editing
+           (render-edit-labels !item)
+           (map render-label labels))]
+        (when selected
+          [:div.selected
+           [:div.issue-body body]])
+        (if editing
+          #_(-> (dom/$ [:input])
+                (dom/keyup (fn [e]
+                             (dom/stop-prop e)
+                             (dom/prevent e)
+                             false))))]))))
+
+(defn render-item [!item]
+  (bind/render2
+   !item
+   [:li.issue
+    {:classes (fn [{:keys [closed_at selected]}]
+                [(if closed_at "closed" "open")
+                 (when selected "selected")])}
+    [:h3.issue-title
+     {:classes (fn [v] (when (not (empty? (:labels v)))
+                         ["has-labels"]))}
+     :title]
+    [:h4.labels
+     (fn [{:keys [editing labels]}]
+       (if editing
+         (render-edit-labels !item)
+         (when (not (empty? labels))
+           (map render-label labels))))]
+    (fn [{:keys [selected body]}]
+      (when selected
+        [:div.body body]))]
+   (fn [new old el]
+     (when (:selected new)
+       (dom/scroll-to el)))))
+
+
+#+end_src
 

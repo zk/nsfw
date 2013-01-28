@@ -1,7 +1,6 @@
 (ns nsfw.dom
   (:use [nsfw.util :only [log]])
-  (:require [crate.core :as crate]
-            [dommy.template :as template]
+  (:require [dommy.template :as template]
             [goog.dom :as dom]
             [goog.dom.classes :as classes]
             [goog.style :as style]
@@ -263,5 +262,4 @@
 
 (defn scroll-to
   [el]
-  (.scrollIntoView el true)
-  (util/log (dom/getDocumentScroll)))
+  (.scrollIntoView el true))
