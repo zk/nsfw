@@ -136,13 +136,14 @@
                   (concat [(first struct) opts] contents)
                   (concat [(first struct)] contents))))))
 
-(defn render2 [!state struct after-update]
+(defn render2 [!state struct & [after-update]]
   (let [!el (atom (render-struct @!state @!state struct))]
     (change !state (fn [id old new]
                      (let [new-el (render-struct new old struct)]
                        (dom/replace @!el new-el)
                        (reset! !el new-el))
-                     (after-update new old @!el)))
+                     (when after-update
+                       (after-update new old @!el))))
     @!el))
 
 (defn text [el atom f]
