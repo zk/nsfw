@@ -100,3 +100,32 @@ h1, h2, h3, h4, h5, h6 {
   right: 5px;
   z-index: 1;
 }
+
+
+/* Console */
+
+.debug {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  border-bottom: solid #ccc 1px;
+  background-color: white;
+  opacity: 0.95;
+  z-index: 10000;
+
+  .search {
+    display: block;
+    width: 100%;
+    right: 0;
+    margin-bottom: 10px;
+  }
+
+  span.type {
+    margin-right: 10px;
+    border: solid #ccc 1px;
+  }
+}
+
