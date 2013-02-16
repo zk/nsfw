@@ -10,10 +10,31 @@
                  (.-webkitRequestAnimationFrame w)
                  (fn [f] (util/timeout f 17)))))
 
+(def perf (.-performance js/window))
+
+(def perf-now (and perf (or (.-now perf)
+                            (.-webkitNow perf)
+                            (.-msNow perf)
+                            (.-mozNow perf))))
+
+(def now (fn [] (.call perf-now perf)))
+
+(def html (.-documentElement js/document))
+
+(def unitless #{"lineHeight" "zoom" "zIndex" "opacity" "transform"})
+
+(def transform
+  (let [styles (.-style (.createElement js/document "a"))
+        props ["webkitTransform" "MozTransform" "OTransform" "msTransform"]]
+    (or (first (filter #(= "" (aget styles %)) props))
+        "Transform")))
+
+
 (defn frame-repeat [f]
   (frame (fn [] (f) (frame-repeat f))))
 
-(defn cross [transition]
+(defn cross
+  [transition]
   {:-webkit-transition transition
    :-moz-transition transition
    :-o-transition transition
