@@ -34,6 +34,13 @@
                  (map #(html/stylesheet (str "/css/" (name %) ".css")) css)
                  (html/stylesheet (str "/css/" (name script) ".css")))]
               [:body
+               (when js
+                 (map (fn [src]
+                        [:script {:type "text/javascript"
+                                  :src (if (keyword? src)
+                                         (str "/js/" (name src) ".js")
+                                         src)}])
+                      js))
                (when google-maps
                  [:script {:type "text/javascript"
                            :src "http://maps.googleapis.com/maps/api/js?sensor=false"}])
