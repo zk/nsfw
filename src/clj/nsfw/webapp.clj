@@ -19,8 +19,9 @@
                                       ; `var functions = ...`"
   [script & ops]
   (fn [r]
-    (let [{:keys [entry title data css google-maps]}
+    (let [{:keys [entry title data css google-maps js]}
           (apply hash-map ops)
+          data (when data (data))
           css (if (coll? css)
                 css
                 [css])]

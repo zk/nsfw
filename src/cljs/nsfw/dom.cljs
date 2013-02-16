@@ -55,13 +55,19 @@
 (defn root []
   (aget (dom/getElementsByTagNameAndClass "html") 0))
 
-(defn selector [s]
-  (dom/query s))
+(defn selector
+  ([s]
+     (dom/query s))
+  ([base s]
+     (dom/query s base)))
 
-(defn $ [o]
-  (cond
-   (coll? o) (template/node o)
-   :else (selector o)))
+(defn $
+  ([o]
+     (cond
+      (coll? o) (template/node o)
+      :else (selector o)))
+  ([base o]
+     (selector base o)))
 
 (defn val
   ([el]
@@ -212,6 +218,9 @@
      el)
   ([els f]
      (listen els :focus f)))
+
+(defn select [el]
+  (.select el))
 
 (defn match-key [els key f]
   (doseq [el (ensure-coll els)]
