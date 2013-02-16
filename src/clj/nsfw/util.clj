@@ -9,6 +9,25 @@
            [java.text SimpleDateFormat]
            [java.net URLEncoder]))
 
+;; Logging
+
+(defn clean-val [val]
+  (cond
+   (string? val) (str "\"" (str/replace val #"\"" "\\\\\"") "\"")
+   :else val))
+
+(defn format-log-entry [key-vals]
+  (->> (partition 2 key-vals)
+       (map #(str (name (first %)) "=" (clean-val (second %))))
+       (interpose " ")
+       (reduce str)
+       (str (System/currentTimeMillis) " ")))
+
+(defn make-logger [app-id ns]
+  (fn [& key-vals]
+    (println (format-log-entry (concat [:app-id app-id :ns ns] key-vals)))))
+
+
 (def iso-formatter (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssZ"))
 
 (defn iso-8601 [o]
@@ -133,3 +152,15 @@
       (let [buf (byte-array (:content-length request))]
         (.read (:body request) buf 0 (:content-length request))
         (String. buf)))))
+
+(defn distinct-by
+  [key coll]
+  (let [step (fn step [xs seen]
+               (lazy-seq
+                ((fn [[f :as xs] seen]
+                   (when-let [s (seq xs)]
+                     (if (contains? seen (key f))
+                       (recur (rest s) seen)
+                       (cons f (step (rest s) (conj seen (key f)))))))
+                 xs seen)))]
+    (step coll #{})))
