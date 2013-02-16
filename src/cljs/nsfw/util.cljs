@@ -4,11 +4,14 @@
             [clojure.string :as str]))
 
 (defn log [& args]
-  (.log js/console (if args (.-a args) nil)))
+  (.log js/console (if args (to-array args) nil)))
 
 (defn log-pass [res]
   (log res)
   res)
+
+(defn lpr [& args]
+  (.log js/console (to-array (map pr-str args))))
 
 (defn ensure-coll [el]
   (if (coll? el)
