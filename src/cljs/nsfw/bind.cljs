@@ -47,51 +47,27 @@
      (when-not (= old new)
        (f id old new)))))
 
-(defn push-updates [atom path & [opts]]
-  (bind atom
-        (fn [id old new]
-          (ajax (merge
-                 {:path path
-                  :data new
-                  :method "POST"}
-                 opts)))))
-
-(defn server [a path success error & [opts]]
-  (let [last-response (atom @a)]
-    (change
-     a
+(defn server [!a opts & keys]
+  (let [last-projection (atom (select-keys @!a keys))]
+    (bind
+     !a
      (fn [id old new]
-       (when (not= @last-response new)
-         (ajax (merge
-                {:path path
-                 :method "POST"
-                 :data new
-                 :success (fn [data]
-                            (when-let [res (success data)]
-                              (reset! last-response res)
-                              (when (not= res new)
-                                (reset! a res))))
-                 :error (fn [e] (error old new e))}
-                opts)))))))
-
-#_(defn server [a path serialize]
-  (let [last-response (atom (serialize @a))]
-    (change
-     a
-     (fn [id old new]
-       (let [serialized (serialize new)]
-         (when (not= @last-response serialized)
-           (ajax (merge
-                  {:path path
-                   :method "POST"
-                   :data serialized
-                   :success (fn [data]
-                              (when data
-                                (reset! last-response data)
-                                (when (not= res serialized)
-                                  (swap! a #(merge % data)))))
-                   :error (fn [e] (error old new e))}
-                  opts))))))))
+       (when (and (not= (select-keys old keys)
+                        (select-keys new keys))
+                  (not= (select-keys new keys)
+                        @last-projection))
+         (ajax {:path (val-or-call (:path opts) new)
+                :method (or (:method opts)
+                            "POST")
+                :data (select-keys new keys)
+                :success
+                (fn [data]
+                  (let [server-projection (select-keys data keys)
+                        local-projection (select-keys @!a keys)]
+                    (reset! last-projection server-projection)
+                    (when (and data
+                               (not= server-projection local-projection))
+                      (util/log (swap! !a merge server-projection)))))}))))))
 
 (defn update [el atom f]
   (bind atom (fn [id old new] (f new old el)))
@@ -151,3 +127,20 @@
                     (-> el
                         dom/empty
                         (dom/text (f new old el))))))
+
+(defn val-or-call [o & args]
+  (if (fn? o)
+    (apply o args)
+    o))
+
+(defn map-difference [m1 m2]
+  (loop [m (transient {})
+         ks (concat (keys m1) (keys m2))]
+    (if-let [k (first ks)]
+      (let [e1 (find m1 k)
+            e2 (find m2 k)]
+        (cond (and e1 e2 (not= (e1 1) (e2 1))) (recur (assoc! m k (e1 1)) (next ks))
+              (not e1) (recur (assoc! m k (e2 1)) (next ks))
+              (not e2) (recur (assoc! m k (e1 1)) (next ks))
+              :else    (recur m (next ks))))
+      (persistent! m))))
