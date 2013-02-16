@@ -65,7 +65,9 @@
   ([o]
      (cond
       (coll? o) (template/node o)
-      :else (selector o)))
+      (or (keyword? o)
+          (string? o)) (selector o)
+      :else o))
   ([base o]
      (selector base o)))
 
@@ -88,8 +90,12 @@
     (if (and (coll? content)
              (not (keyword? (first content))))
       (doseq [c content]
-        (.appendChild el (wrap-content c)))
-      (.appendChild el (wrap-content content))))
+        (.appendChild el (wrap-content c))
+        (when-let [on-insert (aget content "on-insert")]
+          (on-insert el)))
+      (do (.appendChild el (wrap-content content))
+          (when-let [on-insert (aget content "on-insert")]
+            (on-insert el)))))
   els)
 
 (def apd append)
@@ -133,6 +139,9 @@
   (doseq [el (ensure-coll els)]
     (dom/removeChildren el))
   els)
+
+(defn has-class? [el cls]
+  (classes/has el (name cls)))
 
 (defn add-class [els cls]
   (doseq [el (ensure-coll els)]
@@ -230,13 +239,19 @@
                     (f el (val el)))))))
   els)
 
-(defn val-changed [els f]
-  (doseq [el (ensure-coll els)]
-    (let [f (fn [e]
-              (f el (val el)))]
-      (keyup el f)
-      (change el f)))
-  els)
+(defn val-changed
+  ([els f]
+     (doseq [el (ensure-coll els)]
+       (let [f (fn [e]
+                 (f el (val el)))]  ; el, then val - side effects only
+         (keyup el f)
+         (change el f)))
+     els)
+  ([base sel f]
+     (let [$el ($ base)
+           $target ($ $el sel)]
+       (val-changed $target f)
+       $el)))
 
 (defn on-enter [els f]
   (doseq [el (ensure-coll els)]
@@ -256,6 +271,10 @@
                   (util/clear-timeout @timer))
                 (reset! timer (util/timeout #(f e) 150))))))
   els)
+
+(defn on-insert [els f]
+  (doseq [el (ensure-coll els)]
+    (aset el "on-insert" f)))
 
 (defn viewport-size []
   (let [vp (dom/getViewportSize)]
