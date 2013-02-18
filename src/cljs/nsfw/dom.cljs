@@ -89,10 +89,14 @@
     (if (and (coll? content)
              (not (keyword? (first content))))
       (doseq [c content]
-        (.appendChild el (wrap-content c))
-        (when-let [on-insert (aget content "on-insert")]
-          (on-insert el)))
-      (do (.appendChild el (wrap-content content))
+        (when c
+          (.appendChild el (wrap-content c)))
+        (when content
+          (when-let [on-insert (aget content "on-insert")]
+            (on-insert el))))
+      (do (when content
+            (.appendChild el (wrap-content content)))
+          (when content)
           (when-let [on-insert (aget content "on-insert")]
             (on-insert el)))))
   els)
