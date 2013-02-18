@@ -164,3 +164,11 @@
                        (cons f (step (rest s) (conj seen (key f)))))))
                  xs seen)))]
     (step coll #{})))
+
+(defn parse-int [s & [default]]
+  (if s
+    (try
+      (Integer/parseInt s)
+      (catch Exception e
+        default))
+    default))
