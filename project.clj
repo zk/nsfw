@@ -1,4 +1,4 @@
-(defproject nsfw "0.4.3"
+(defproject nsfw "0.4.4"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [clj-stacktrace "0.2.5"]
