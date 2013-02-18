@@ -115,7 +115,9 @@
   els)
 
 (defn size [el]
-  (style/getSize el))
+  (let [res (style/getSize el)]
+    [(.-width res)
+     (.-height res)]))
 
 (defn attrs
   [els m]
@@ -279,7 +281,7 @@
   (doseq [el (ensure-coll els)]
     (aset el "on-insert" f)))
 
-(defn viewport-size []
+(defn viewport []
   (let [vp (dom/getViewportSize)]
     [(.-width vp)
      (.-height vp)]))
@@ -294,3 +296,11 @@
 (defn scroll-to
   [el]
   (.scrollIntoView el true))
+
+(defn scroll-top [& [el]]
+  (let [el (or el js/document)]
+    (if (or (= js/window el) (= js/document el))
+      (or (aget js/window "pageYOffset")
+          (aget (.-documentElement js/document) "scrollTop")
+          (aget (.-body js/document) "scrollTop"))
+      (aget el "scrollTop"))))
