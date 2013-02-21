@@ -1,4 +1,4 @@
-(defproject nsfw/lein-template "0.4.3"
+(defproject nsfw/lein-template "0.4.4"
   :description "Template for NSFW apps."
   :url "http://github.com/zkim/nsfw"
   :license {:name "Eclipse Public License"
