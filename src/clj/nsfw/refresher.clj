@@ -23,8 +23,9 @@
 (defn refresh-on-change [refresh-fn]
   (wt/watcher ["resources/public" "src/clj"]
               (wt/rate 100)
-              (wt/on-change (fn [& args]
+              (wt/on-change (fn [args]
                               (println (->> args
+                                            (map #(.getPath %))
                                             (interpose ", ")
                                             (apply str))
                                        "changed, refreshing browser")
