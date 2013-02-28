@@ -831,3 +831,14 @@ feels really fucking good
 
 #+end_src
 
+
+* 2013-02-27 Wed 19:45
+
+Goals for tonight:
+
+1. Change refresher to only refresh the first chrome tab, not the
+   top-most.
+2. Work on css3 animation framework
+
+
+
