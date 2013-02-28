@@ -5,6 +5,11 @@
             [cljs.reader :as reader]
             [goog.net.XhrIo]))
 
+(defn val-or-call [o & args]
+  (if (fn? o)
+    (apply o args)
+    o))
+
 (defn ajax [opts]
   (let [{:keys [path method data headers success error]}
         (merge
@@ -38,7 +43,8 @@
    atom
    (gensym)
    (fn [key identity old-value new-value]
-     (f identity old-value new-value))))
+     (f identity old-value new-value)))
+  atom)
 
 (defn change [atom f]
   (bind
@@ -127,11 +133,6 @@
                     (-> el
                         dom/empty
                         (dom/text (f new old el))))))
-
-(defn val-or-call [o & args]
-  (if (fn? o)
-    (apply o args)
-    o))
 
 (defn map-difference [m1 m2]
   (loop [m (transient {})
