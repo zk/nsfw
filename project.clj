@@ -16,10 +16,10 @@
                  [org.clojure/google-closure-library-third-party "0.0-2029"]
                  [watchtower "0.1.1"]
                  [ring-reload-modified "0.1.1"]
-                 [org.clojure/tools.nrepl "0.2.0-RC1"]]
+                 [org.clojure/tools.nrepl "0.2.0-RC1"]
+                 [org.pegdown/pegdown "1.2.1"]]
   :source-paths ["src/clj" "examples/clj"]
   :test-paths ["test/clj"]
-  :hooks [leiningen.cljsbuild]
   :jar-name "nsfw.jar"
   :cljsbuild {:builds
               [{:source-path "src/cljs"

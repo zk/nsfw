@@ -7,7 +7,8 @@
             [cheshire.custom :as json])
   (:import [java.util Date]
            [java.text SimpleDateFormat]
-           [java.net URLEncoder]))
+           [java.net URLEncoder]
+           [org.pegdown PegDownProcessor Extensions]))
 
 ;; Logging
 
@@ -172,3 +173,10 @@
       (catch Exception e
         default))
     default))
+
+(defn markdown
+  "Render HTML from markdown"
+  [s]
+  (let [pgp (PegDownProcessor. Extensions/ALL)]
+    (when s
+      (.markdownToHtml pgp (str/replace s #"!\[\]" "![ ]")))))
