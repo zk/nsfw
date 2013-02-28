@@ -5,10 +5,12 @@
             [nsfw.util :as nu]
             [clojure.string :as str]))
 
-(defmacro routes [& body]
-  `(moustache/app
-    nm/wrap-web-defaults
-    ~@body))
+(defmacro routes [& [opts & rest :as body]]
+  (let [opts (if (map? opts) opts {})
+        body (if (map? opts) rest body)]
+    `(moustache/app
+      (nm/wrap-web-defaults ~opts)
+      ~@body)))
 
 (defn cs
   "Provies a route helper to set up a clojurescript app.
