@@ -34,9 +34,8 @@
 (defn wrap-web-defaults
   "Wraps a good default set of middleware for webapps.  Includes
   session, file handling, and params."
-  [handler & opts]
-  (let [opts (apply hash-map opts)
-        session-store (get opts :session-store (memory-store
+  [handler opts]
+  (let [session-store (get opts :session-store (memory-store
                                                 (get opts :session-atom (atom {}))))
         public-path (get opts :public-path "resources/public")]
     (-> handler
