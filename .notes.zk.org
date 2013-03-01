@@ -840,5 +840,6 @@ Goals for tonight:
    top-most.
 2. Work on css3 animation framework
 
-
+The animation framework should let you easily transition properties on
+elements using css3. Taking a lot of inspiration from emile.js.
 

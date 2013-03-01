@@ -23,12 +23,17 @@
 
 (def unitless #{"lineHeight" "zoom" "zIndex" "opacity" "transform"})
 
-(def transform
+(def transition-prop
   (let [styles (.-style (.createElement js/document "a"))
-        props ["webkitTransform" "MozTransform" "OTransform" "msTransform"]]
+        props ["webkitTransition" "MozTransition" "OTransition" "msTransition"]]
     (or (first (filter #(= "" (aget styles %)) props))
-        "Transform")))
+        "Transition")))
 
+(def trans-end-prop
+  (condp = transition-prop
+    "webkitTransition" "webkitTransitionEnd" ; webkit
+    "OTransition" "oTransitionEnd" ; opera
+    "transitionend")) ; moz & spec
 
 (defn frame-repeat [f]
   (frame (fn [] (f) (frame-repeat f))))
@@ -50,24 +55,39 @@
 
 (defn now [] (.now js/Date))
 
-(def c (atom 0))
-
-(defn trans [el val duration]
-  (let [start-val (-> el dom/bounds :left)
-        start (now)
-        end val
-        calc (fn [t] (+ start-val (* (- end start-val) t)))
-        move (fn [t]
-               (dom/style el {:left (str (calc t) "px")}))]
-    (letfn [(on-frame []
-              (let [n (now)
-                    elapsed (- (now) start)
-                    t (/ elapsed duration)]
-                (when (<= t 1)
-                  (move t)
-                  (util/log (swap! c inc))
-                  (frame on-frame))))]
-      (frame on-frame))))
-
 #_(defn transition [el val]
   (swap! anims #(conj % (trans el val))))
+
+(defn interpolate [src target pos]
+  (+ source
+     (* (- target src)
+        pos)))
+
+(def parse-el (dom/$ [:div]))
+
+(def props (->> '[backgroundColor
+                  width]
+                (map str)))
+
+(defn normalize [el style]
+  )
+
+(defn transition [{:keys [dur ease] :or {dur "1s"}} props]
+  (->> props
+       (map #(->> [(name %)
+                   dur
+                   ease]
+                  (filter identity)
+                  (interpose " ")
+                  (apply str)))
+       (interpose ", ")
+       (apply str)))
+
+(defn act
+  [el style opts]
+  (let [t (->> (keys style)
+               (transition opts))]
+    (aset (aget el "style") transition-prop t)
+    (dom/style el style)
+    (dom/listen el trans-end-prop #(aset (aget el "style") transition-prop ""))
+    el))
