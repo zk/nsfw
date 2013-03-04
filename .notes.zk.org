@@ -843,3 +843,11 @@ Goals for tonight:
 The animation framework should let you easily transition properties on
 elements using css3. Taking a lot of inspiration from emile.js.
 
+* 2013-03-01 Fri 23:10
+
+Responsive design.
+
+Box sizing: http://paulirish.com/2012/box-sizing-border-box-ftw/
+
+
+
