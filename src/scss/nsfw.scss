@@ -1,0 +1,213 @@
+// Mixins
+
+@mixin border-radius($u) {
+  -moz-border-radius: $u;
+  -webkit-border-radius: $u;
+  border-radius: $u;
+}
+
+@mixin transition($props) {
+  -webkit-transition: $props;
+  transition: all $props;
+}
+
+@mixin child-padding($p) {
+  &> * {
+    margin-bottom: $p;
+  }
+
+  &> *:last-child {
+    margin-bottom: 0;
+  }
+}
+
+
+// Meyer Reset
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+body {
+  line-height: 1;
+}
+ol, ul {
+  list-style: none;
+}
+blockquote, q {
+  quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+
+/* 
+   12 COLUMN - RESPONSIVE GRID SYSTEM
+   DEVELOPED BY DENIS LEBLANC
+   URL - http://responsive.gs
+   VERSION - 2.0
+   LICENSED UNDER GPL & MIT
+   */
+
+
+/* 	SET ALL ELEMENTS BOX-SIZING TO BORDER-BOX
+	If you need support for IE7 and lower use polyfill: https://github.com/Schepp/box-sizing-polyfill */
+* { -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box; }
+
+/* MAIN CONTAINER */
+.container { margin: 0 auto; }
+
+
+/* SELF CLEARING FLOATS - CLEARFIX METHOD */
+.row:after, .col:after, .clr:after, .group:after { 
+  content: ""; 
+  display: block; 
+  height: 0; 
+  clear: both; 
+  visibility: hidden; }
+
+
+/* DEFAULT ROW STYLES */
+.row { margin-bottom: 1.5em; } /* set according to preference*/
+
+
+/* DEFAULT COLUMN STYLES */
+.col { 
+  display: block;
+  float:left;
+  width: 100%;
+}
+
+@media ( min-width : 768px ) {
+  .col {
+    margin-left: 2%;
+  }
+}
+
+
+/* RESET MARGINS */
+.col:first-child { margin-left: 0; } /* all browsers except IE6 and lower */
+
+
+/* COLUMN WIDTH ON DISPLAYS +768px */
+@media ( min-width : 768px ) {
+  .span1 { width: 6.5%; }
+  .span2 { width: 15.0%; }
+  .span3 { width: 23.5%; }
+  .span4 { width: 32.0%; }
+  .span5 { width: 40.5%; }
+  .span6 { width: 49.0%; }
+  .span7 { width: 57.5%; }
+  .span8 { width: 66.0%; }
+  .span9 { width: 74.5%; }
+  .span10 { width: 83.0%; }
+  .span11 { width: 91.5%; }
+  .span12 { width: 100%; }
+}
+
+// NSFW
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, sans-serif;
+}
+
+p {
+  font-size: 0.95em;
+  line-height: 1.6em;
+}
+
+pre {
+  background-color: #fafafa;
+  padding: 1em;
+  border: solid #ddd 1px;
+  margin-bottom: 1.5em;
+
+  font-size: 85%;
+  font-family: 'Courier New', monospace;
+
+  @include border-radius(3px);
+  @include transition(100ms);
+
+  overflow-x: auto;
+}
+
+pre:hover {
+  background-color: #e8e8e8;
+}
+
+h1 {
+}
+
+header {
+  @include child-padding(0.5em)
+}
+
+.ani500 {
+  @include transition(500ms)
+}
+
+div.col, div.content {
+  @include child-padding(0.75em)
+}
+
+h1 {
+  font-size: 2em;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 1.75em;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+a {
+  text-decoration: none;
+}
+
+code {
+  font-family: 'Courier New', Courier, monospace;
+  padding-left: 0.25em;
+  padding-right: 0.25em;
+  @include border-radius(3px);
+  background-color: #fafafa;
+}
+
+.row {
+  @include child-padding(1em);
+}
+
