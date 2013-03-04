@@ -36,3 +36,10 @@
 
 (defn page-data [key]
   (reader/read-string (aget js/window (str/replace (name key) #"-" "_"))))
+
+(defn run-once [f]
+  (let [did-run (atom false)]
+    (fn [& args]
+      (when-not @did-run
+        (reset! did-run true)
+        (apply f args)))))
