@@ -207,6 +207,10 @@ code {
   background-color: #fafafa;
 }
 
+img {
+  max-width: 100%;
+}
+
 .row {
   @include child-padding(1em);
 }
