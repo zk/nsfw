@@ -304,3 +304,44 @@
           (aget (.-documentElement js/document) "scrollTop")
           (aget (.-body js/document) "scrollTop"))
       (aget el "scrollTop"))))
+
+(def transition-prop
+  (let [styles (.-style (.createElement js/document "a"))
+        props ["webkitTransition" "MozTransition" "OTransition" "msTransition"]]
+    (or (first (filter #(= "" (aget styles %)) props))
+        "Transition")))
+
+(def trans-end-prop
+  (condp = transition-prop
+    "webkitTransition" "webkitTransitionEnd" ; webkit
+    "OTransition" "oTransitionEnd" ; opera
+    "transitionend"))
+
+(defn trans*
+  [el {:keys [done dur ease]
+       :or   {done #() dur "1s" ease "ease"}
+       :as   opts}]
+  (let [st (dissoc opts :done :dur :ease)
+        t  (str "all " (name dur) " " (name ease))]
+    (when-not (= t (aget (.-style el) transition-prop))
+      (aset (.-style el) transition-prop t))
+    (style el st)
+    (listen el
+            trans-end-prop
+            (util/run-once
+             (fn []
+               #_(aset (aget el "style") transition-prop "")
+               (done))))
+    el))
+
+(defn trans [el & os]
+  (let [os (loop [os os out []]
+             (let [fo (first os)
+                   so (second os)]
+               (if-not so
+                 (conj out fo)
+                 (recur (rest os)
+                        (conj out (assoc fo :done (fn []
+                                                    ((or (:done fo) #()))
+                                                    (trans* el so))))))))]
+    (trans* el (first os))))
