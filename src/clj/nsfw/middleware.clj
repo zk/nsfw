@@ -42,7 +42,7 @@
         wrap-keyword-params
         wrap-nested-params
         wrap-params
-        (wrap-file public-path)
+        (wrap-file public-path {:allow-symlinks? true})
         wrap-file-info
         (wrap-session {:store session-store})
         wrap-stacktrace)))
