@@ -31,6 +31,7 @@
       {:headers {"Content-Type" "text/html"}
        :body (html/html5
               [:head
+               [:meta {:name "viewport" :content "width=device-width" :initial-scale "1"}]
                (when title
                  [:title title])
                (if-not (empty? css)
