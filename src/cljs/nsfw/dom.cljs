@@ -86,19 +86,21 @@
 
 (defn append [els content]
   (doseq [el (ensure-coll els)]
-    (if (and (coll? content)
-             (not (keyword? (first content))))
-      (doseq [c content]
-        (when c
-          (.appendChild el (wrap-content c)))
-        (when content
-          (when-let [on-insert (aget content "on-insert")]
-            (on-insert el))))
-      (do (when content
-            (.appendChild el (wrap-content content)))
-          (when content)
-          (when-let [on-insert (aget content "on-insert")]
-            (on-insert el)))))
+    (if el
+      (if (and (coll? content)
+               (not (keyword? (first content))))
+        (doseq [c content]
+          (when c
+            (.appendChild el (wrap-content c)))
+          (when content
+            (when-let [on-insert (aget content "on-insert")]
+              (on-insert el))))
+        (do (when content
+              (.appendChild el (wrap-content content)))
+            (when content
+              (when-let [on-insert (aget content "on-insert")]
+                (on-insert el)))))
+      (throw "Can't call dom/append on a null element")))
   els)
 
 (def apd append)
