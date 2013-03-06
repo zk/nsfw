@@ -2,12 +2,19 @@
   :description "A Clojure web app using NSFW."
   :min-lein-version "2"
   :dependencies [[org.clojure/clojure "1.4.0"]
-                 [nsfw "0.4.3"]]
+                 [nsfw "0.5.0"]]
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :plugins [[lein-cljsbuild "0.2.10"]]
   :cljsbuild {:builds
-              [{:source-path "src/cljs"
-                :compiler {:output-to "resources/public/js/app.js"
-                           :optimizations :whitespace}
-                :jar true}]})
+              {:dev  {:source-path "src/cljs"
+                      :compiler {:output-to "resources/public/js/app.js"
+                                 :optimizations :whitespace
+                                 :pretty-print true}
+                      :jar true}
+
+               :prod {:source-path "src/cljs"
+                      :compiler {:output-to "resources/public/js/app.js"
+                                 :optimizations :advanced
+                                 :pretty-print false}
+                      :jar true}}})

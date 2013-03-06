@@ -6,11 +6,13 @@
 
 (def $body (dom/$ "body"))
 
-(dom/append
- $body
- [:div
-  [:h1 "Hello {{name}}"]
-  [:p
-   "This file can be found at " [:code "src/cljs/{{sanitized}}/app.cljs"] ". "
-   "Any changes to this file (and any other cljs files) will automatically be "
-   "reloaded in your browser."]])
+(def $page
+  [:div
+   [:h1 "Hello {{name}}."]
+   [:p
+    "This file can be found at " [:code "src/cljs/{{sanitized}}/app.cljs"] ". "
+    "Any changes to this file (and any other cljs files) will automatically be "
+    "reloaded in your browser."]])
+
+(defn entry []
+  (dom/append $body $page))

@@ -850,4 +850,118 @@ Responsive design.
 Box sizing: http://paulirish.com/2012/box-sizing-border-box-ftw/
 
 
+* 2013-03-04 Mon 18:13
 
+With routes, there should be some common setup, init routes which
+watches for changes on the hash and loads new content when the page
+changes.
+
+Challenges: How is global set up handled?
+
+The idea is:
+
+1. There's some common page setup, maybe initialization of query
+   services, polling, websockets connections, whatever. Stuff that's
+   common to the entire lifecycle of the app.
+
+2. There's per-route setup.
+
+
+Q: what's the right level of setup done by the initial page load / vs
+subsequent js 'page' changes. Should be as easy to make single page
+apps as it is to make more traditional 'dynamically enhanced' apps.
+
+What's this mean for routing? Seems like a lot of bookkeeping you have
+to do manually.
+
+I'm worried that the overhead of shipping an entire app in one js page
+might not be feasable, even with dead code removal.
+
+Maybe I should be opinionated here -- There's one backend route that
+ships the entire application, and all other routes are api routes.
+
+I'm pretty comfortable with that for now. Clojurescript app at
+root. What about the loader script?
+
+Since we put js tags in the body, the initial page load structure
+should ship the loading screen, then get wiped out as a first action
+by the javascript.  So, we need to have a nice way of providing the
+loading screen. Let's look at that now. `webapp.cs` should default to
+a nice nsfw loading screen, with the ability to override.
+
+Ok, so now we're shipping a loading screen, but the jump is pretty
+jarring. Fade out / fade in? Also, if you're dynamically loading data
+in the background that's two jumps. Perhaps a way to signal that the
+initial UI is ready to be viewed?
+
+Meh, I'm on the fence on this. It's nice to have the animated
+transition, but it's clear that the transition should only happen on
+initial page load. Also, maybe it should only load if the :loading
+opt is set on `webapp/cs`. If this is the case, then we'll need to
+provide some page load helper. So what goes into page load?
+
++ Getting a handle on data injected into the page
++ Initial js transfer and load.
++ Initial background color for load
+
+Looks like we need to make some state available for the page. This
+feels good though, we're starting at the beginning.
+
+JHC just spent the last hour tracking down an Undefined Identifier
+error, no line number. Ended up being I was passing in something to
+util/timeout without wrapping it in a function first. AARRRGGGGHHH.
+
+Ok so it looks like loading is a non-issue, it dosen't seem like
+there's a reliable way to get some page content to load before the js
+anyway, so any HTML shipped wouldn't show anyway. It's important to
+keep the js as small as possible though, so that's something I'll have
+to make easy. Revised initial stuff below:
+
++ Initial background color for load
++ Getting a handle on data injected into the page
++ Initial js transfer and load.
+
+
+Order of ops
++ Request comes in
++ One route for the app
++ Load the 
+
+
++ App Setup
+  + Clojurescript app
+    + Session storage
+    + entry ns
+    + route handling
+    + css
+    + extra js
+  + handles all traffic (push state)
+    + has the ability to pretty seriously break 404, as all your
+      routes will resolve as a 200 now. Perhaps can handle this with a
+      route whitelist, patterns of valid pages.
+  + API slug, everything there is handled by api routes
+
+
+
+** New clojurescript app syntax
+
+#+begin_src clojure
+
+(def routes
+  (app/clojurescript
+   :session-atom session-atom
+   :entry 'bigboard.app/entry
+   :css   [:bootstrap.min :bootstrap-responsive.min :app]
+   :data  (fn [r]
+            {:issues (take 10 @!gh-issues)
+             :user (when-let [gh-user (-> r :session :gh-user)] gh-user)})
+   :api (app/route
+         ["label-ac"] (label-ac !gh-issues !gh-labels)
+         ["issues" number] {:post (post-issue !gh-issues number)}
+         ["issues"]        (fn [{:keys [params]}]
+                             (let [{:keys [d t] :or {d 0 t 10}} params]
+                               {:body (pr-str (->> @!gh-issues
+                                                   (drop (nu/parse-int d))
+                                                   (take (nu/parse-int t))))})))))
+
+#+end_src

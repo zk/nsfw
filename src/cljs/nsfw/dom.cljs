@@ -343,7 +343,9 @@
                (if-not so
                  (conj out fo)
                  (recur (rest os)
-                        (conj out (assoc fo :done (fn []
-                                                    ((or (:done fo) #()))
-                                                    (trans* el so))))))))]
-    (trans* el (first os))))
+                        (conj out (assoc fo
+                                    :done (fn []
+                                            ((or (:done fo) #()))
+                                            (trans* el so))))))))]
+    (trans* el (first os))
+    el))

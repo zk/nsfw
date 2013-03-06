@@ -9,7 +9,7 @@
   (repl/start-server :port port))
 
 (def root-entry
-  (-> #'entry/routes
+  (-> #'entry/app
       (reload/wrap-reload-modified ["src/clj"])))
 
 (defn -main [& args]

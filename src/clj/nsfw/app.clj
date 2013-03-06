@@ -2,7 +2,8 @@
   (:use [nsfw.util]
         (ring.middleware file file-info resource params nested-params
                          keyword-params multipart-params session)
-        [ring.middleware.session.memory :only (memory-store)])
+        [ring.middleware.session.memory :only (memory-store)]
+        [ring.middleware.session.cookie :only (cookie-store)])
   (:require [net.cgrand.moustache :as moustache]
             [nsfw.html :as html]
             [nsfw.middleware :as nm]
@@ -55,6 +56,18 @@
                (when entry
                  [:script {:type "text/javascript"}
                   (str entry-js "()")])])})))
+
+(defn session-store
+  [type & rest]
+  (condp = type
+    :atom (if-not (empty? rest)
+            (memory-store (first rest))
+            (memory-store))
+
+    ;; encrypted cookie
+    (if-not (empty? rest)
+      (cookie-store (first rest))
+      (cookie-store))))
 
 (defmacro route [& routes]
   `(moustache/app ~@routes))

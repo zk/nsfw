@@ -1,4 +1,4 @@
 web: lein run -m {{name}}.run
-cljs: lein cljsbuild auto
-sass: sass --watch src/sass:resources/public/css
+cljs: lein cljsbuild auto dev
+sass: sass --watch src/scss:resources/public/css
 refresher: lein run -m nsfw.refresher

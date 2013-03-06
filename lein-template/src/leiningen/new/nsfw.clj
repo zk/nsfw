@@ -16,6 +16,6 @@
              ["src/clj/{{sanitized}}/run.clj" (render "run.clj" data)]
              ["src/clj/{{sanitized}}/entry.clj" (render "entry.clj" data)]
              ["src/cljs/{{sanitized}}/app.cljs" (render "app.cljs" data)]
-             ["src/sass/app.scss" (render "app.scss" data)]
-             ["resources/public/css/bootstrap-responsive.min.css" (render "bootstrap-responsive.min.css" data)]
-             ["resources/public/css/bootstrap.min.css" (render "bootstrap.min.css" data)])))
+             ["src/scss/app.scss" (render "app.scss" data)]
+             ["src/scss/nsfw.scss" (render "nsfw.scss" data)]
+             ["README.md" (render "README.md" data)])))

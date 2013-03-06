@@ -117,3 +117,21 @@
                                                                (apply str))]
                                                 (render-result data)]))))))
     $el))
+
+(defn on-cmd-space [el f]
+  (dom/keydown
+   js/document
+   (fn [{:keys [key-code meta-key ctrl-key] :as e}]
+     (when (and (= 32 key-code)
+                meta-key)
+       (f e)))))
+
+(defn panel []
+  (let [el (dom/$ [:div.console-panel "COMMAND PANEL"])
+        toggle (util/toggle
+                #(dom/style el {:display "block"})
+                #(dom/style el {:display "none"}))]
+    (on-cmd-space
+     el
+     toggle)
+    el))
