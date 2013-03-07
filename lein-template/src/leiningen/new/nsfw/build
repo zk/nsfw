@@ -4,9 +4,9 @@
 if [ ! -d "$PWD/.gem" ]; then
     mkdir $PWD/.gem
 fi
-gem install sass --no-rdoc --no-ri --install-dir "$PWD/.gem"
+gem install sass --pre --no-rdoc --no-ri --install-dir "$PWD/.gem"
 export GEM_PATH=$GEM_PATH:$PWD/.gem
-$PWD/.gem/bin/sass --update src/scss:resources/public/css --style compressed
+$PWD/.gem/bin/sass --update src/scss:resources/public/css --style compressed --sourcemap
 
 # cljs
 lein cljsbuild once prod
