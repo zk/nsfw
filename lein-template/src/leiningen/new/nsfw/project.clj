@@ -5,15 +5,15 @@
                  [nsfw "0.5.0"]]
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
-  :plugins [[lein-cljsbuild "0.2.10"]]
+  :plugins [[lein-cljsbuild "0.3.0"]]
   :cljsbuild {:builds
-              {:dev  {:source-path "src/cljs"
+              {:dev  {:source-paths ["src/cljs"]
                       :compiler {:output-to "resources/public/js/app.js"
                                  :optimizations :whitespace
                                  :pretty-print true}
                       :jar true}
 
-               :prod {:source-path "src/cljs"
+               :prod {:source-paths ["src/cljs"]
                       :compiler {:output-to "resources/public/js/app.js"
                                  :optimizations :advanced
                                  :pretty-print false}

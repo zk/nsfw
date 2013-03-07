@@ -23,7 +23,7 @@
   :jar-name "nsfw.jar"
   :hooks [leiningen.cljsbuild]
   :cljsbuild {:builds
-              [{:source-path "src/cljs"
+              [{:source-paths ["src/cljs"]
                 :compiler {:output-to "resources/test.js"
                            :optimizations :whitespace}
                 :jar true}]})
