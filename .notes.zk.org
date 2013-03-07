@@ -921,12 +921,10 @@ to make easy. Revised initial stuff below:
 + Getting a handle on data injected into the page
 + Initial js transfer and load.
 
-
 Order of ops
 + Request comes in
 + One route for the app
 + Load the 
-
 
 + App Setup
   + Clojurescript app
