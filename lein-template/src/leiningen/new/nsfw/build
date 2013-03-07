@@ -6,7 +6,7 @@ if [ ! -d "$PWD/.gem" ]; then
 fi
 gem install sass --no-rdoc --no-ri --install-dir "$PWD/.gem"
 export GEM_PATH=$GEM_PATH:$PWD/.gem
-$PWD/.gem/bin/sass --update src/scss:resources/public/css
+$PWD/.gem/bin/sass --update src/scss:resources/public/css --style compressed
 
 # cljs
 lein cljsbuild once prod
