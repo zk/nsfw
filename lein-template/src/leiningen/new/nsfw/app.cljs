@@ -14,5 +14,5 @@
     "Any changes to this file (and any other cljs files) will automatically be "
     "reloaded in your browser."]])
 
-(defn entry []
+(defn ^:export entry []
   (dom/append $body $page))
