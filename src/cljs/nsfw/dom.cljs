@@ -179,8 +179,12 @@
   els)
 
 (defn handler [evt]
-  (fn [els f]
-    (listen els (name evt) f)))
+  (fn
+    ([els f]
+       (listen els (name evt) f))
+    ([els sel f]
+       (listen (dom/$ els sel) (name evt) f)
+       els)))
 
 (def click (handler :click))
 (def dblclick (handler :dblclick))
@@ -268,6 +272,23 @@
                     (stop-prop e)
                     (f e el)))))
   els)
+
+(defn keys-down [root & args]
+  (let [sel (when (-> args count odd?)
+              (first args))
+        args (if (-> args count odd?)
+               (rest args)
+               args)
+        pairs (partition 2 args)
+        els (if sel ($ root sel) root)]
+    (when (> (count els) 0)
+      (doseq [[target-key f] pairs]
+        (keydown
+         els
+         (fn [{:keys [key-code] :as e}]
+           (when (= key-code target-key)
+             (f e els))))))
+    root))
 
 (defn scroll-end [els f]
   (doseq [el (ensure-coll els)]
