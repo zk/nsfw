@@ -65,10 +65,10 @@
      (cond
       (coll? o) (template/node o)
       (or (keyword? o)
-          (string? o)) (selector o)
+          (string? o)) (selector (name o))
       :else o))
   ([base o]
-     (selector base o)))
+     (selector base (name o))))
 
 (defn val
   ([el]
