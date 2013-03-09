@@ -70,11 +70,16 @@
   ([base o]
      (selector base (name o))))
 
+(defn unwrap [el]
+  (if (coll? el)
+    (first el)
+    el))
+
 (defn val
   ([el]
-     (.-value (if (coll? el) (first el) el)))
+     (.-value (unwrap el)))
   ([el new-value]
-     (set! (.-value el) new-value)))
+     (set! (.-value (unwrap el)) new-value)))
 
 (defn wrap-content
   [content]
