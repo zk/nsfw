@@ -72,7 +72,7 @@
 
 (defn val
   ([el]
-     (.-value el))
+     (.-value (if (coll? el) (first el) el)))
   ([el new-value]
      (set! (.-value el) new-value)))
 
