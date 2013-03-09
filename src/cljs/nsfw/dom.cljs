@@ -108,6 +108,25 @@
       (throw "Can't call dom/append on a null element")))
   els)
 
+(defn prepend [els content]
+  (doseq [el (ensure-coll els)]
+    (if el
+      (if (and (coll? content)
+               (not (keyword? (first content))))
+        (doseq [c content]
+          (when c
+            (dom/insertChildAt el (wrap-content c) 0))
+          (when content
+            (when-let [on-insert (aget content "on-insert")]
+              (on-insert el))))
+        (do (when content
+              (dom/insertChildAt el (wrap-content content) 0))
+            (when content
+              (when-let [on-insert (aget content "on-insert")]
+                (on-insert el)))))
+      (throw "Can't call dom/append on a null element")))
+  els)
+
 (def apd append)
 
 (defn append-to [child parents]
@@ -292,7 +311,7 @@
          els
          (fn [{:keys [key-code] :as e}]
            (when (= key-code target-key)
-             (f e els))))))
+             (f e root))))))
     root))
 
 (defn scroll-end [els f]
