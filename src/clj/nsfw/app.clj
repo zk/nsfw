@@ -10,6 +10,11 @@
             [nsfw.util :as nu]
             [clojure.string :as str]))
 
+(defn clj->js-name [s]
+  (-> s
+      str
+      (str/replace #"-" "_")))
+
 (defn cs-route [opts]
   (fn [r]
     (let [{:keys [entry title data css google-maps js]} opts
@@ -21,7 +26,8 @@
           entry-ns (first (str/split (str entry) #"/"))
           entry-js (->> (str/split (str entry) #"/")
                         (interpose ".")
-                        (apply str))]
+                        (apply str)
+                        clj->js-name)]
       {:headers {"Content-Type" "text/html"}
        :body (html/html5
               [:head
