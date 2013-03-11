@@ -53,7 +53,31 @@
      (when-not (= old new)
        (f id old new)))))
 
+(defn server-push-when [!a opts should-push?]
+  (bind
+   !a
+   (fn [id old new]
+     (when (should-push? old new)
+       (ajax (merge {:path "/"
+                     :method "PATCH"
+                     :success #()
+                     :error #()
+                     :data (pr-str new)}
+                    opts))))))
+
+(defn server-push [!a opts]
+  (server-push-when !a opts (constantly true)))
+
+(defn server-keys [!a opts & keys]
+  (server-push-when
+   !a opts
+   (fn [old new]
+     (not= (select-keys old keys)
+           (select-keys new keys)))))
+
 (defn server [!a opts & keys]
+  ;; Track state of last server response to prevent shipping the same
+  ;; thing twice
   (let [last-projection (atom (select-keys @!a keys))]
     (bind
      !a
