@@ -963,3 +963,100 @@ Order of ops
                                                    (take (nu/parse-int t))))})))))
 
 #+end_src
+
+
+* <2013-03-08 Fri 16:49>
+
+Pain points:
+
++ Form validation
++ Loading state
+  + global (whole page loader) / local (specific element)
+
+
+Colors pulled from http://pinterest.com/pin/135671007496518737/
+
+* <2013-03-09 Sat 13:40>
+
+Working on the data interface. Work with the grain of http.
+
+GET - Query
+POST - New 
+PATCH - Update entity
+PUT - Full update
+
+Don't really use put, patch instead
+
+Two basic common operations, query and post info
+
+Query needs to be send along with the body of the request
+
+edn in a query parameter?
+
+
+* <2013-03-09 Sat 18:55>
+
+Working on the server stuff still, trying to get super clean on it,
+basically I need to define what's the important stuff here.
+
+Local changes should be persisted to the server, only caring about
+response code (success or failure). At it's simplest version there's
+no update from the server.
+
+sever-push -- takes the atom representing state, options (method,
+path, etc), and a function which determines whether or not to send to
+the server.
+
+get vs post vs put vs patch
+
+get - single / collection
+post - single / collection
+put - single / collection
+patch - single / collection
+
+Also need a predicate to tell when to transmit data? Are atoms the
+right thing for this?
+
++ piece of data
++ watch for changes
++ know when to send to server
+
+Where is the code for sending the new thing to the server? It seems to
+be apart from the presentation, but that's where all the error
+handling logic needs to go in the case where the user has to be
+notified of a failure.
+
+So we've got a collection of items that's being watched. How bout a
+couple of places being a possibility?
+
+1. Keep all logic local to the preso / event handling code, assume the
+   thing is on the server when it makes it into the collection.
+2. Add logic to the collection to which the thing gets added. Assume
+   success and remove if that's not the case (it seems like you need
+   to know why it was removed).
+
+
+Overall, the opinion is keep validations on the client (still need to
+validate on server for data integrity / rules), keep a handle to the
+new thing until the server response comes back 200. So it's #2, and
+this is to make the user experience better, and I'm ok with the
+assumption that failures on the server will be the edge case assuming
+the data passes local validation.
+
+There are three cases when you consider the single / coll perspective:
+
+1. Add single record to collection, single record is rendered,
+   collection saves to server, everything is ok. Like
+   this because it separates the preso / data logic.
+2. Add single record, single rendered, collection saves to server,
+   failure, single removed from collection, single rendering removed
+   from DOM.
+
+One potential downside is that you lose the diff at the source, so it
+may be expensive to calculate the diff. May have enough of a handle to
+make this ok.
+
+It seems like the diff structure needs to be a first class thing, so
+you can reverse changes you assume to work when you find out they
+didn't. Very similar to an undo stack.
+
