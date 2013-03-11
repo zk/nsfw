@@ -21,6 +21,15 @@
   }
 }
 
+@mixin transition($t) {
+  -webkit-transition: $t;
+  -moz-transition: $t;
+  -ms-transition: $t;
+  -o-transition: $t;
+  transition: $t;
+}
+
+
 
 // Meyer Reset
 
@@ -135,6 +144,9 @@ table {
   .span12 { width: 100%; }
 }
 
+// clearfix from http://nicolasgallagher.com/micro-clearfix-hack/
+
+
 // NSFW
 
 body {
@@ -211,7 +223,37 @@ img {
   max-width: 100%;
 }
 
+ul, ol { @include child-padding(0.5em) }
+
 .row {
   @include child-padding(1em);
 }
 
+.content,
+.ct {
+  @include child-padding(0.5em);
+}
+
+.right {
+  float: right;
+}
+
+.left {
+  float: left;
+}
+
+input[type="text"],
+textarea {
+  font-size: 1em;
+  padding: 0.25em;
+  width: 100%;
+  border: solid #ccc 1px;
+
+  @include transition(outline 150ms ease);
+}
+
+.clear {
+  clear: both;
+  margin: 0 !important;
+  padding: 0;
+}
