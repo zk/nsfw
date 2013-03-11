@@ -2,8 +2,8 @@
   (:use [nsfw.github] :reload)
   (:use [clojure.test])
   (:require [nsfw.server :as server]
-            [nsfw.webapp :as webapp]
-            [nsfw.html :as html]))
+            [nsfw.html :as html]
+            [nsfw.app :as app]))
 
 (deftest test-auth-redirect-url
   (is (= "https://github.com/login/oauth/authorize?client_id=c%2Fi&redirect_uri=r%2Fi&scope=f%2Fb%2Cbstate=s%2Fe"
@@ -104,13 +104,10 @@
                        [:div.email email]])])]]])})))
 
 (def entry-point
-  (webapp/routes
+  (app/route
    [""] (page :step1)
    ["exchange"] (page :step2)))
 
 (server/start :name server-name
               :port server-port
               :entry entry-point)
-
-
-
