@@ -381,16 +381,17 @@
                (done))))
     el))
 
-(defn trans [el & os]
-  (let [os (loop [os os out []]
-             (let [fo (first os)
-                   so (second os)]
-               (if-not so
-                 (conj out fo)
-                 (recur (rest os)
-                        (conj out (assoc fo
-                                    :done (fn []
-                                            ((or (:done fo) #()))
-                                            (trans* el so))))))))]
-    (trans* el (first os))
-    el))
+(defn trans [els & os]
+  (doseq [el (ensure-coll els)]
+    (let [os (loop [os os out []]
+               (let [fo (first os)
+                     so (second os)]
+                 (if-not so
+                   (conj out fo)
+                   (recur (rest os)
+                          (conj out (assoc fo
+                                      :done (fn []
+                                              ((or (:done fo) #()))
+                                              (trans* el so))))))))]
+      (trans* el (first os))
+      el)))
