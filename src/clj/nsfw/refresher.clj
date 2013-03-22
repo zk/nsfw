@@ -45,7 +45,7 @@
   nil)
 
 (defn -main []
-  (let [browser (or (:browser (config-contents))
+  (let [browser (or (config-contents)
                     "chrome")]
     (condp = browser
       "safari" (refresh-on-change refresh-safari)
