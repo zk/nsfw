@@ -21,7 +21,7 @@
 
 (defn ge->map
   "Turns a google closure event into a map.
-   See http://goo.gl/87L84 for more info."
+   See http://goo.gl/Jxgbo for more info."
   [e]
   {:type (.-type e)
    :timestamp (.-timestamp e)
