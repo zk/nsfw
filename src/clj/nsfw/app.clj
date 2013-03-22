@@ -78,20 +78,17 @@
 (defmacro route [& routes]
   `(moustache/app ~@routes))
 
-(defn clojurescript [& opts]
-  (let [{:keys [session-store
-                session-atom
-                public-path
-                api]}
-        (apply hash-map opts)
-        store (or session-store (memory-store session-atom))
-        public-path (or public-path "resources/public")]
-    (moustache/app
-     (wrap-session {:store store})
-     wrap-file-info
-     (wrap-file public-path {:allow-symlinks? true})
-     wrap-params
-     wrap-nested-params
-     wrap-keyword-params
-     ["api" &] api
-     [&] (cs-route opts))))
+(defmacro clojurescript [& opts]
+  (let [{:keys [routes] :as opts} (apply hash-map opts)]
+    `(let [opts# ~opts
+           store# (or (:session-store opts#) (memory-store (:session-atom opts#)))
+           public-path# (or (:public-path opts#) "resources/public")]
+       (moustache/app
+        (wrap-session {:store store#})
+        wrap-file-info
+        (wrap-file public-path# {:allow-symlinks? true})
+        wrap-params
+        wrap-nested-params
+        wrap-keyword-params
+        ~@routes
+        [""] (cs-route opts#)))))
