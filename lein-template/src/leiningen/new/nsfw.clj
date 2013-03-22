@@ -11,6 +11,7 @@
     (->files data
              ["Procfile" (render "Procfile" data)]
              ["bin/build" (render "build" data)]
+             ["bin/dev" (render "dev" data)]
              ["project.clj" (render "project.clj" data)]
              [".gitignore" (render ".gitignore" data)]
              ["src/clj/{{sanitized}}/run.clj" (render "run.clj" data)]

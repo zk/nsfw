@@ -156,7 +156,7 @@ We've got some basic functionality down for the clojuredocs example. Is it reada
 It's not declarative, but what are we declaring? Well, what are the parts?
 
 + HTML / CSS -- provide the visuals, although with transitions and
-  animations, css bleeds over to the action. 
+  animations, css bleeds over to the action.
 
 Should we make the firing of events a bit easier? This would help us
 decouple the input / text from what to do with it. Lets look at a text
@@ -610,7 +610,7 @@ Phases for working on NSFW
   + Add / remove / modify files in lein-template folder
   + Test by =lein install=, =lein new nsfw <proj name>=
 + clj code
-  + CRUD 
+  + CRUD
   + testing
   + nrepl
 + cljs code
@@ -924,7 +924,7 @@ to make easy. Revised initial stuff below:
 Order of ops
 + Request comes in
 + One route for the app
-+ Load the 
++ Load the
 
 + App Setup
   + Clojurescript app
@@ -981,7 +981,7 @@ Colors pulled from http://pinterest.com/pin/135671007496518737/
 Working on the data interface. Work with the grain of http.
 
 GET - Query
-POST - New 
+POST - New
 PATCH - Update entity
 PUT - Full update
 
@@ -1060,3 +1060,177 @@ It seems like the diff structure needs to be a first class thing, so
 you can reverse changes you assume to work when you find out they
 didn't. Very similar to an undo stack.
 
+
+* <2013-03-11 Mon 23:37>
+
+I really enjoyed reading
+http://www.chris-granger.com/2013/01/24/the-ide-as-data/ and it got me
+thinking of how coupled everything is in NSFW right now. I've got
+functions that conflate everything, but what is everything?
+
++ event handlers
++ elements
++ application data
++ external communication
+
+Let's take permrec as an example.
+
+I've got an input (element), and when the value of this input changes
+I want to fetch records matching the input's text and display them in
+an area under the input.
+
++ event handlers
+  + input keydown
++ elements
+  + input el
+  + results area
++ application data
+  + input value
+  + matching records
++ external comm
+  + hit server for records (async)
+
+
+data can be a value, function or atom
+
+value -- rendered normally
+function -- called with some context
+atom -- bind for changes
+
+Values aren't interesting, just embed them into the dom?
+
+Part of the problem with using changes to the data atom to push
+changes to the server is that multiple locatons can be bound to update
+data, both locally and on the server.
+
+Whos responsbility is it to update the server? How does that thing
+communicate success / failure? Events? Seems reasonable. Things need
+to be either values or functions or atoms.
+
+Binding of values happens at call time through the use of
+functions. Let's make time a thing.
+
+Ok, this feels pretty good. Composable behavoir.
+
+Types of changes
++ t (pure)
++ updates to $el
+
+Naming selectors?
+
+1. Set up
+2. Respond to events
+
+Composibility / introspection
+
+Composibility
++ collection
++ nesting
+
+Introspection
++ Single point of change / state
+
+
+* <2013-03-15 Fri 16:55>
+
+What's the basic concept here? Functions modifying maps I think.
+
+Maps representing some state about the widget, things being run when
+state gets modified? Can we put a general rule around functions being
+executed?
+
+Having an atom in the map feels weird, but that can just be server
+state / long range communication stuff. Local changes to the map don't
+have event callbacks?
+
+
+* <2013-03-17 Sun 16:24>
+
+Ok, I want to know what the structure and behavior is for the element
+(preso is not a concern here.)
+
+Kind of stuck here, how to handle the long-range comm problem?
+
+ARRRRRRGGGGGGHHHHHHHHH
+
+init - puts extra data on map
+
+Ok, behaviors work off of state
+
+Why not just use dom props? Well, we need a system that can do both.
+
+Use selectors as names
+
+What it _is_ and what it _does_
+
+I like the idea of the whole thing being available
+
+render behavior
+
+
+Ok, how do we apply the good things about functional programming
+(immutability, composition, purity) with dom programming? I want to
+say that state is managed by the framework, but I don't think that's
+right.
+
+Declaration is good.
+
+Some way to hook back to the larger state
+
+Start at the top
+
+Value transitions
+
+add remove update
+
+d3?
+
+
+Simple -> Complex
+
++ HTML rendered as DOM
++ HTML w/ events
++ HTML w/ data callbacks
+
+Let's add a functional interface on top
+
+Ok, let's get really crisp on what this is and what's important:
+
+Declarative -- what not how
+
+
+dom, events, data
+
+Specifying css selectors
+
++ "#foo.bar baz"
++ :#foo.bar
++ [:#foo "bar.baz" :.bap"]
+
+So you want to deal with the element itself, plus the data and work
+through events on the data.
+
+Need a richer change api, additions, removals changes (by position?)
+
++ Maps: keys changed, from what to what
+
+{:key [from-val to-val]}
+{:key {:from val :to val}}
+
+Tough to do nested in this way, need to figure out the questions that
+would be asked.
+
+
+one el, one atom
+
+can they be decoupled by async?
+
+Ok, feel pretty good. Next.
+
+
+* <2013-03-21 Thu 15:23>
+
+Think we're gonna need some sort of introspection on the events stuff,
+running into a thing where the ordering of event handlers across
+multiple behavior functions is causing a bug. Need a way to visualize
+that.

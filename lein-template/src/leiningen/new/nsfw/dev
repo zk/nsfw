@@ -2,4 +2,4 @@
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-cd $SCRIPT_DIR/.. && REPL_PORT=7888 foreman start
+cd  $SCRIPT_DIR/.. && REPL_PORT=7888 foreman start
