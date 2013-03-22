@@ -53,3 +53,23 @@
       (let [res (if-not @!a (apply f0 args) (apply f1 args))]
         (swap! !a not)
         res))))
+
+(defn ms [date]
+  (.getTime date))
+
+(defn now-ms []
+  (ms (js/Date.)))
+
+
+(defn timeago [date]
+  (let [ms (ms date)
+        s (/ ms 1000)
+        m (/ s 60)
+        h (/ m 60)
+        d (/ h 24)
+        y (/ d 365)]))
+
+(defn ref? [o]
+  (instance? cljs.core/Atom o))
+
+#_(log timeago (js/Date. (- (now-ms) 100000)))
