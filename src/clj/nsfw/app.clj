@@ -78,6 +78,16 @@
 (defmacro route [& routes]
   `(moustache/app ~@routes))
 
+(defmacro route-default [store & routes]
+  `(moustache/app
+    (wrap-session {:store ~store})
+    wrap-file-info
+    (wrap-file "resources/public" {:allow-symlinks? true})
+    wrap-params
+    wrap-nested-params
+    wrap-keyword-params
+    ~@routes))
+
 (defmacro clojurescript [& opts]
   (let [{:keys [routes] :as opts} (apply hash-map opts)]
     `(let [opts# ~opts
