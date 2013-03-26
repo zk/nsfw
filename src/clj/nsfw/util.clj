@@ -117,14 +117,13 @@
         (throw (new RuntimeException e))))))
 
 (defn grav-url-for [email & [_ size]]
-  (when email
-    (let [email (->> email
-                     (str/trim)
-                     (str/lower-case))
-          url (str "http://gravatar.com/avatar/" (md5 email))]
-      (if size
-        (str url "?s=" size)
-        url))))
+  (let [email (->> (or email "")
+                   (str/trim)
+                   (str/lower-case))
+        url (str "https://gravatar.com/avatar/" (md5 email) "?d=identicon")]
+    (if size
+      (str url "&s=" size)
+      url)))
 
 (defn html-response [& body]
   (-> (html body)
