@@ -27,3 +27,9 @@
   "Retrieve and parse string env var."
   [sym & [default]]
   (env sym default))
+
+(defn bool
+  [sym & [default]]
+  (if-let [env-var (env sym)]
+    (Boolean/parseBoolean env-var)
+    default))
