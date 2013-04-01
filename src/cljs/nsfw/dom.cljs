@@ -49,6 +49,11 @@
     el
     [el]))
 
+(defn ensure-el [coll]
+  (if (coll? coll)
+    (first coll)
+    coll))
+
 ;; Dom
 
 (defn root []
@@ -68,7 +73,7 @@
           (string? o)) (selector (name o))
       :else o))
   ([base o]
-     (selector base (name o))))
+     (selector (ensure-el base) (name o))))
 
 (defn unwrap [el]
   (if (coll? el)
@@ -149,7 +154,10 @@
   [els m]
   (doseq [el (ensure-coll els)]
     (doseq [key (keys m)]
-      (.setAttribute el (name key) (get m key))))
+      (let [v (get m key)]
+        (if (nil? v)
+          (.removeAttribute el (name key))
+          (.setAttribute el (name key) (get m key))))))
   els)
 
 (defn text [els text]
@@ -395,3 +403,14 @@
                                               (trans* el so))))))))]
       (trans* el (first os))
       el)))
+
+(defn brect [$el]
+  (let [br (-> $el
+               ensure-el
+               (.getBoundingClientRect))]
+    {:bottom (.-bottom br)
+     :height (.-height br)
+     :left (.-left br)
+     :right (.-right br)
+     :top (.-top br)
+     :width (.-width br)}))
