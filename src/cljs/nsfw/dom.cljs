@@ -160,6 +160,9 @@
           (.setAttribute el (name key) (get m key))))))
   els)
 
+(defn attr [el attr]
+  (.getAttribute el (name attr)))
+
 (defn text [els text]
   (doseq [el (ensure-coll els)]
     (dom/setTextContent el (str text)))
@@ -191,6 +194,10 @@
   (doseq [el (ensure-coll els)]
     (classes/remove el (name cls)))
   els)
+
+(defn tog-class [els cls]
+  (doseq [el (ensure-coll els)]
+    (classes/toggle el (name cls))))
 
 (def body ($ "body"))
 
