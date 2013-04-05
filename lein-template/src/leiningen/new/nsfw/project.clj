@@ -2,7 +2,7 @@
   :description "A Clojure web app using NSFW."
   :min-lein-version "2"
   :dependencies [[org.clojure/clojure "1.4.0"]
-                 [nsfw "0.5.6"]]
+                 [nsfw "0.5.7"]]
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :plugins [[lein-cljsbuild "0.3.0"]]

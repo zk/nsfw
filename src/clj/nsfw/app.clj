@@ -78,9 +78,9 @@
 (defmacro route [& routes]
   `(moustache/app ~@routes))
 
-(defmacro route-default [store & routes]
+(defmacro route-default [opts & routes]
   `(moustache/app
-    (wrap-session {:store ~store})
+    (wrap-session ~opts)
     wrap-file-info
     (wrap-file "resources/public" {:allow-symlinks? true})
     wrap-params
