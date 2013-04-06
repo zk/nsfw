@@ -47,10 +47,3 @@
 (defn sha1 [string]
   "convert utf8 string to sha1 hex string"
   (bytes->hex (sha1-bytes string)))
-
-
-(defn hash [algorithm string]
-  (cond
-    (= :md5  algorithm) (md5-hex  string)
-    (= :sha1 algorithm) (sha1-hex string)
-    ))
