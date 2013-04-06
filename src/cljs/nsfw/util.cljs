@@ -1,7 +1,8 @@
 (ns nsfw.util
   (:require #_[cljs-uuid-utils :as uu]
             [cljs.reader :as reader]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [nsfw.crypt :as crypt]))
 
 (defn log [& args]
   (.log js/console (if args (to-array args) nil)))
@@ -73,3 +74,14 @@
   (instance? cljs.core/Atom o))
 
 #_(log timeago (js/Date. (- (now-ms) 100000)))
+
+(def md5 crypt/md5)
+
+(defn grav-url-for [email & [_ size]]
+  (let [email (->> (or email "")
+                   (str/trim)
+                   (str/lower-case))
+        url (str "https://gravatar.com/avatar/" (md5 email) "?d=identicon")]
+    (if size
+      (str url "&s=" size)
+      url)))
