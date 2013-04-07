@@ -1,4 +1,4 @@
-(defproject nsfw "0.5.8"
+(defproject nsfw "0.5.9"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [clj-stacktrace "0.2.5"]
@@ -12,8 +12,8 @@
                  [joda-time/joda-time "2.1"]
                  [org.clojars.franks42/cljs-uuid-utils "0.1.3"]
                  [oauth-clj "0.1.1"]
-                 [org.clojure/google-closure-library "0.0-2029"]
-                 [org.clojure/google-closure-library-third-party "0.0-2029"]
+                 [org.clojure/google-closure-library "0.0-2029-2"]
+                 [org.clojure/google-closure-library-third-party "0.0-2029-2"]
                  [watchtower "0.1.1"]
                  [ring-reload-modified "0.1.1"]
                  [org.clojure/tools.nrepl "0.2.0-RC1"]
