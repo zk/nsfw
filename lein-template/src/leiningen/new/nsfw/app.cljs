@@ -8,8 +8,9 @@
 (def $page
   [:div
    [:h1
-    [:i.icon-gift]
-    "Hello {{name}}"]
+    [:i.icon-bolt]
+    "Hello "
+    (clojure.string/capitalize "{{name}}")]
    [:p
     "This file can be found at " [:code "src/cljs/{{sanitized}}/app.cljs"] ". "
     "Any changes to this file (and any other cljs files) will automatically be "
