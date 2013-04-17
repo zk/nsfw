@@ -7,7 +7,7 @@
   (app/clojurescript
    :entry '{{name}}.app/entry
    :session-store session
-   :css [:nsfw :app]
+   :css [:app]
    :data (fn [r]
            ;; Key / val pairs are embedded into the page as js vars
            {:unique-value (str (gensym))})

@@ -11,16 +11,6 @@
   transition: all $props;
 }
 
-@mixin child-padding($p) {
-  &> * {
-    margin-bottom: $p;
-  }
-
-  &> *:last-child {
-    margin-bottom: 0;
-  }
-}
-
 @mixin transition($t) {
   -webkit-transition: $t;
   -moz-transition: $t;
@@ -42,8 +32,8 @@ b, u, i, center,
 dl, dt, dd, ol, ul, li,
 fieldset, form, label, legend,
 table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed, 
-figure, figcaption, footer, header, hgroup, 
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
 menu, nav, output, ruby, section, summary,
 time, mark, audio, video {
   margin: 0;
@@ -54,7 +44,7 @@ time, mark, audio, video {
   vertical-align: baseline;
 }
 /* HTML5 display-role reset for older browsers */
-article, aside, details, figcaption, figure, 
+article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
   display: block;
 }
@@ -78,7 +68,7 @@ table {
 }
 
 
-/* 
+/*
    12 COLUMN - RESPONSIVE GRID SYSTEM
    DEVELOPED BY DENIS LEBLANC
    URL - http://responsive.gs
@@ -98,11 +88,11 @@ table {
 
 
 /* SELF CLEARING FLOATS - CLEARFIX METHOD */
-.row:after, .col:after, .clr:after, .group:after { 
-  content: ""; 
-  display: block; 
-  height: 0; 
-  clear: both; 
+.row:after, .col:after, .clr:after, .group:after {
+  content: "";
+  display: block;
+  height: 0;
+  clear: both;
   visibility: hidden; }
 
 
@@ -111,13 +101,13 @@ table {
 
 
 /* DEFAULT COLUMN STYLES */
-.col { 
+.col {
   display: block;
   float:left;
   width: 100%;
 }
 
-@media ( min-width : 768px ) {
+@media ( min-width : 900px ) {
   .col {
     margin-left: 2%;
   }
@@ -129,7 +119,7 @@ table {
 
 
 /* COLUMN WIDTH ON DISPLAYS +768px */
-@media ( min-width : 768px ) {
+@media ( min-width : 900px ) {
   .span1 { width: 6.5%; }
   .span2 { width: 15.0%; }
   .span3 { width: 23.5%; }
@@ -154,8 +144,8 @@ body {
 }
 
 p {
-  font-size: 0.95em;
-  line-height: 1.6em;
+  line-height: 1.3em;
+  margin-bottom: 0.5em;
 }
 
 pre {
@@ -180,31 +170,26 @@ pre:hover {
 h1 {
 }
 
-header {
-  @include child-padding(0.5em)
-}
-
 .ani500 {
   @include transition(500ms)
-}
-
-div.col, div.content {
-  @include child-padding(0.75em)
 }
 
 h1 {
   font-size: 2em;
   font-weight: 600;
+  margin-bottom: 0.3em;
 }
 
 h2 {
   font-size: 1.75em;
   font-weight: 600;
+  margin-bottom: 0.3em;
 }
 
 h3 {
   font-size: 1.5em;
   font-weight: 600;
+  margin-bottom: 0.3em;
 }
 
 a {
@@ -223,26 +208,8 @@ img {
   max-width: 100%;
 }
 
-ul, ol { @include child-padding(0.5em) }
-
-.row {
-  @include child-padding(1em);
-}
-
-.content,
-.ct {
-  @include child-padding(0.5em);
-}
-
-.right {
-  float: right;
-}
-
-.left {
-  float: left;
-}
-
 input[type="text"],
+input[type="password"],
 textarea {
   font-size: 1em;
   padding: 0.25em;
@@ -252,8 +219,23 @@ textarea {
   @include transition(outline 150ms ease);
 }
 
+
 .clear {
   clear: both;
   margin: 0 !important;
   padding: 0;
 }
+
+$peter-river: #3498DB;
+$turquoise: #1ABC9C;
+$wisteria: #8E44AD;
+$nephritis: #27AE60;
+$pumpkin: #D35400;
+$pomegranate: #C0392B;
+$green-sea: #16A085;
+$belize-hole: #2980B9;
+$sunflower: #F1C40F;
+$carrot: #E67E22;
+$concrete: #95A5A6;
+$clouds: #ECF0F1;
+$orange: #F39C12;

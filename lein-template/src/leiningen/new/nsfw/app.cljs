@@ -7,7 +7,9 @@
 
 (def $page
   [:div
-   [:h1 "Hello {{name}}."]
+   [:h1
+    [:i.icon-gift]
+    "Hello {{name}}"]
    [:p
     "This file can be found at " [:code "src/cljs/{{sanitized}}/app.cljs"] ". "
     "Any changes to this file (and any other cljs files) will automatically be "
