@@ -1,6 +1,7 @@
 (ns nsfw.util
   (:use hiccup.core
-        [hiccup.page :only (doctype)])
+        [hiccup.page :only (doctype)]
+        [clojure.pprint :only (pprint)])
   (:require [clj-stacktrace.repl :as stacktrace]
             [clojure.string :as str]
             [ring.util.response :as resp]
@@ -179,3 +180,16 @@
   (let [pgp (PegDownProcessor. Extensions/ALL)]
     (when s
       (.markdownToHtml pgp (str/replace s #"!\[\]" "![ ]")))))
+
+(def pp pprint)
+
+(defn pp-str [o]
+  (let [w (java.io.StringWriter.)]
+    (pprint o w)
+    (.toString w)))
+
+(defn stacktrace->str [exc]
+  (let [sw (java.io.StringWriter.)
+        pw (java.io.PrintWriter. sw)]
+    (.printStackTrace exc pw)
+    (.toString sw)))
