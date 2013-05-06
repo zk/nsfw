@@ -184,7 +184,7 @@
   els)
 
 (defn has-class? [el cls]
-  (classes/has el (name cls)))
+  (classes/has (unwrap el) (name cls)))
 
 (defn add-class [els cls]
   (doseq [el (ensure-coll els)]
