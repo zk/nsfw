@@ -164,10 +164,13 @@
 (defn attr [el attr]
   (.getAttribute el (name attr)))
 
-(defn text [els text]
-  (doseq [el (ensure-coll els)]
-    (dom/setTextContent el (str text)))
-  els)
+(defn text
+  ([els]
+     (dom/getTextContent (unwrap els)))
+  ([els text]
+     (doseq [el (ensure-coll els)]
+       (dom/setTextContent el (str text)))
+     els))
 
 (defn replace [els content]
   (doseq [el (ensure-coll els)]
