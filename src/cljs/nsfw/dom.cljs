@@ -6,6 +6,7 @@
             [goog.style :as style]
             [goog.events :as events]
             [goog.dom.query]
+            [goog.dom.forms :as forms]
             [cljs.core :as cc]
             [nsfw.util :as util])
   (:refer-clojure :exclude [val replace remove empty drop]))
@@ -82,7 +83,7 @@
 
 (defn val
   ([el]
-     (.-value (unwrap el)))
+     (forms/getValue (unwrap el)))
   ([el new-value]
      (set! (.-value (unwrap el)) new-value)))
 
