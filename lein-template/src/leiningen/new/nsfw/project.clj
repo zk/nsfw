@@ -1,7 +1,7 @@
 (defproject {{name}} "0.1.0"
   :description "A Clojure web app using NSFW."
   :min-lein-version "2"
-  :dependencies [[org.clojure/clojure "1.4.0"]
+  :dependencies [[org.clojure/clojure "1.5.1"]
                  [nsfw "0.5.12"]]
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]

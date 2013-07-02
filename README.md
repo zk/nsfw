@@ -18,11 +18,14 @@ Could not find metadata nsfw:lein-template/maven-metadata.xml in central (http:/
 
 Just `rm -rf ./<project dir>` and try again.
 
-## Neat Stuff
 
-Live as close to production as possible.
+## Dev
 
-1. Sass sourcemaps!
+### Bumping Versions
+
+* Try to keep `$REPO/project.clj`, `$REPO/lein-template/project.clj` in sync.
+* Run `bin/ship`
+
 
 ## License
 

@@ -1,6 +1,6 @@
 (defproject nsfw "0.5.12"
   :description "No Such Framework -- Experimental"
-  :dependencies [[org.clojure/clojure "1.4.0"]
+  :dependencies [[org.clojure/clojure "1.5.1"]
                  [clj-stacktrace "0.2.5"]
                  [hiccup "1.0.2"]
                  [congomongo "0.3.3"]
