@@ -4,7 +4,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 REPO=$SCRIPT_DIR/..
 
-cd $SCRIPT_DIR/.. && \
+set -e
+
+$SCRIPT_DIR/test
+
+cd $REPO && \
     lein jar && \
     lein pom && \
     scp $REPO/pom.xml $REPO/target/nsfw.jar clojars@clojars.org: && \
