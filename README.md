@@ -23,7 +23,8 @@ Just `rm -rf ./<project dir>` and try again.
 
 ### Bumping Versions
 
-* Try to keep `$REPO/project.clj`, `$REPO/lein-template/project.clj` in sync.
+* Try to keep the version `$REPO/project.clj`, `$REPO/lein-template/project.clj`, and the dep in
+`$REPO/lein-template/src/leiningen/new/nsfw/project.clj` in sync.
 * Run `bin/ship`
 
 

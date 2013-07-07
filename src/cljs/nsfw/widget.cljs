@@ -4,6 +4,9 @@
             [nsfw.util :as util]
             [clojure.string :as str]))
 
+(defn el [w]
+  (:$el w))
+
 (defn data [t & name-val-pairs]
   (->> name-val-pairs
        (partition 2)
