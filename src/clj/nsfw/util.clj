@@ -143,17 +143,20 @@
   (when s
     (URLEncoder/encode s)))
 
-(defn read-body
+(defn decode-body [content-length body]
+  (when (and content-length
+             (> content-length 0))
+    (let [buf (byte-array content-length)]
+      (.read body buf 0 content-length)
+      (.close body)
+      (String. buf))))
+
+(defn response-body
   "Turn a HttpInputStream into a string."
-  [request]
-  (if (string? (:body request))
-    (:body request)
-    (when (and (:content-length request)
-               (> (:content-length request) 0))
-      (let [buf (byte-array (:content-length request))]
-        (.read (:body request) buf 0 (:content-length request))
-        (.close (:body request))
-        (String. buf)))))
+  [{:keys [content-length body]}]
+  (if (string? body)
+    body
+    (decode-body content-length body)))
 
 (defn distinct-by
   [key coll]
