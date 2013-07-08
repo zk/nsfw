@@ -17,7 +17,8 @@
                  [watchtower "0.1.1"]
                  [ring-reload-modified "0.1.1"]
                  [org.clojure/tools.nrepl "0.2.0-RC1"]
-                 [org.pegdown/pegdown "1.2.1"]]
+                 [org.pegdown/pegdown "1.2.1"]
+                 [prismatic/plumbing "0.1.0"]]
   :source-paths ["src/clj" "examples/clj"]
   :test-paths ["test/clj"]
   :jar-name "nsfw.jar"
