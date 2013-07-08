@@ -152,6 +152,7 @@
                (> (:content-length request) 0))
       (let [buf (byte-array (:content-length request))]
         (.read (:body request) buf 0 (:content-length request))
+        (.close (:body request))
         (String. buf)))))
 
 (defn distinct-by
