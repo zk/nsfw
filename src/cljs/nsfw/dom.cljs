@@ -51,7 +51,8 @@
     [el]))
 
 (defn ensure-el [coll]
-  (if (coll? coll)
+  (if (or (coll? coll)
+          (= js/Array (type coll)))
     (first coll)
     coll))
 
@@ -277,7 +278,7 @@
 
 (defn focus
   ([el]
-     (.focus el)
+     (ensure-el (.focus el))
      el)
   ([els f]
      (listen els :focus f)))
