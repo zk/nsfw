@@ -1,0 +1,8 @@
+#!/bin/sh
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+export DEBUG_EXCEPTIONS=true
+export REPL_PORT=7888
+
+cd  $SCRIPT_DIR/.. && foreman start
