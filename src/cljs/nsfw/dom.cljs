@@ -1,4 +1,5 @@
 (ns nsfw.dom
+  "Utilities for DOM interation / event binding."
   (:use [nsfw.util :only [log]])
   (:require [dommy.template :as template]
             [goog.dom :as dom]
@@ -9,7 +10,7 @@
             [goog.dom.forms :as forms]
             [cljs.core :as cc]
             [nsfw.util :as util])
-  (:refer-clojure :exclude [val replace remove empty drop]))
+  (:refer-clojure :exclude [val replace remove empty drop > select]))
 
 (extend-type js/NodeList
   ISeqable
@@ -46,7 +47,8 @@
    :event e})
 
 (defn ensure-coll [el]
-  (if (coll? el)
+  (if (or (coll? el)
+          (= js/Array (type el)))
     el
     [el]))
 
@@ -77,6 +79,8 @@
   ([base o]
      (selector (ensure-el base) (name o))))
 
+(def > $)
+
 (defn unwrap [el]
   (if (coll? el)
     (first el)
@@ -104,15 +108,9 @@
                (not (keyword? (first content))))
         (doseq [c content]
           (when c
-            (.appendChild el (wrap-content c)))
-          (when content
-            (when-let [on-insert (aget content "on-insert")]
-              (on-insert el))))
-        (do (when content
-              (.appendChild el (wrap-content content)))
-            (when content
-              (when-let [on-insert (aget content "on-insert")]
-                (on-insert el)))))
+            (.appendChild el (wrap-content c))))
+        (when content
+          (.appendChild el (wrap-content content))))
       (throw "Can't call dom/append on a null element")))
   els)
 
@@ -247,7 +245,7 @@
 (def blur (handler :blur))
 
 (def change (handler :change))
-(def select (handler :select))
+#_(def select (handler :select))
 (def submit (handler :submit))
 (def input (handler :input))
 
