@@ -8,7 +8,8 @@
             [nsfw.html :as html]
             [nsfw.middleware :as nm]
             [nsfw.util :as nu]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clout.core :as clout]))
 
 (defn debug-exceptions [h enabled?]
   (fn [r]
@@ -129,3 +130,33 @@
         wrap-keyword-params
         ~@routes
         [""] (cs-route opts#)))))
+
+(defn has-route? [m]
+  (-> m :meta :route))
+
+(defn load-routes [route-nss]
+  (doseq [ns route-nss]
+    (require ns))
+  (let [routes (->> route-nss
+                    (map ns-publics)
+                    (map (fn [publics]
+                           (map (fn [[sym var]]
+                                  {:sym sym
+                                   :var var
+                                   :meta (meta var)})
+                                publics)))
+                    flatten
+                    (filter has-route?)
+                    (map (fn [{:keys [meta var]}]
+                           {:route (:route meta)
+                            :handler var})))]
+    (fn [req]
+      (let [match (->> routes
+                       (map (fn [{:keys [route handler]}]
+                              {:route-params (clout/route-matches route req)
+                               :handler handler}))
+                       (remove #(-> % :route-params nil?))
+                       first)]
+        (when match
+          ((:handler match)
+           (assoc req :route (:route-params match))))))))
