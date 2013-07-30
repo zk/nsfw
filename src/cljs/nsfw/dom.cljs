@@ -25,26 +25,30 @@
   "Turns a google closure event into a map.
    See http://goo.gl/Jxgbo for more info."
   [e]
-  {:type (.-type e)
-   :timestamp (.-timestamp e)
-   :target (.-target e)
-   :current-target (.-currentTarget e)
-   :related-target (.-relatedTarget e)
-   :offset-x (.-offsetX e)
-   :offset-y (.-offsetY e)
-   :client-x (.-clientX e)
-   :client-y (.-clientY e)
-   :screen-x (.-screenX e)
-   :screen-y (.-screenY e)
-   :button (.-button e)
-   :key-code (.-keyCode e)
-   :ctrl-key (.-ctrlKey e)
-   :alt-key (.-altKey e)
-   :shift-key (.-shiftKey e)
-   :meta-key (.-metaKey e)
-   :default-prevented (.-defaultPrevented e)
-   :state (.-state e)
-   :event e})
+  (let [res {:type (.-type e)
+             :timestamp (.-timestamp e)
+             :target (.-target e)
+             :current-target (.-currentTarget e)
+             :related-target (.-relatedTarget e)
+             :offset-x (.-offsetX e)
+             :offset-y (.-offsetY e)
+             :client-x (.-clientX e)
+             :client-y (.-clientY e)
+             :screen-x (.-screenX e)
+             :screen-y (.-screenY e)
+             :button (.-button e)
+             :key-code (.-keyCode e)
+             :ctrl-key (.-ctrlKey e)
+             :alt-key (.-altKey e)
+             :shift-key (.-shiftKey e)
+             :meta-key (.-metaKey e)
+             :default-prevented (.-defaultPrevented e)
+             :state (.-state e)
+             :event e}
+        nsfw-payload (aget (aget e "event_") "nsfw_payload")]
+    (if nsfw-payload
+      (merge res nsfw-payload)
+      res)))
 
 (defn ensure-coll [el]
   (if (or (coll? el)
@@ -63,21 +67,24 @@
 (defn root []
   (aget (dom/getElementsByTagNameAndClass "html") 0))
 
-(defn selector
+(defn query
   ([s]
-     (dom/query s))
+     (dom/query (name s)))
   ([base s]
-     (dom/query s base)))
+     (dom/query (name s) base)))
+
+(defn node [o]
+  (template/node o))
 
 (defn $
   ([o]
      (cond
       (coll? o) (template/node o)
       (or (keyword? o)
-          (string? o)) (selector (name o))
+          (string? o)) (query (name o))
       :else o))
   ([base o]
-     (selector (ensure-el base) (name o))))
+     (query (ensure-el base) (name o))))
 
 (def > $)
 
@@ -425,3 +432,17 @@
      :right (.-right br)
      :top (.-top br)
      :width (.-width br)}))
+
+(defn fire
+  "Fire a custom DOM event, opts takes :bubble? and :preventable? as
+   bool config options on whether or not to bubble the event, and
+   allow preventing of the event, respectively."
+  [$el event payload & opts]
+  (let [opts (apply hash-map opts)
+        bubble? (:bubble? opts)
+        preventable? (:preventable? opts)
+        ev (.createEvent js/document "Event")]
+    (.initEvent ev (name event) true true)
+    (aset ev "nsfw_payload" payload)
+    (.dispatchEvent $el ev))
+  $el)
