@@ -18,13 +18,14 @@
                  [ring-reload-modified "0.1.1"]
                  [org.clojure/tools.nrepl "0.2.0-RC1"]
                  [org.pegdown/pegdown "1.2.1"]
-                 [prismatic/plumbing "0.1.0"]]
+                 [prismatic/plumbing "0.1.0"]
+                 [clout "1.1.0"]]
   :source-paths ["src/clj" "examples/clj"]
   :test-paths ["test/clj"]
   :jar-name "nsfw.jar"
   :hooks [leiningen.cljsbuild]
   :cljsbuild {:builds
-              [{:source-paths ["src/cljs"]
+              [{:source-paths ["src/cljs" "test/cljs"]
                 :compiler {:output-to "resources/test.js"
                            :optimizations :whitespace}
                 :jar true}]})
