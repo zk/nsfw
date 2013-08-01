@@ -11,7 +11,11 @@
             [clojure.string :as str]
             [clout.core :as clout]))
 
-(defn debug-exceptions [h enabled?]
+(defn debug-exceptions
+  "Ring handler that will render exceptions to the client.
+
+   Don't use in production."
+  [h enabled?]
   (fn [r]
     (if-not enabled?
       (h r)
@@ -33,7 +37,7 @@
                                      :overflow-x "scroll"
                                      :margin-bottom "3em"}])]]
                   [:body
-                   [:h1 "Oh Snap!"]
+                   [:h1 "Oh Snap!!!!!"]
                    [:pre (nu/stacktrace->str e)]
                    [:h2 "Request"]
                    [:pre (nu/pp-str r)]])})))))
