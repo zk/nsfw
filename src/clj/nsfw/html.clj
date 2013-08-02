@@ -1,6 +1,7 @@
 (ns nsfw.html
   (:require [hiccup.core :as hiccup]
-            [hiccup.page :as hiccup-page]))
+            [hiccup.page :as hiccup-page])
+  (:import [org.pegdown PegDownProcessor]))
 
 (defn href
   "ex. (href \"http://google.com\" \"Google!\" :rel \"nofollow\")"
@@ -47,3 +48,7 @@
 
 (defn html [body]
   (hiccup/html body))
+
+(defn markdown [s]
+  (let [pd (PegDownProcessor.)]
+      (.markdownToHtml pd s)))
