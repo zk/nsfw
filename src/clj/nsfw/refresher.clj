@@ -8,11 +8,6 @@
     (catch java.io.FileNotFoundException e
       nil)))
 
-(defn config-contents [& [file-path]]
-  (let [file-path (or file-path ".refresher")
-        contents (slurp-safe file-path)]
-    contents))
-
 (defn refresh-safari []
   (->> ["osascript"
         "tell application \"Safari\" to tell its first document"
@@ -31,9 +26,9 @@
        (interpose "-e")
        (apply sh/sh)))
 
-(defn refresh-on-change [refresh-fn]
+(defn refresh-on-change [refresh-fn paths]
   (wt/watcher
-   ["resources" "src/clj"]
+   paths
    (wt/rate 100)
    (wt/on-change (fn [args]
                    (println (->> args
@@ -44,9 +39,10 @@
                    (refresh-fn))))
   nil)
 
-(defn -main []
-  (let [browser (or (config-contents)
-                    "chrome")]
+(defn -main [& args]
+  (let [browser (or (first args) "chrome")
+        paths (or (rest args)
+                  ["src/clj" "resources"])]
     (condp = browser
-      "safari" (refresh-on-change refresh-safari)
-      "chrome" (refresh-on-change refresh-chrome))))
+      "safari" (refresh-on-change refresh-safari paths)
+      "chrome" (refresh-on-change refresh-chrome paths))))
