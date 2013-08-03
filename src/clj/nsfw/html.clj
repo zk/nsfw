@@ -1,7 +1,8 @@
 (ns nsfw.html
   (:require [hiccup.core :as hiccup]
             [hiccup.page :as hiccup-page])
-  (:import [org.pegdown PegDownProcessor]))
+  (:import [org.pegdown PegDownProcessor]
+           [org.pegdown Parser]))
 
 (defn href
   "ex. (href \"http://google.com\" \"Google!\" :rel \"nofollow\")"
