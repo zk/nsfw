@@ -9,7 +9,12 @@
             [nsfw.middleware :as nm]
             [nsfw.util :as nu]
             [clojure.string :as str]
-            [clout.core :as clout]))
+            [clout.core :as clout])
+  (:import [java.io
+            PushbackReader
+            File
+            BufferedReader
+            FileReader]))
 
 (defn debug-exceptions
   "Ring handler that will render exceptions to the client.
@@ -138,29 +143,76 @@
 (defn has-route? [m]
   (-> m :meta :route))
 
-(defn load-routes [route-nss]
-  (doseq [ns route-nss]
-    (require ns))
-  (let [routes (->> route-nss
-                    (map ns-publics)
-                    (map (fn [publics]
-                           (map (fn [[sym var]]
-                                  {:sym sym
-                                   :var var
-                                   :meta (meta var)})
-                                publics)))
-                    flatten
-                    (filter has-route?)
-                    (map (fn [{:keys [meta var]}]
-                           {:route (:route meta)
-                            :handler var})))]
-    (fn [req]
-      (let [match (->> routes
-                       (map (fn [{:keys [route handler]}]
-                              {:route-params (clout/route-matches route req)
-                               :handler handler}))
-                       (remove #(-> % :route-params nil?))
-                       first)]
-        (when match
-          ((:handler match)
-           (assoc req :route (:route-params match))))))))
+
+(defn comment?
+  "Returns true if form is a (comment ...)"
+  [form]
+  (and (list? form) (= 'comment (first form))))
+
+(defn ns-decl?
+  "Returns true if form is a (ns ...) declaration."
+  [form]
+  (and (list? form) (= 'ns (first form))))
+
+(defn read-ns-decl
+  "Attempts to read a (ns ...) declaration from a
+  java.io.PushbackReader, and returns the unevaluated form. Returns
+  nil if read fails or if a ns declaration cannot be found. The ns
+  declaration must be the first Clojure form in the file, except for
+  (comment ...) forms."
+  [rdr]
+  (try
+    (loop [] (let [form (doto (read rdr) str)]
+               (cond
+                (ns-decl? form) form
+                (comment? form) (recur)
+                :else nil)))
+    (catch Exception e nil)))
+
+(defn read-file-ns-decl
+  "Attempts to read a (ns ...) declaration from file, and returns the
+  unevaluated form.  Returns nil if read fails, or if the first form
+  is not a ns declaration."
+  [#^File file]
+  (with-open [rdr (PushbackReader. (BufferedReader. (FileReader. file)))]
+    (read-ns-decl rdr)))
+
+(defn parse-ns-sym [file-path]
+  (-> file-path
+      (java.io.File.)
+      read-file-ns-decl))
+
+(defn load-routes [path]
+  (let [route-nss (->> path
+                       (java.io.File.)
+                       file-seq
+                       (map #(.getAbsolutePath %))
+                       (filter #(.endsWith % ".clj"))
+                       (map parse-ns-sym)
+                       (map second)
+                       (filter identity))]
+    (doseq [ns route-nss]
+      (require ns))
+    (let [routes (->> route-nss
+                      (map ns-publics)
+                      (map (fn [publics]
+                             (map (fn [[sym var]]
+                                    {:sym sym
+                                     :var var
+                                     :meta (meta var)})
+                                  publics)))
+                      flatten
+                      (filter has-route?)
+                      (map (fn [{:keys [meta var]}]
+                             {:route (:route meta)
+                              :handler var})))]
+      (fn [req]
+        (let [match (->> routes
+                         (map (fn [{:keys [route handler]}]
+                                {:route-params (clout/route-matches route req)
+                                 :handler handler}))
+                         (remove #(-> % :route-params nil?))
+                         first)]
+          (when match
+            ((:handler match)
+             (assoc req :route (:route-params match)))))))))
