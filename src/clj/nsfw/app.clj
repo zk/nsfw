@@ -20,32 +20,35 @@
   "Ring handler that will render exceptions to the client.
 
    Don't use in production."
-  [h enabled?]
+  [h enabled? & [with-err]]
   (fn [r]
     (if-not enabled?
       (h r)
       (try
         (h r)
         (catch Exception e
-          {:header {"Content-Type" "text/html"}
-           :status 200
-           :body (html/html5
-                  [:head
-                   [:title (str (type e) " | NSFW")]
-                   [:style {:type "text/css"}
-                    (html/css [:body {:padding "1em 3em"
-                                      :font-family "'Helvetica Neue', Helvetica, Arial, sans-serif"}]
-                              [:pre {:padding "1em"
-                                     :border "solid #ccc 1px;"
-                                     :border-radius "0.5em"
-                                     :background-color "#fafafa"
-                                     :overflow-x "scroll"
-                                     :margin-bottom "3em"}])]]
-                  [:body
-                   [:h1 "Oh Snap!!!!!"]
-                   [:pre (nu/stacktrace->str e)]
-                   [:h2 "Request"]
-                   [:pre (nu/pp-str r)]])})))))
+          (if with-err
+            (with-err e r)
+            {:header {"Content-Type" "text/html"}
+             :status 500
+             :body (html/html5
+                    [:head
+                     [:title (str (type e) " | NSFW")]
+                     [:style {:type "text/css"}
+                      (html/css [:body {:padding "1em 3em"
+                                        :font-family "'Helvetica Neue', Helvetica, Arial, sans-serif"}]
+                                [:pre {:padding "1em"
+                                       :border "solid #ccc 1px;"
+                                       :border-radius "0.5em"
+                                       :background-color "#fafafa"
+                                       :overflow-x "scroll"
+                                       :margin-bottom "3em"}])]]
+                    [:body
+                     [:h1 "Oh Snap"]
+                     [:pre (nu/stacktrace->str e)]
+
+                     [:h2 "Request"]
+                     [:pre (nu/pp-str r)]])}))))))
 
 (defn clj->js-name [s]
   (-> s
