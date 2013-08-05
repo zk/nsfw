@@ -11,18 +11,16 @@
             [ring.middleware.reload-modified :as reload]
             [net.cgrand.moustache :as moustache]))
 
-(def !reload-nss (atom []))
 
 (defn start-repl [port]
   (repl/start-server :port port))
 
-(defn load-nss [ns-syms]
-  (reset! !reload-nss ns-syms))
-
-(defn serve-routes [h !nss]
+(defn serve-routes [h path]
   (fn [r]
-    (if-let [res ((app/load-routes @!nss) r)]
-      res
+    (if path
+      (if-let [res ((app/load-routes path) r)]
+        res
+        (h r))
       (h r))))
 
 (defn catch-all [r]
@@ -33,12 +31,17 @@
                 server-port
                 entry-point
                 app-nss
-                session]}
+                session
+                on-err
+                autoload]}
         (apply hash-map opts)]
-    (when repl-port
-      (start-repl repl-port))
+    (try (when repl-port
+           (start-repl repl-port))
+         (catch Exception e
+           (println "Can't start REPL on port" repl-port)
+           (println e)))
     (server/start :entry (moustache/app
-                          (app/debug-exceptions true)
+                          (app/debug-exceptions true on-err)
                           (wrap-reload :dirs ["src/clj"])
                           wrap-file-info
                           (wrap-file "resources/public" {:allow-symlinks? true})
@@ -46,6 +49,6 @@
                           wrap-nested-params
                           wrap-keyword-params
                           (wrap-session (or session {}))
-                          (serve-routes !reload-nss)
+                          (serve-routes autoload)
                           catch-all)
                   :port server-port)))
