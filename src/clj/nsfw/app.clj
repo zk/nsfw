@@ -44,9 +44,8 @@
                                        :overflow-x "scroll"
                                        :margin-bottom "3em"}])]]
                     [:body
-                     [:h1 "Oh Snap"]
+                     [:h1 "Oh Snap!"]
                      [:pre (nu/stacktrace->str e)]
-
                      [:h2 "Request"]
                      [:pre (nu/pp-str r)]])}))))))
 
