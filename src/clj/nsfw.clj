@@ -3,14 +3,17 @@
                          keyword-params multipart-params session)
         [ring.middleware.session.memory :only (memory-store)]
         [ring.middleware.session.cookie :only (cookie-store)]
-        [ring.middleware.reload :only (wrap-reload)])
+        [ring.middleware.reload :only (wrap-reload)]
+        [clojure.pprint])
   (:require [nsfw.env :as env]
             [nsfw.app :as app]
             [nsfw.server :as server]
+            [nsfw.html :as html]
+            [nsfw.http :as http]
             [clojure.tools.nrepl.server :as repl]
             [ring.middleware.reload-modified :as reload]
-            [net.cgrand.moustache :as moustache]))
-
+            [net.cgrand.moustache :as moustache])
+  (:refer-clojure :exclude [comp]))
 
 (defn start-repl [port]
   (repl/start-server :port port))
@@ -52,3 +55,14 @@
                           (serve-routes autoload)
                           catch-all)
                   :port server-port)))
+
+(def !components (atom {}))
+
+(def comp (html/mk-comp !components))
+
+(def transform-components (html/mk-renderer !components))
+
+(defn render [& body]
+  (-> body
+      transform-components
+      http/html))
