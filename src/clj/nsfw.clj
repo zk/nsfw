@@ -12,22 +12,23 @@
             [nsfw.http :as http]
             [clojure.tools.nrepl.server :as repl]
             [ring.middleware.reload-modified :as reload]
-            [net.cgrand.moustache :as moustache])
-  (:refer-clojure :exclude [comp]))
+            [net.cgrand.moustache :as moustache]))
 
 (defn start-repl [port]
   (repl/start-server :port port))
 
-(defn serve-routes [h path]
+(defn serve-routes [h path !components]
   (fn [r]
     (if path
-      (if-let [res ((app/load-routes path) r)]
+      (if-let [res ((app/load-routes path !components) r)]
         res
         (h r))
       (h r))))
 
 (defn catch-all [r]
   {:body "NO HANDLER"})
+
+(defonce !components (atom {}))
 
 (defn app [& opts]
   (let [{:keys [repl-port
@@ -52,15 +53,11 @@
                           wrap-nested-params
                           wrap-keyword-params
                           (wrap-session (or session {}))
-                          (serve-routes autoload)
+                          (serve-routes autoload !components)
                           catch-all)
                   :port server-port)))
 
-(def !components (atom {}))
-
-(def comp (html/mk-comp !components))
-
-(def transform-components (html/mk-renderer !components))
+(def transform-components (html/mk-transformer !components))
 
 (defn render [& body]
   (-> body

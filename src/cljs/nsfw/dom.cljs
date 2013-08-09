@@ -455,3 +455,68 @@
     (aset ev "nsfw_payload" payload)
     (.dispatchEvent $el ev))
   $el)
+
+(defn apply-transform [$el transforms]
+  (doseq [{:keys [style text add-class rem-class selector val] :as xf}
+          (if (or (list? transforms)
+                  (vector? transforms))
+            transforms
+            [transforms])]
+    (let [$el (if selector
+                (query $el selector)
+                $el)]
+      (when style
+        (nsfw.dom/style $el style))
+      (when text
+        (nsfw.dom/text $el text))
+      (when add-class
+        (doseq [cls (if (coll? add-class)
+                      add-class
+                      [add-class])]
+          (nsfw.dom/add-class $el cls)))
+      (when rem-class
+        (doseq [cls (if (coll? rem-class)
+                      rem-class
+                      [rem-class])]
+          (nsfw.dom/rem-class $el cls)))
+      (when val
+        (nsfw.dom/val $el val)))))
+
+(defn calc-transform [o msg]
+  (when-let [msg-handler (:msg-handler o)]
+    (msg-handler msg o)))
+
+(defn send [o msg]
+  (let [transform (calc-transform o msg)]
+    (apply-transform (:$el o) transform)
+    transform))
+
+(defn build [{:keys [html init events msg-handler] :as opts}]
+  ;; gen html
+  (let [$root (init opts)
+        opts (assoc opts :$el $root)]
+    ;; bind events
+    (doseq [{:keys [selector event transform]} events]
+      (let [$el (if selector
+                  (first (query $root selector))
+                  $root)]
+        (listen $el event (fn [e]
+                            (when-let [msg (transform e $el)]
+                              (send opts msg))))))
+    (:$el opts)))
+
+(defn parse-sel-ev [sel-ev]
+  (let [event (->> sel-ev
+                   name
+                   reverse
+                   (take-while #(not= "." %))
+                   reverse
+                   (apply str))
+        sel (->> sel-ev
+                 name
+                 reverse
+                 (drop-while #(not= "." %))
+                 (drop 1)
+                 reverse
+                 (apply str))]
+    [sel event]))

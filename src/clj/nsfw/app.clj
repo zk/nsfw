@@ -3,7 +3,8 @@
         (ring.middleware file file-info resource params nested-params
                          keyword-params multipart-params session)
         [ring.middleware.session.memory :only (memory-store)]
-        [ring.middleware.session.cookie :only (cookie-store)])
+        [ring.middleware.session.cookie :only (cookie-store)]
+        [clojure.pprint :only [pprint]])
   (:require [net.cgrand.moustache :as moustache]
             [nsfw.html :as html]
             [nsfw.middleware :as nm]
@@ -145,6 +146,9 @@
 (defn has-route? [m]
   (-> m :meta :route))
 
+(defn has-comp-tag? [m]
+  (-> m :meta :comp-tag))
+
 (defn comment?
   "Returns true if form is a (comment ...)"
   [form]
@@ -183,30 +187,56 @@
       (java.io.File.)
       read-file-ns-decl))
 
-(defn load-routes [path]
-  (let [route-nss (->> path
-                       (java.io.File.)
-                       file-seq
-                       (map #(.getAbsolutePath %))
-                       (filter #(.endsWith % ".clj"))
-                       (map parse-ns-sym)
-                       (map second)
-                       (filter identity))]
+
+(defn namespaces-in [path]
+  (->> path
+       (java.io.File.)
+       file-seq
+       (map #(.getAbsolutePath %))
+       (filter #(.endsWith % ".clj"))
+       (map parse-ns-sym)
+       (map second)
+       (filter identity)))
+
+(defn var-data [nss]
+  (->> nss
+       (map ns-publics)
+       (map (fn [publics]
+              (map (fn [[sym var]]
+                     {:sym sym
+                      :var var
+                      :meta (meta var)})
+                   publics)))
+       flatten))
+
+(defn routes-in-nss [nss]
+  (->> nss
+       var-data
+       (filter has-route?)
+       (map (fn [{:keys [meta var]}]
+              {:route (:route meta)
+               :handler var}))))
+
+(defn comps-in-nss [nss]
+  (->> nss
+       var-data
+       (filter has-comp-tag?)
+       (map (fn [{:keys [meta var]}]
+              {:tag (:comp-tag meta)
+               :var var}))))
+
+(defn load-routes [path !components]
+  (let [route-nss (namespaces-in path)]
     (doseq [ns route-nss]
       (require ns))
-    (let [routes (->> route-nss
-                      (map ns-publics)
-                      (map (fn [publics]
-                             (map (fn [[sym var]]
-                                    {:sym sym
-                                     :var var
-                                     :meta (meta var)})
-                                  publics)))
-                      flatten
-                      (filter has-route?)
-                      (map (fn [{:keys [meta var]}]
-                             {:route (:route meta)
-                              :handler var})))]
+    (let [comps (->> route-nss
+                     comps-in-nss
+                     (group-by :tag)
+                     (map (fn [[k vs]]
+                            [k (-> vs first :var deref)]))
+                     (into {}))
+          routes (routes-in-nss route-nss)]
+      (swap! !components merge comps)
       (fn [req]
         (let [match (->> routes
                          (map (fn [{:keys [route handler]}]

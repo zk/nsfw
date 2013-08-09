@@ -117,7 +117,7 @@
                                      res (if (fn? f)
                                            (f opts body)
                                            f)
-                                     res (apply-comps res)]
+                                     res (apply-comps !components res)]
                                  res)))
 
                  (has-nested-seqs? (zip/node n))
@@ -126,7 +126,7 @@
                  :else n)))))))
 
 (defn mk-comp [!components]
-  (fn comp [& comps]
+  (fn [& comps]
     (->> comps
          (partition 2)
          (reduce #(assoc %1 (first %2) (second %2)) {})
