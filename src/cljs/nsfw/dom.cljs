@@ -148,6 +148,14 @@
     (append el child))
   child)
 
+(defn insert-at [parent child index]
+  (let [child (node child)]
+    (doseq [parent (ensure-coll parent)]
+      (dom/insertChildAt parent child index))))
+
+(defn parse-html [s]
+  (dom/htmlToDocumentFragment s))
+
 (defn style [els css-map]
   (let [jsobj (clj->js css-map)]
     (doseq [el (ensure-coll els)]
