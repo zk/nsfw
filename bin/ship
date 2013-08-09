@@ -11,7 +11,7 @@ $SCRIPT_DIR/test
 cd $REPO && \
     lein jar && \
     lein pom && \
-    scp $REPO/pom.xml $REPO/target/nsfw.jar clojars@clojars.org: && \
+    scp $REPO/pom.xml $REPO/target/provided/nsfw.jar clojars@clojars.org: && \
     lein install
 
 
