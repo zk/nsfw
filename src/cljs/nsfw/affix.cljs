@@ -6,7 +6,7 @@
 
 (defn el [$el offset]
   (doseq [$el ($/ensure-coll $el)]
-    ($/listen js/window
+    ($/listen js/document
               :scroll
               (fn [e]
                 (let [scroll-height (gdom/getDocumentHeight)
@@ -19,6 +19,6 @@
   (doseq [$el ($/query "[data-spy='affix']")]
     (let [offset (try
                    (js/parseInt ($/attr $el :data-offset-top))
-                   (catch Exception e
+                   (catch js/Exception e
                      200))]
       (el $el offset))))
