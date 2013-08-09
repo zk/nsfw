@@ -1,4 +1,4 @@
-(defproject nsfw "0.6.6"
+(defproject nsfw "0.6.7"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [clj-stacktrace "0.2.5"]
@@ -16,7 +16,7 @@
                  [org.clojure/google-closure-library-third-party "0.0-2029-2"]
                  [watchtower "0.1.1"]
                  [ring-reload-modified "0.1.1"]
-                 [org.clojure/tools.nrepl "0.2.0-RC1"]
+                 [org.clojure/tools.nrepl "0.2.3"]
                  [org.pegdown/pegdown "1.2.1"]
                  [prismatic/plumbing "0.1.0"]
                  [clout "1.1.0"]
