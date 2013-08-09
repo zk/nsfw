@@ -10,8 +10,28 @@
     (apply o args)
     o))
 
+(defn validate-ajax-args [{:keys [method]}]
+  (let [valid-http-methods #{"GET"
+                             "POST"
+                             "PUT"
+                             "PATCH"
+                             "DELETE"
+                             "OPTIONS"
+                             "HEAD"
+                             "TRACE"
+                             "CONNECT"}]
+    (when-not (get valid-http-methods method)
+      (throw (str "nsfw.bind/ajax: "
+                  method
+                  " is not a valid ajax method ("
+                  (->> valid-http-methods
+                       (map pr-str)
+                       (interpose ", ")
+                       (apply str))
+                  ")")))))
+
 (defn ajax [opts]
-  (let [{:keys [path method data headers success error]}
+  (let [{:keys [path method data headers success error] :as opts}
         (merge
          {:path "/"
           :method "GET"
@@ -20,6 +40,7 @@
           :success (fn [])
           :error (fn [])}
          opts)]
+    (validate-ajax-args opts)
     (goog.net.XhrIo/send
      path
      (fn [e]
