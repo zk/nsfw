@@ -45,7 +45,7 @@
              :default-prevented (.-defaultPrevented e)
              :state (.-state e)
              :event e}
-        nsfw-payload (when-let [event_ (aget e "event_")]
+        nsfw-payload (when-let [event_ (.-event_ e)]
                        (aget event_ "nsfw_payload"))]
     (if nsfw-payload
       (merge res nsfw-payload)
