@@ -1,6 +1,7 @@
 (ns nsfw.chart
   (:require [goog.ui.ServerChart]
-            [nsfw.util :as util]))
+            [nsfw.util :as util])
+  (:refer-clojure :exclude [map]))
 
 (defn apply-data-set
   "Apply `data-set` to `chart`. Data set can be either a seq, in
