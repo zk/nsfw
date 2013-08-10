@@ -57,6 +57,9 @@
                           catch-all)
                   :port server-port)))
 
+(defn apply-comps [comp]
+  (html/apply-comps !components comp))
+
 (def transform-components (html/mk-transformer !components))
 
 (defn render [& body]
