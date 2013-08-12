@@ -144,7 +144,7 @@
         [""] (cs-route opts#)))))
 
 (defn has-route? [m]
-  (-> m :meta :route))
+  (-> m :meta :nsfw/route))
 
 (defn has-comp-tag? [m]
   (-> m :meta :comp-tag))
@@ -214,7 +214,7 @@
        var-data
        (filter has-route?)
        (map (fn [{:keys [meta var]}]
-              {:route (:route meta)
+              {:route (:nsfw/route meta)
                :handler var}))))
 
 (defn comps-in-nss [nss]
@@ -246,4 +246,4 @@
                          first)]
           (when match
             ((:handler match)
-             (assoc req :route (:route-params match)))))))))
+             (assoc req :route-params (:route-params match)))))))))
