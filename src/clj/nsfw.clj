@@ -66,3 +66,15 @@
   (-> body
       transform-components
       http/html))
+
+(defmacro defcomp
+  "Define a html component"
+  [name & rest]
+  `(defn ~(with-meta name (assoc (meta name) :nsfw/comp-tag (keyword name)))
+     ~@rest))
+
+(defmacro defroute
+  "Define a route var"
+  [route name & rest]
+  `(defn ~(with-meta name (assoc (meta name) :nsfw/route route))
+     ~@rest))
