@@ -63,9 +63,10 @@
 (def transform-components (html/mk-transformer !components))
 
 (defn render [& body]
-  (-> body
-      transform-components
-      http/html))
+  (when-not (->> body (filter identity) empty?)
+    (-> body
+        transform-components
+        http/html)))
 
 (defmacro defcomp
   "Define a html component"
