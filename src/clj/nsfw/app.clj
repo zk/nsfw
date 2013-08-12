@@ -147,7 +147,7 @@
   (-> m :meta :nsfw/route))
 
 (defn has-comp-tag? [m]
-  (-> m :meta :comp-tag))
+  (-> m :meta :nsfw/comp-tag))
 
 (defn comment?
   "Returns true if form is a (comment ...)"
@@ -222,7 +222,7 @@
        var-data
        (filter has-comp-tag?)
        (map (fn [{:keys [meta var]}]
-              {:tag (:comp-tag meta)
+              {:tag (:nsfw/comp-tag meta)
                :var var}))))
 
 (defn load-routes [path !components]
