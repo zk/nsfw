@@ -1,32 +1,26 @@
 # nsfw
 
-Proving ground for library code.
+Web dev in Clojure
 
 [![Build Status](https://travis-ci.org/zkim/nsfw.png)](https://travis-ci.org/zkim/nsfw)
 
-## Usage
+Super-extra alpha.
 
-`lein new nsfw <project name>`
+## Getting Started
 
-If you get:
+```shell
+# Requires Lein, Foreman, Sass
 
-```bash
-Retrieving nsfw/lein-template/maven-metadata.xml (1k)
-    from http://clojars.org/repo/
-Could not find metadata nsfw:lein-template/maven-metadata.xml in central (http://repo1.maven.org/maven2)
+git clone https://github.com/zk/nsfw-starter my-app
+
+cd my-app
+bin/dev
+
+...
+
+open http://localhost:5000
+
 ```
-
-Just `rm -rf ./<project dir>` and try again.
-
-
-## Dev
-
-### Bumping Versions
-
-* Try to keep the version `$REPO/project.clj`, `$REPO/lein-template/project.clj`, and the dep in
-`$REPO/lein-template/src/leiningen/new/nsfw/project.clj` in sync.
-* Run `bin/ship`
-
 
 ## License
 
