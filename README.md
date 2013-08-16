@@ -12,12 +12,10 @@ Super-extra alpha.
 # Requires Lein, Foreman, Sass
 
 git clone https://github.com/zk/nsfw-starter my-app
-
+...
 cd my-app
 bin/dev
-
 ...
-
 open http://localhost:5000
 
 ```
