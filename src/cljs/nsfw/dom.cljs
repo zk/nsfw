@@ -486,16 +486,55 @@
       (when val
         (nsfw.dom/val $el val)))))
 
-(defn calc-transform [o msg]
-  (when-let [msg-handler (:msg-handler o)]
-    (msg-handler msg o)))
+(defn calc-transform
+  "Loop over msg handlers, match types (and typeless handlers), and call
+   actions. Returns a list of resulting actions."
+  [o msg]
+  (let [[msg-type action] msg]
+    (loop [hs (->> o :msg-handlers (filter identity))
+           ress []]
+      (if (empty? hs)
+        ress
+        (recur (rest hs)
+               (let [msg-handler (first hs)
+                     match? (= msg-type (:msg-type msg-handler))
+                     res (cond
+                          (nil? (:msg-type msg-handler))
+                          ((:action msg-handler) msg o)
+
+                          match?
+                          (apply (:action msg-handler) (concat (rest msg) [o]))
+
+                          :else nil)]
+                 (conj ress res)))))))
 
 (defn send [o msg]
-  (let [transform (calc-transform o msg)]
-    (apply-transform (:$el o) transform)
-    transform))
+  (let [transforms (calc-transform o msg)]
+    (doseq [xf transforms]
+      (apply-transform (:$el o) xf))
+    transforms))
 
-(defn build [{:keys [html init events msg-handler] :as opts}]
+(defn bind [atom f]
+  (add-watch
+   atom
+   (gensym)
+   (fn [key identity old-value new-value]
+     (f identity old-value new-value)))
+  atom)
+
+(defn on-change [atom f]
+  (bind
+   atom
+   (fn [id old new]
+     (when-not (= old new)
+       (f id old new)))))
+
+(defn build [{:keys [html
+                     init
+                     events
+                     msg-handlers
+                     data-bindings
+                     !state] :as opts}]
   ;; gen html
   (let [$root (init opts)
         opts (assoc opts :$el $root)]
@@ -505,8 +544,17 @@
                   (first (query $root selector))
                   $root)]
         (listen $el event (fn [e]
-                            (when-let [msg (transform e $el)]
+                            (when-let [msg (transform e $el opts)]
                               (send opts msg))))))
+    (doseq [{:keys [query-fn handler]} data-bindings]
+      (on-change
+       !state
+       (fn [id old new]
+         (let [qold (query-fn old)
+               qnew (query-fn new)]
+           (when (not= qold qnew)
+             (handler qnew qold opts)))))
+      (handler (query-fn @!state) nil opts))
     (:$el opts)))
 
 (defn parse-sel-ev [sel-ev]
@@ -520,7 +568,10 @@
                  name
                  reverse
                  (drop-while #(not= "." %))
-                 (drop 1)
+                 (clojure.core/drop 1)
                  reverse
-                 (apply str))]
+                 (apply str))
+        sel (if (empty? sel)
+              nil
+              sel)]
     [sel event]))
