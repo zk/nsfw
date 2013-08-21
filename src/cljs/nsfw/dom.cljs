@@ -99,7 +99,8 @@
      (forms/getValue (unwrap el)))
   ([el new-value]
      (doseq [el (ensure-coll el)]
-       (forms/setValue el new-value))))
+       (forms/setValue el new-value))
+     el))
 
 (defn wrap-content
   [content]
