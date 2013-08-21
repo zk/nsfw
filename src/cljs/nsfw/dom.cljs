@@ -111,7 +111,10 @@
    :else content))
 
 (defn append [els content]
-  (doseq [el (ensure-coll els)]
+  (doseq [el (if (or (keyword? els)
+                     (string? els))
+               (query els)
+               (ensure-coll els))]
     (if el
       (if (and (coll? content)
                (not (keyword? (first content))))
@@ -120,7 +123,7 @@
             (.appendChild el (wrap-content c))))
         (when content
           (.appendChild el (wrap-content content))))
-      (throw "Can't call dom/append on a null element")))
+      (throw "Can't call nsfw.dom/append on a null element")))
   els)
 
 (defn prepend [els content]
