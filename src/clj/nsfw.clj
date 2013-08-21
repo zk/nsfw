@@ -62,11 +62,21 @@
 
 (def transform-components (html/mk-transformer !components))
 
-(defn render [& body]
+(defn render-html [& body]
   (when-not (->> body (filter identity) empty?)
     (-> body
         transform-components
         http/html)))
+
+(defn render-edn [body]
+  {:headers {"Content-Type" "application/edn;encoding=utf-8"}
+   :status 200
+   :body (pr-str body)})
+
+(defn render-json [body]
+  {:headers {"Content-Type" "application/json;encoding=utf-8"}
+   :status 200
+   :body (cheshire/generate-string body)})
 
 (defmacro defcomp
   "Define a html component"
