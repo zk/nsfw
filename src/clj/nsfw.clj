@@ -12,7 +12,8 @@
             [nsfw.http :as http]
             [clojure.tools.nrepl.server :as repl]
             [ring.middleware.reload-modified :as reload]
-            [net.cgrand.moustache :as moustache]))
+            [net.cgrand.moustache :as moustache]
+            [cheshire.core :as cheshire]))
 
 (defn start-repl [port]
   (repl/start-server :port port))
@@ -25,8 +26,30 @@
         (h r))
       (h r))))
 
+(defn file-exists? [path]
+  (.exists (java.io.File. path)))
+
 (defn catch-all [r]
-  {:body "NO HANDLER"})
+  (let [path "resources/public/404.html"]
+    {:status 404
+     :type "text/html;charset=utf-8"
+     :body (if (file-exists? path)
+             (slurp path)
+             "404")}))
+
+(defn handle-errors [h debug-exceptions]
+  (fn [r]
+    (if debug-exceptions
+      ((app/debug-exceptions h true) r)
+      (try
+        (h r)
+        (catch Exception e
+          (let [path "resources/public/500.html"]
+            {:status 500
+             :type "text/html;charset=utf-8"
+             :body (if (file-exists? path)
+                     (slurp path)
+                     "500")}))))))
 
 (defonce !components (atom {}))
 
@@ -36,8 +59,8 @@
                 entry-point
                 app-nss
                 session
-                on-err
-                autoload]}
+                autoload
+                debug-exceptions]}
         (apply hash-map opts)]
     (try (when repl-port
            (start-repl repl-port))
@@ -45,7 +68,7 @@
            (println "Can't start REPL on port" repl-port)
            (println e)))
     (server/start :entry (moustache/app
-                          (app/debug-exceptions true on-err)
+                          (handle-errors debug-exceptions)
                           (wrap-reload :dirs ["src/clj"])
                           wrap-file-info
                           (wrap-file "resources/public" {:allow-symlinks? true})
@@ -89,3 +112,7 @@
   [route name & rest]
   `(defn ~(with-meta name (assoc (meta name) :nsfw/route route))
      ~@rest))
+
+(def env-str env/str)
+(def env-int env/int)
+(def env-bool env/bool)
