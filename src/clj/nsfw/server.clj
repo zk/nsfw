@@ -8,7 +8,8 @@
    ;; Change to port 4000 and join. Will shut down server bound to
    ;; 4321.
    (start-server server (fn [req] {:body \"lo\"}) {:port 4000 :join? true})"
-  (:require [ring.adapter.jetty :as jetty]))
+  (:require [ring.adapter.jetty :as jetty]
+            [aleph.http :as ah]))
 
 
 ;; # Server
@@ -23,22 +24,25 @@
    {:port        8080
     :join?       false  ; Join server thread?
     :max-threads 100    ; Request thredpool cap.
-    :min-threads 10}
-"
+    :min-threads 10}"
   [server-atom entry-point & [opts]]
   (let [opts (merge server-defaults opts)]
     (when @server-atom
-      (.stop @server-atom))
+      (@server-atom))
     (swap! server-atom
-           (fn [& _] (jetty/run-jetty entry-point opts)))
-    (doto (.getThreadPool @server-atom)
-      (.setMaxThreads (:max-threads opts))
-      (.setMinThreads (:min-threads opts)))
+           (fn [& _] (ah/start-http-server
+                      (ah/wrap-ring-handler
+                       (fn [r]
+                         (let [resp (entry-point r)]
+                           (if (:status resp)
+                             resp
+                             (assoc resp :status 200)))))
+                      opts)))
     server-atom))
 
 (defn stop-server [server-atom]
   (when @server-atom
-    (.stop @server-atom)))
+    (@server-atom)))
 
 (def restart-server start-server)
 

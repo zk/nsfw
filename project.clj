@@ -5,6 +5,7 @@
                  [hiccup "1.0.2"]
                  [congomongo "0.3.3"]
                  [ring "1.2.0"]
+                 [aleph "0.3.0-rc2"]
                  [net.cgrand/moustache "1.1.0"]
                  [slingshot "0.10.2"]
                  [clj-http "0.5.8"]
