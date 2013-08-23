@@ -5,8 +5,3 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 REPO=$SCRIPT_DIR/..
 
 cd $SCRIPT_DIR/.. && lein install
-
-
-REPO=$SCRIPT_DIR/../lein-template
-
-cd $REPO && lein install
