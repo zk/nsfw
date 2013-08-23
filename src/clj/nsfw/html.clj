@@ -3,7 +3,8 @@
             [hiccup.page :as hiccup-page]
             [clojure.zip :as zip])
   (:import [org.pegdown PegDownProcessor]
-           [org.pegdown Parser]))
+           [org.pegdown Parser]
+           [org.pegdown Extensions]))
 
 (defn href
   "ex. (href \"http://google.com\" \"Google!\" :rel \"nofollow\")"
@@ -52,9 +53,10 @@
   (hiccup/html body))
 
 (defn markdown [s]
-  (let [pd (PegDownProcessor.)]
-      (.markdownToHtml pd s)))
-
+  (let [pd (PegDownProcessor. (int (bit-or Extensions/AUTOLINKS
+                                           Extensions/FENCED_CODE_BLOCKS
+                                           Extensions/TABLES)))]
+    (.markdownToHtml pd s)))
 
 ;; Components
 (defn parse-comp [[tag opts-raw & body]]
