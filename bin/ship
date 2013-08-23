@@ -13,12 +13,3 @@ cd $REPO && \
     lein pom && \
     scp $REPO/pom.xml $REPO/target/provided/nsfw.jar clojars@clojars.org: && \
     lein install
-
-
-REPO=$SCRIPT_DIR/../lein-template
-
-cd $REPO && \
-    lein jar && \
-    lein pom && \
-    scp $REPO/pom.xml $REPO/target/lein-template.jar clojars@clojars.org: && \
-    lein install
