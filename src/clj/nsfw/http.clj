@@ -32,6 +32,6 @@
 
 (defn redirect [loc & opts]
   (merge
-   {:headers {"Location" "/"}
+   {:headers {"Location" loc}
     :status 301}
    (apply hash-map opts)))
