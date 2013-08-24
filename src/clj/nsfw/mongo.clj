@@ -9,7 +9,7 @@
      (org.bson.types.ObjectId.))
   ([id-or-str]
      (org.bson.types.ObjectId/massageToObjectId id-or-str)))
- 
+
 (defn parse-username
   "ex. uri http://foo:bar@zaarly.com returns `\"foo\"`."
   [^URI uri]
@@ -36,7 +36,7 @@
 (defn parse-mongo-url
   "Takes a string representing a mongod connection and returns a map
   representing the connection information.
- 
+
   ex. (parse-mongo-url \"mongodb://foo:bar@localhost:123/database?asdf=zxcv\")
   ;; => {:host     \"localhost\"
          :db       \"zaarly\"
@@ -57,3 +57,10 @@
 (def fetch-and-modify mon/fetch-and-modify)
 (def mongo! mon/mongo!)
 (def make-connection mon/make-connection)
+(def update! mon/update!)
+
+(defn connect! [url]
+  (let [{:keys [host db port username password]} (parse-mongo-url url)]
+    (mon/mongo! :host host :db db :port port)
+    (when username
+      (mon/authenticate username password))))
