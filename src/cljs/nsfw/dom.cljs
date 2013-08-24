@@ -262,7 +262,6 @@
 (def keypress (handler :keypress))
 (def keydown (handler :keydown))
 (def keyup (handler :keyup))
-(def blur (handler :blur))
 
 (def change (handler :change))
 #_(def select (handler :select))
@@ -301,6 +300,13 @@
      el)
   ([els f]
      (listen els :focus f)))
+
+(defn blur
+  ([el]
+     (ensure-el (.blur el))
+     el)
+  ([els f]
+     (listen els :blur f)))
 
 (defn select [el]
   (.select el))
