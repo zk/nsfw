@@ -7,7 +7,7 @@
 
 (def tw-secret "tAB0jkD3J8LzxgnaW8WtmSUxlwRqCoWmmKJTzMbag")
 
-(def request-token (tw/oauth-request-token tw-key tw-secret))
+#_(def request-token (tw/oauth-request-token tw-key tw-secret))
 
 (defn auth-url [opts]
   (let [{:keys [callback token]}
@@ -15,5 +15,3 @@
     (str (tw/oauth-authorization-url token)
          "&oauth_callback="
          (nu/url-encode callback))))
-
-(pprint (auth-url {:callback "http://localhost:5000" :token tw-key}))
