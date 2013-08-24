@@ -1,57 +1,48 @@
 (ns nsfw.widget
-  (:require [nsfw.dom :as dom]
+  (:require [nsfw.dom :as $]
             [nsfw.bind :as bind]
             [nsfw.util :as util]
             [clojure.string :as str]))
 
-(defn el [w]
-  (:$el w))
+(defn html
+  ([m struct]
+     (assoc m :init
+            (fn [opts]
+              ($/node struct))))
+  ([m atom struct]
+     (assoc m :init
+            (fn [opts]
+              (bind/render2 atom struct)))))
 
-(defn data [t & name-val-pairs]
-  (->> name-val-pairs
-       (partition 2)
-       (map (fn [[key val]]
-              [key (atom val)]))
-       (into {})
-       (merge t)))
+(defn el
+  [m q]
+  (assoc m :init (fn [opts]
+                   (first ($/query q)))))
 
-(defn render [{:keys [$el] :as t} sel f]
-  (f (dom/$ $el sel))
-  t)
+(defn event
+  [m sel-ev transform]
+  (let [events (:events m)
+        [sel ev] ($/parse-sel-ev sel-ev)
+        events (concat events [{:selector sel
+                                :event ev
+                                :transform transform}])]
+    (assoc m :events events)))
 
-(defn bind [t data-key f]
-  (bind/update (:$el t) (data-key t) f)
-  t)
+(defn handle
+  ([m msg handler]
+     (let [handlers (:msg-handlers m)]
+       (assoc m :msg-handlers (concat handlers [{:msg-type msg
+                                                 :action handler}]))))
+  ([m handler] (handle m nil handler)))
 
-(defn parse-sel-ev [sel-ev]
-  (let [event (->> sel-ev
-                   name
-                   reverse
-                   (take-while #(not= "." %))
-                   reverse
-                   (apply str))
-        sel (->> sel-ev
-                 name
-                 reverse
-                 (drop-while #(not= "." %))
-                 (drop 1)
-                 reverse
-                 (apply str))]
-    [sel event]))
+(defn state
+  [m atom]
+  (assoc m :!state atom))
 
-(defn event [t & rest]
-  (let [$el (:$el t)
-        events (butlast rest)
-        f (last rest)
-        sel-evs (map parse-sel-ev events)]
-    (doseq [[sel ev] sel-evs]
-      (let [$el (if (empty? sel)
-                  $el
-                  (dom/$ $el sel))]
-        (dom/listen $el ev (fn [e] (f $el e t))))))
-  t)
-
-(defn html [t struct]
-  (assoc t :$el (dom/$ struct)))
-
-(def new {})
+(defn bind
+  ([m query-fn handler]
+     (let [bindings (:data-bindings m)]
+       (assoc m :data-bindings (concat bindings [{:query-fn query-fn
+                                                  :handler handler}]))))
+  ([m handler]
+     (bind m identity handler)))
