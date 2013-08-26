@@ -106,6 +106,17 @@
       (str)
       (str/replace #"-" "")))
 
+(def secure-random-obj (java.security.SecureRandom.))
+
+(defn sec-rand-str
+  "Generates a random string of bytes in hex"
+  [n]
+  (let [buf (byte-array n)]
+    (.nextBytes secure-random-obj buf)
+    (->> buf
+         (map #(Integer/toHexString (bit-and % 0xff)))
+         (apply str))))
+
 (defn md5
   "Compute the hex MD5 sum of a string."
   [#^String str]
