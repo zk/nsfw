@@ -296,14 +296,14 @@
 
 (defn focus
   ([el]
-     (ensure-el (.focus el))
+     (.focus (ensure-el el))
      el)
   ([els f]
      (listen els :focus f)))
 
 (defn blur
   ([el]
-     (ensure-el (.blur el))
+     (.blur (ensure-el el))
      el)
   ([els f]
      (listen els :blur f)))
