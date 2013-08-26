@@ -46,3 +46,6 @@
                                                   :handler handler}]))))
   ([m handler]
      (bind m identity handler)))
+
+(defn spy [m]
+  (handle m (fn [msg] (util/lpr msg))))
