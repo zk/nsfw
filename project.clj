@@ -21,7 +21,8 @@
                  [org.pegdown/pegdown "1.2.1"]
                  [prismatic/plumbing "0.1.0"]
                  [clout "1.1.0"]
-                 [org.pegdown/pegdown "1.4.1"]]
+                 [org.pegdown/pegdown "1.4.1"]
+                 [com.draines/postal "1.10.2"]]
   :source-paths ["src/clj" "examples/clj"]
   :test-paths ["test/clj"]
   :jar-name "nsfw.jar"
