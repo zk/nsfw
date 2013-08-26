@@ -35,11 +35,13 @@
   #_(cljs-uuid-utils/make-random-uuid)
   (gensym))
 
-(defn page-data [key]
+(defn page-data [key & [default]]
   (try
     (reader/read-string (aget js/window (str/replace (name key) #"-" "_")))
     (catch js/Error e
-      (throw (str "Couldn't find page data " key)))))
+      (if default
+        default
+        (throw (str "Couldn't find page data " key))))))
 
 (defn run-once [f]
   (let [did-run (atom false)]
