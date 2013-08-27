@@ -89,6 +89,7 @@
   (when-not (->> body (filter identity) empty?)
     (-> body
         transform-components
+        html/html5
         http/html)))
 
 (defn render-edn [body]

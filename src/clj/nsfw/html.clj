@@ -136,5 +136,8 @@
 
 (defn mk-transformer [!components]
   (fn [body-coll]
-    (-> (map #(apply-comps !components %) body-coll)
-        html5)))
+    (let [body-coll (if (-> body-coll first keyword?)
+                      [body-coll]
+                      body-coll)]
+      (->> (map #(apply-comps !components %) body-coll)
+           html))))
