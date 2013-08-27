@@ -149,6 +149,9 @@
 (defn has-comp-tag? [m]
   (-> m :meta :nsfw/comp-tag))
 
+(defn has-middleware-tag? [m]
+  (-> m :meta :nsfw/middleware))
+
 (defn comment?
   "Returns true if form is a (comment ...)"
   [form]
@@ -209,13 +212,19 @@
                    publics)))
        flatten))
 
+(defn parse-route [{:keys [path method middleware] :as route}]
+  (if (string? route)
+    {:path route}
+    route))
+
 (defn routes-in-nss [nss]
   (->> nss
        var-data
        (filter has-route?)
        (map (fn [{:keys [meta var]}]
-              {:route (:nsfw/route meta)
-               :handler var}))))
+              (let [route (parse-route (:nsfw/route meta))
+                    res (assoc route :handler var :skip-middleware (:nsfw/skip-middleware meta))]
+                res)))))
 
 (defn comps-in-nss [nss]
   (->> nss
@@ -224,6 +233,18 @@
        (map (fn [{:keys [meta var]}]
               {:tag (:nsfw/comp-tag meta)
                :var var}))))
+
+(defn middleware-in-nss [nss]
+  (->> nss
+       var-data
+       (filter has-middleware-tag?)
+       (map (fn [{:keys [meta var]}]
+              {:var var
+               :ns (-> meta :ns str symbol)}))
+       (reduce #(assoc %1 (:ns %2) (:var %2)) {})))
+
+(defn apply-middleware [mws handler]
+  ((apply comp mws) handler))
 
 (defn load-routes [path !components]
   (let [route-nss (namespaces-in path)]
@@ -235,15 +256,28 @@
                      (map (fn [[k vs]]
                             [k (-> vs first :var deref)]))
                      (into {}))
-          routes (routes-in-nss route-nss)]
+          routes (routes-in-nss route-nss)
+          middlewares (middleware-in-nss route-nss)]
       (swap! !components merge comps)
       (fn [req]
         (let [match (->> routes
-                         (map (fn [{:keys [route handler]}]
-                                {:route-params (clout/route-matches route req)
-                                 :handler handler}))
-                         (remove #(-> % :route-params nil?))
-                         first)]
+                         (map (fn [{:keys [method path handler skip-middleware]}]
+                                (let [route-params (clout/route-matches path req)
+                                      method-match (or (nil? method)
+                                                       (= :any method)
+                                                       (= method (:request-method req)))]
+                                  {:match (and route-params method-match)
+                                   :route-params route-params
+                                   :handler handler
+                                   :skip-middleware skip-middleware})))
+                         (filter :match)
+                         first)
+              route-ns (-> match :handler meta :ns str symbol)
+              middleware (get middlewares route-ns)
+              handler (:handler match)
+              handler (if (and middleware
+                               (not (-> match :skip-middleware)))
+                        (apply-middleware @middleware handler)
+                        handler)]
           (when match
-            ((:handler match)
-             (assoc req :route-params (:route-params match)))))))))
+            (handler (assoc req :route-params (:route-params match)))))))))
