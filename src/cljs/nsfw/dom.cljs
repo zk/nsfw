@@ -195,6 +195,13 @@
        (dom/setTextContent el (str text)))
      els))
 
+(defn html
+  ([els html-string]
+     (doseq [$el (ensure-coll els)]
+       (-> $el
+           empty
+           (append (dom/htmlToDocumentFragment html-string))))))
+
 (defn replace [els content]
   (doseq [el (ensure-coll els)]
     (dom/replaceNode content el))
