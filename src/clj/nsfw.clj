@@ -10,10 +10,17 @@
             [nsfw.server :as server]
             [nsfw.html :as html]
             [nsfw.http :as http]
+            [clojure.string :as str]
             [clojure.tools.nrepl.server :as repl]
             [ring.middleware.reload-modified :as reload]
             [net.cgrand.moustache :as moustache]
             [cheshire.core :as cheshire]))
+
+;; -- Environment--
+
+(def env-str env/str)
+(def env-int env/int)
+(def env-bool env/bool)
 
 (defn start-repl [port]
   (repl/start-server :port port))
@@ -110,10 +117,14 @@
 
 (defmacro defroute
   "Define a route var"
-  [route name & rest]
-  `(defn ~(with-meta name (assoc (meta name) :nsfw/route route))
-     ~@rest))
-
-(def env-str env/str)
-(def env-int env/int)
-(def env-bool env/bool)
+  [route & rest]
+  (let [name# (-> route
+                  (str/replace #"/" "")
+                  (str/replace #":" "-")
+                  (str/replace #"\*" "all"))
+        name# (if (empty? name#)
+                "index"
+                name#)
+        name# (symbol name#)]
+    `(defn ~(with-meta name# (assoc (meta name) :nsfw/route route))
+       ~@rest)))
