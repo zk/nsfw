@@ -112,32 +112,43 @@
   `(defn ~(with-meta name (assoc (meta name) :nsfw/comp-tag (keyword name)))
      ~@rest))
 
+(defn parse-route [route]
+  (cond
+   (string? route) {:path route}
+   (vector? route) (let [[method path] route]
+                     {:method method
+                      :path path})
+   (map? route) route))
+
+(defn parse-route-name [route]
+  (let [name (cond
+              (string? route) route
+              (map? route) (:path route)
+              (vector? route) (second route))
+        name (-> name
+                 (str/replace #"/" "")
+                 (str/replace #":" "-")
+                 (str/replace #"\*" "all"))
+        name (if (empty? name)
+               "index"
+               name)
+        name (symbol name)]
+    name))
+
 (defmacro defroute
   "Define a route var"
   [route & rest]
-  (let [name# (-> route
-                  (str/replace #"/" "")
-                  (str/replace #":" "-")
-                  (str/replace #"\*" "all"))
-        name# (if (empty? name#)
-                "index"
-                name#)
-        name# (symbol name#)]
-    `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route))
+  (let [name# (parse-route-name route)
+        route# (parse-route route)]
+    `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route#))
        ~@rest)))
 
 (defmacro defhtml
   "Define a route var"
   [route params & rest]
-  (let [name# (-> route
-                  (str/replace #"/" "")
-                  (str/replace #":" "-")
-                  (str/replace #"\*" "all"))
-        name# (if (empty? name#)
-                "index"
-                name#)
-        name# (symbol name#)]
-    `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route)) ~params
+  (let [name# (parse-route-name route)
+        route# (parse-route route)]
+    `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route#)) ~params
        (render-html ~@rest))))
 
 (defmacro defmiddleware

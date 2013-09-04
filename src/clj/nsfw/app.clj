@@ -222,6 +222,7 @@
        var-data
        (filter has-route?)
        (map (fn [{:keys [meta var]}]
+              (println meta)
               (let [route (parse-route (:nsfw/route meta))
                     res (assoc route :handler var :skip-middleware (:nsfw/skip-middleware meta))]
                 res)))))
