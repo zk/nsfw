@@ -67,25 +67,27 @@
                 app-nss
                 session
                 autoload
-                debug-exceptions]}
+                debug-exceptions
+                session-store]}
         (apply hash-map opts)]
     (try (when repl-port
            (start-repl repl-port))
          (catch Exception e
            (println "Can't start REPL on port" repl-port)
            (println e)))
-    (server/start :entry (moustache/app
-                          (handle-errors debug-exceptions)
-                          (wrap-reload :dirs ["src/clj"])
-                          wrap-file-info
-                          (wrap-file "resources/public" {:allow-symlinks? true})
-                          wrap-params
-                          wrap-nested-params
-                          wrap-keyword-params
-                          (wrap-session (or session {}))
-                          (serve-routes autoload !components)
-                          catch-all)
-                  :port server-port)))
+    (let [sess (app/session-store (or session-store :encrypted-cookie))]
+      (server/start :entry (moustache/app
+                            (handle-errors debug-exceptions)
+                            (wrap-reload :dirs ["src/clj"])
+                            wrap-file-info
+                            (wrap-file "resources/public" {:allow-symlinks? true})
+                            wrap-params
+                            wrap-nested-params
+                            wrap-keyword-params
+                            (wrap-session (or session {}))
+                            (serve-routes autoload !components)
+                            catch-all)
+                    :port server-port))))
 
 (def transform-components (html/mk-transformer !components))
 

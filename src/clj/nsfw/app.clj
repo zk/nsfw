@@ -103,17 +103,21 @@
                  [:script {:type "text/javascript"}
                   (str entry-js "()")])])})))
 
-(defn session-store
-  [type & rest]
-  (condp = type
-    :atom (if-not (empty? rest)
-            (memory-store (first rest))
-            (memory-store))
+(defn session-store [kw-or-opts]
+  (let [type (if (keyword? kw-or-opts)
+               kw-or-opts
+               (:type kw-or-opts))
+        opts (if-not (keyword? kw-or-opts)
+               (dissoc kw-or-opts :type))]
+    (condp = type
+      :atom (if opts
+              (memory-store opts)
+              (memory-store))
 
-    ;; encrypted cookie
-    (if-not (empty? rest)
-      (cookie-store (first rest))
-      (cookie-store))))
+      ;; encrypted cookie
+      (if opts
+        (cookie-store opts)
+        (cookie-store)))))
 
 (defmacro route [& routes]
   `(moustache/app ~@routes))
@@ -222,7 +226,6 @@
        var-data
        (filter has-route?)
        (map (fn [{:keys [meta var]}]
-              (println meta)
               (let [route (parse-route (:nsfw/route meta))
                     res (assoc route :handler var :skip-middleware (:nsfw/skip-middleware meta))]
                 res)))))
