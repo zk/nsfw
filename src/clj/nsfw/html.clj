@@ -68,11 +68,10 @@
                (concat [opts-raw] body))]
     [opts body]))
 
-(defn tag-match? [!components node]
+(defn tag-match? [components node]
   (and (coll? node)
        (keyword? (first node))
-       (@!components (first node))))
-
+       (components (first node))))
 
 (defn vec-or-seq? [o]
   (or (seq? o)
@@ -100,7 +99,7 @@
                                (drop 1))]
                  (vec (concat pre ns post))))))))
 
-(defn apply-comps [!components structure]
+(defn apply-comps [components structure]
   (let [z (zip/zipper #(or (vector? %) (seq? %))
                       identity
                       (fn [node children]
@@ -111,21 +110,24 @@
         (zip/root n)
         (recur (zip/next
                 (cond
-                 (tag-match? !components (zip/node n))
+                 (tag-match? components (zip/node n))
                  (zip/edit n (fn [node]
                                (let [tag (first node)
                                      [opts body] (parse-comp node)
-                                     f (@!components tag)
+                                     f (components tag)
                                      res (if (fn? f)
                                            (f opts body)
                                            f)
-                                     res (apply-comps !components res)]
+                                     res (apply-comps components res)]
                                  res)))
 
                  (has-nested-seqs? (zip/node n))
                  (zip/edit n unwrap-nested-seqs)
 
                  :else n)))))))
+
+(defn apply-comps! [!components structure]
+  (apply-comps @!components structure))
 
 (defn mk-comp [!components]
   (fn [& comps]
@@ -139,5 +141,5 @@
     (let [body-coll (if (-> body-coll first keyword?)
                       [body-coll]
                       body-coll)]
-      (->> (map #(apply-comps !components %) body-coll)
+      (->> (map #(apply-comps! !components %) body-coll)
            html))))

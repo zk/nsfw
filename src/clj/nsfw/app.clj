@@ -239,9 +239,9 @@
        var-data
        (filter has-middleware-tag?)
        (map (fn [{:keys [meta var]}]
-              {:var var
-               :ns (-> meta :ns str symbol)}))
-       (reduce #(assoc %1 (:ns %2) (:var %2)) {})))
+              (merge {:var var :ns (-> meta :ns str symbol)}
+                     @var)))
+       #_(reduce #(assoc %1 (:ns %2) (:var %2)) {})))
 
 (defn apply-middleware [mws handler]
   ((apply comp mws) handler))
@@ -261,23 +261,28 @@
       (swap! !components merge comps)
       (fn [req]
         (let [match (->> routes
-                         (map (fn [{:keys [method path handler skip-middleware]}]
+                         (map (fn [{:keys [method path handler skip-middleware] :as route}]
                                 (let [route-params (clout/route-matches path req)
                                       method-match (or (nil? method)
                                                        (= :any method)
                                                        (= method (:request-method req)))]
                                   {:match (and route-params method-match)
                                    :route-params route-params
-                                   :handler handler
-                                   :skip-middleware skip-middleware})))
+                                   :handler handler})))
                          (filter :match)
                          first)
               route-ns (-> match :handler meta :ns str symbol)
-              middleware (get middlewares route-ns)
+              middleware (->> middlewares
+                              (filter #((:pred %) req))
+                              (mapcat :middleware)
+                              reverse)
               handler (:handler match)
               handler (if (and middleware
                                (not (-> match :skip-middleware)))
-                        (apply-middleware @middleware handler)
+                        (apply-middleware middleware handler)
                         handler)]
           (when match
-            (handler (assoc req :route-params (:route-params match)))))))))
+            (handler (assoc req
+                       :params (merge (:route-params match)
+                                      (:params req))
+                       :route (assoc match :middleware middleware)))))))))

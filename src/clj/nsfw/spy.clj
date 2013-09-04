@@ -21,7 +21,7 @@
       (str/replace #"<" "&lt;")
       (str/replace #">" "&gt;")))
 
-(nsfw/defroute "/_spy" spy [r]
+(nsfw/defroute "/_spy" [r]
   (nsfw/render-html
    [:page-body
     {:class "page-spy"}

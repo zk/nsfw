@@ -87,9 +87,6 @@
                           catch-all)
                   :port server-port)))
 
-(defn apply-comps [comp]
-  (html/apply-comps !components comp))
-
 (def transform-components (html/mk-transformer !components))
 
 (defn render-html [& body]
@@ -126,5 +123,26 @@
                 "index"
                 name#)
         name# (symbol name#)]
-    `(defn ~(with-meta name# (assoc (meta name) :nsfw/route route))
+    `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route))
        ~@rest)))
+
+(defmacro defhtml
+  "Define a route var"
+  [route params & rest]
+  (let [name# (-> route
+                  (str/replace #"/" "")
+                  (str/replace #":" "-")
+                  (str/replace #"\*" "all"))
+        name# (if (empty? name#)
+                "index"
+                name#)
+        name# (symbol name#)]
+    `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route)) ~params
+       (render-html ~@rest))))
+
+(defmacro defmiddleware
+  "Define a route var"
+  [name pred & mws]
+  `(def ~(with-meta name (assoc (meta name) :nsfw/middleware true))
+     {:pred ~pred
+      :middleware [~@mws]}))
