@@ -99,6 +99,17 @@
                                (drop 1))]
                  (vec (concat pre ns post))))))))
 
+(defn tag-structure-as-comp [structure tag]
+  (let [[el & rem] structure
+        opts (if (map? (first rem))
+               (assoc (first rem) :data-nsfw-comp tag)
+               {:data-nsfw-comp tag})
+        rem (if (map? (first rem))
+              (rest rem)
+              rem)
+        res (vec (concat [el opts] rem))]
+    res))
+
 (defn apply-comps [components structure]
   (let [z (zip/zipper #(or (vector? %) (seq? %))
                       identity
@@ -118,6 +129,7 @@
                                      res (if (fn? f)
                                            (f opts body)
                                            f)
+                                     res (tag-structure-as-comp res tag)
                                      res (apply-comps components res)]
                                  res)))
 
