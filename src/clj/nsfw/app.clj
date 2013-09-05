@@ -227,7 +227,7 @@
        (filter has-route?)
        (map (fn [{:keys [meta var]}]
               (let [route (parse-route (:nsfw/route meta))
-                    res (assoc route :handler var :skip-middleware (:nsfw/skip-middleware meta))]
+                    res (assoc route :handler var)]
                 res)))))
 
 (defn comps-in-nss [nss]
@@ -265,7 +265,7 @@
       (swap! !components merge comps)
       (fn [req]
         (let [match (->> routes
-                         (map (fn [{:keys [method path handler skip-middleware] :as route}]
+                         (map (fn [{:keys [method path handler] :as route}]
                                 (let [route-params (clout/route-matches path req)
                                       method-match (or (nil? method)
                                                        (= :any method)
@@ -281,8 +281,7 @@
                               (mapcat :middleware)
                               reverse)
               handler (:handler match)
-              handler (if (and middleware
-                               (not (-> match :skip-middleware)))
+              handler (if middleware
                         (apply-middleware middleware handler)
                         handler)]
           (when match
