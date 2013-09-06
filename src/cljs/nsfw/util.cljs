@@ -2,7 +2,9 @@
   (:require #_[cljs-uuid-utils :as uu]
             [cljs.reader :as reader]
             [clojure.string :as str]
-            [nsfw.crypt :as crypt]))
+            [nsfw.crypt :as crypt]
+            [goog.date :as gd]
+            [goog.i18n.DateTimeFormat]))
 
 (defn log [& args]
   (.log js/console (if args (to-array args) nil)))
@@ -65,12 +67,20 @@
 
 
 (defn timeago [date]
-  (let [ms (ms date)
+  (let [ms (- (now-ms) (ms date))
         s (/ ms 1000)
         m (/ s 60)
         h (/ m 60)
         d (/ h 24)
-        y (/ d 365)]))
+        y (/ d 365)]
+    (cond
+     (< s 60) "less than a minute"
+     (< m 2) "1 minute"
+     (< h 1) (str (int m) " minutes")
+     (< d 1) (str (int h) " hours")
+     (< d 2) "1 day"
+     (< y 1) (str (int d) " days")
+     (< y 2) "over a year")))
 
 (defn ref? [o]
   (instance? cljs.core/Atom o))
@@ -87,3 +97,10 @@
     (if size
       (str url "&s=" size)
       url)))
+
+(defn parse-iso-8601 [iso-str]
+  (gd/fromIsoString iso-str))
+
+(defn format-date
+  ([pattern date]
+     (.format (goog.i18n.DateTimeFormat. pattern) date)))
