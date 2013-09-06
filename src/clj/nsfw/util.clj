@@ -208,3 +208,5 @@
         pw (java.io.PrintWriter. sw)]
     (.printStackTrace exc pw)
     (.toString sw)))
+
+(defn now [] (System/currentTimeMillis))
