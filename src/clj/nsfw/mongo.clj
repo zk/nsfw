@@ -59,6 +59,7 @@
 (def make-connection mon/make-connection)
 (def update! mon/update!)
 (def insert! mon/insert!)
+(def destroy! mon/destroy!)
 
 (defn connect! [url]
   (let [{:keys [host db port username password]} (parse-mongo-url url)]
