@@ -122,11 +122,9 @@
                       :path path})
    (map? route) route))
 
+
 (defn parse-route-name [route]
-  (let [name (cond
-              (string? route) route
-              (map? route) (:path route)
-              (vector? route) (second route))
+  (let [name (:path route)
         name (-> name
                  (str/replace #"/" "")
                  (str/replace #":" "-")
@@ -134,22 +132,23 @@
         name (if (empty? name)
                "index"
                name)
+        name (str (or (:method route) "any") "-" name)
         name (symbol name)]
     name))
 
 (defmacro defroute
   "Define a route var"
   [route & rest]
-  (let [name# (parse-route-name route)
-        route# (parse-route route)]
+  (let [route# (parse-route route)
+        name# (parse-route-name route#)]
     `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route#))
        ~@rest)))
 
 (defmacro defhtml
   "Define a route var"
   [route params & rest]
-  (let [name# (parse-route-name route)
-        route# (parse-route route)]
+  (let [route# (parse-route route)
+        name# (parse-route-name route#)]
     `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route#)) ~params
        (render-html ~@rest))))
 
