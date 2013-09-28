@@ -9,12 +9,25 @@
             [goog.dom.query]
             [goog.dom.forms :as forms]
             [cljs.core :as cc]
-            [nsfw.util :as util])
+            [nsfw.util :as util]
+            [cljs.reader :as reader]
+            [clojure.string :as str]
+            [nsfw.pubsub :as ps])
   (:refer-clojure :exclude [val replace remove empty drop > select]))
 
 (extend-type js/NodeList
   ISeqable
   (-seq [array] (array-seq array 0)))
+
+(extend-type js/NodeList
+  ICollection
+  (-conj [coll o]
+    (throw "Error: Can't conj onto a NodeList.")))
+
+(extend-type js/HTMLCollection
+  ISeqable
+  (-seq [array]
+    (array-seq array 0)))
 
 (extend-type js/NodeList
   ICollection
@@ -195,13 +208,6 @@
        (dom/setTextContent el (str text)))
      els))
 
-(defn html
-  ([els html-string]
-     (doseq [$el (ensure-coll els)]
-       (-> $el
-           empty
-           (append (dom/htmlToDocumentFragment html-string))))))
-
 (defn replace [els content]
   (doseq [el (ensure-coll els)]
     (dom/replaceNode content el))
@@ -215,6 +221,16 @@
   (doseq [el (ensure-coll els)]
     (dom/removeChildren el))
   els)
+
+(defn children [el]
+  (seq (dom/getChildren (ensure-el el))))
+
+(defn html
+  ([els html-string]
+     (doseq [$el (ensure-coll els)]
+       (-> $el
+           empty
+           (append (dom/htmlToDocumentFragment html-string))))))
 
 (defn has-class? [el cls]
   (classes/has (unwrap el) (name cls)))
@@ -468,8 +484,8 @@
    allow preventing of the event, respectively."
   [$el event payload & opts]
   (let [opts (apply hash-map opts)
-        bubble? (:bubble? opts)
-        preventable? (:preventable? opts)
+        bubble? (or (:bubble? opts) true)
+        preventable? (or (:preventable? opts) true)
         ev (.createEvent js/document "Event")]
     (.initEvent ev (name event) true true)
     (aset ev "nsfw_payload" payload)
@@ -551,10 +567,22 @@
                      events
                      msg-handlers
                      data-bindings
-                     !state] :as opts}]
+                     !state
+                     bus] :as opts}]
   ;; gen html
   (let [$root (init opts)
-        opts (assoc opts :$el $root)]
+        opts (assoc opts :$el $root)
+        bus (or bus (ps/mk-bus))]
+
+    ;; add subs
+    (doseq [{:keys [msg-type action]}
+            (->> msg-handlers (filter identity))]
+      (ps/sub bus msg-type
+              (fn [msg]
+                (if msg-type
+                  (apply action (concat (clojure.core/drop 1 msg) [opts]))
+                  (action msg opts)))))
+
     ;; bind events
     (doseq [{:keys [selector event transform]} events]
       (let [$el (if selector
@@ -562,7 +590,8 @@
                   $root)]
         (listen $el event (fn [e]
                             (when-let [msg (transform e $el opts)]
-                              (send opts msg))))))
+                              (ps/pub bus msg))))))
+
     (doseq [{:keys [query-fn handler]} data-bindings]
       (on-change
        !state
@@ -592,3 +621,64 @@
               nil
               sel)]
     [sel event]))
+
+(defn validate-ajax-args [{:keys [method]}]
+  (let [valid-http-methods #{:get
+                             :post
+                             :put
+                             :patch
+                             :delete
+                             :options
+                             :head
+                             :trace
+                             :connect}]
+    (when-not (get valid-http-methods method)
+      (throw (str "nsfw.dom/ajax: "
+                  method
+                  " is not a valid ajax method ("
+                  (->> valid-http-methods
+                       (map pr-str)
+                       (interpose ", ")
+                       (apply str))
+                  ")")))))
+
+(defn safe-name [o]
+  (when o
+    (name o)))
+
+(defn safe-upper-case [s]
+  (when s
+    (str/upper-case s)))
+
+(defn ajax [opts]
+  (let [{:keys [path method data headers success error] :as opts}
+        (merge
+         {:path "/"
+          :method "GET"
+          :data {}
+          :headers {"content-type" "application/clojure"}
+          :success (fn []
+                     (throw "nsfw.dom/ajax: Unhandled :success callback from AJAX call."))
+          :error (fn []
+                   (throw "nsfw.dom/ajax: Unhandled :error callback from AJAX call."))}
+         opts)]
+    (validate-ajax-args opts)
+    (goog.net.XhrIo/send
+     path
+     (fn [e]
+       (try
+         (let [req (.-target e)]
+           (if (.isSuccess req)
+             ;; maybe pull js->clj
+             (success (let [resp (.getResponseText req)]
+                        (when-not (empty? resp)
+                          (reader/read-string resp))))
+             (error req)))
+         (catch js/Object e
+           (.error js/console (.-stack e))
+           (throw e))))
+     (-> method
+         name
+         safe-upper-case)
+     (pr-str data)
+     (clj->js headers))))
