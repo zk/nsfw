@@ -39,7 +39,10 @@
 
 (defn page-data [key & [default]]
   (try
-    (reader/read-string (aget js/window (str/replace (name key) #"-" "_")))
+    (reader/read-string (aget js/window (-> key
+                                            name
+                                            (str/replace #"-" "_")
+                                            str/upper-case)))
     (catch js/Error e
       (if default
         default
@@ -62,12 +65,14 @@
 (defn ms [date]
   (.getTime date))
 
-(defn now-ms []
+(defn now []
   (ms (js/Date.)))
 
 
-(defn timeago [date]
-  (let [ms (- (now-ms) (ms date))
+(defn timeago [date-or-ms]
+  (let [ms (if (number? date-or-ms)
+             (- (now) date-or-ms)
+             (- (now) (ms date)))
         s (/ ms 1000)
         m (/ s 60)
         h (/ m 60)
@@ -80,12 +85,10 @@
      (< d 1) (str (int h) " hours")
      (< d 2) "1 day"
      (< y 1) (str (int d) " days")
-     (< y 2) "over a year")))
+     :else "over a year")))
 
 (defn ref? [o]
   (instance? cljs.core/Atom o))
-
-#_(log timeago (js/Date. (- (now-ms) 100000)))
 
 (def md5 crypt/md5)
 
@@ -100,6 +103,11 @@
 
 (defn parse-iso-8601 [iso-str]
   (gd/fromIsoString iso-str))
+
+(defn to-iso-8601 [unix-time]
+  (.toUTCIsoString (doto (gd/DateTime.)
+                     (.setTime unix-time))
+                   false true))
 
 (defn format-date
   ([pattern date]
