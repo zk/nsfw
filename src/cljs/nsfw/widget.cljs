@@ -94,9 +94,9 @@
 
     ;; bind events
     (doseq [{:keys [selector event transform type]} events]
-      (let [$el (if selector
-                  (first ($/query $root selector))
-                  $root)]
+      (doseq [$el (if selector
+                    ($/query $root selector)
+                    [$root])]
         (when (nil? $el)
           (throw (format "nsfw.widget/build: Element binding event [%s %s] to is nil."
                          selector event)))
