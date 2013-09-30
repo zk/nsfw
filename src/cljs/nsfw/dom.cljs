@@ -656,7 +656,7 @@
          {:path "/"
           :method "GET"
           :data {}
-          :headers {"content-type" "application/clojure"}
+          :headers {"content-type" "application/edn"}
           :success (fn []
                      (throw "nsfw.dom/ajax: Unhandled :success callback from AJAX call."))
           :error (fn []
