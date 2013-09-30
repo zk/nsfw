@@ -32,21 +32,20 @@
 (defn add-comp [selector init]
   (swap! !comps concat [{:selector selector :init init}]))
 
-#_(defn init-comps [& [sel]]
-  (doseq [{:keys [selector init]} @!comps]
-    (doseq [$match ($/query ($/query (or sel :body)) selector)]
+(defn init-comps [$el comps]
+  (doseq [{:keys [selector init]} comps]
+    (doseq [$match ($/query $el selector)]
       (let [data-str ($/attr $match :data-nsfw)
             data (when data-str (rdr/read-string data-str))]
-        (init $match data)))))
+        (init $match data default-bus)))))
+
+(defn init-page-comps []
+  (init-comps (first ($/query :body)) @!comps))
 
 (defn append [parent el-or-wd]
   (let [$el (if (map? el-or-wd)
               (:$el el-or-wd)
               el-or-wd)
         $el ($/node $el)]
-    (doseq [{:keys [selector init]} @!comps]
-      (doseq [$match ($/query ($/node [:div $el]) selector)]
-        (let [data-str ($/attr $match :data-nsfw)
-              data (when data-str (rdr/read-string data-str))]
-          (init $match data default-bus))))
+    (init-comps ($/node [:div $el]) @!comps)
     ($/append parent $el)))
