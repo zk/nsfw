@@ -2,7 +2,8 @@
   (:require [clojure.core :as cc])
   (:import [org.joda.time
             DateTime
-            DateTimeZone]
+            DateTimeZone
+            DateMidnight]
            [org.joda.time.format
             DateTimeFormatter
             ISODateTimeFormat
@@ -22,7 +23,12 @@
    (cc/= :yesterday o) (.minusDays (DateTime.) 1)
    (cc/= :tomorrow o) (.plusDays (DateTime.) 1)
    (string? o) (.parseDateTime iso-parser o)
+   (number? o) (DateTime. o)
    :else nil))
+
+
+(defn midnight [o]
+  (DateMidnight. (from o)))
 
 (defn to-iso [dt]
   (cond
