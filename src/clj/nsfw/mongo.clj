@@ -54,6 +54,7 @@
 
 (def fetch-one mon/fetch-one)
 (def fetch mon/fetch)
+(def fetch-count mon/fetch-count)
 (def fetch-and-modify mon/fetch-and-modify)
 (def mongo! mon/mongo!)
 (def make-connection mon/make-connection)
