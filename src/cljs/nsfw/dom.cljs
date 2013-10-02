@@ -667,13 +667,14 @@
      path
      (fn [e]
        (try
-         (let [req (.-target e)]
+         (let [req (.-target e)
+               data (let [resp (.getResponseText req)]
+                      (when-not (empty? resp)
+                        (reader/read-string resp)))]
            (if (.isSuccess req)
              ;; maybe pull js->clj
-             (success (let [resp (.getResponseText req)]
-                        (when-not (empty? resp)
-                          (reader/read-string resp))))
-             (error req)))
+             (success data req)
+             (error data req)))
          (catch js/Object e
            (.error js/console (.-stack e))
            (throw e))))
