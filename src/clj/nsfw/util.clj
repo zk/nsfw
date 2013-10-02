@@ -40,6 +40,10 @@
    (= "" o) nil
    :else nil))
 
+(defn format-ms [ms format]
+  (let [d (Date. ms)]
+    (.format (SimpleDateFormat. format) d)))
+
 (defn web-stacktrace [e req]
   (str "<html><body>"
        "<h1>500 - " (.getMessage e) "</h1>"
