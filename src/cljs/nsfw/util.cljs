@@ -72,7 +72,7 @@
 (defn timeago [date-or-ms]
   (let [ms (if (number? date-or-ms)
              (- (now) date-or-ms)
-             (- (now) (ms date)))
+             (- (now) (ms date-or-ms)))
         s (/ ms 1000)
         m (/ s 60)
         h (/ m 60)
