@@ -112,7 +112,8 @@
 
 (defn val
   ([el]
-     (forms/getValue (unwrap el)))
+     (let [res (forms/getValue (unwrap el))]
+       (when-not (empty? res) res)))
   ([el new-value]
      (doseq [el (ensure-coll el)]
        (forms/setValue el new-value))
@@ -683,3 +684,19 @@
          safe-upper-case)
      (pr-str data)
      (clj->js headers))))
+
+(defn form-values [$el]
+  (let [$els (->> ["input" "select" "textarea"]
+                  (map #(query $el %))
+                  (reduce concat))]
+    (->> $els
+         (map (fn [$el]
+                [(attr $el :name)
+                 (val $el)]))
+         (clojure.core/remove #(nil? (first %)))
+         (map #(vector (keyword (first %))
+                       (second %)))
+         (into {}))))
+
+(defn parent [el]
+  (dom/getParentElement el))
