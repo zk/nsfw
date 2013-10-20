@@ -83,6 +83,7 @@
      (< m 2) "1 minute"
      (< h 1) (str (int m) " minutes")
      (< d 1) (str (int h) " hours")
+     (< h 2) "1 hour"
      (< d 2) "1 day"
      (< y 1) (str (int d) " days")
      :else "over a year")))
