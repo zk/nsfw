@@ -117,3 +117,6 @@
              (handler qnew qold opts)))))
       #_(handler (query-fn @!state) nil opts))
     (:$el opts)))
+
+(defn node [m $el]
+  (assoc m :init (fn [& _] $el)))
