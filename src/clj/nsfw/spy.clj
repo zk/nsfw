@@ -3,7 +3,8 @@
             [nsfw]
             [nsfw.util :as util]
             [nsfw.app :as app]
-            [nsfw.html :as html]))
+            [nsfw.html :as html]
+            [clj-stacktrace.repl :as cst]))
 
 (defn query-routes [path]
   (->> path
@@ -21,51 +22,35 @@
       (str/replace #"<" "&lt;")
       (str/replace #">" "&gt;")))
 
-(nsfw/defroute "/_spy" [r]
-  (nsfw/render-html
-   [:page-body
-    {:class "page-spy"}
-    [:div.container
-     [:div.row
-      [:div.col-lg-12
-       [:div.page-lead
-        [:h1 "Spy"]
-        [:p.lead "Look at what's going on in your app!"]]]]
-     [:div.row
-      [:div.col-lg-3
-       [:ul.nav.demo-nav
-        {:data-spy "affix"
-         :data-offset-top "190"}
-        [:li
-         [:a {:href "#routes"} "Routes"]]
-        [:li
-         [:a {:href "#components"} "Components"]]]]
-      [:div.col-lg-9
-       [:section.spy
-        [:h2#routes "Routes"]
-        [:div.routes
-         [:table.table.table-striped
-          [:thead
-           [:tr
-            [:th "Path"]
-            [:th "Handler"]]]
-          [:tbody
-           (map (fn [{:keys [path method middleware handler]}]
-                  [:tr
-                   [:td (or method "*")]
-                   [:td [:a {:href path} path]]
-                   [:td  handler]])
-                (query-routes "src/clj"))]]]]
-       [:section.components
-        [:h2#components "Components"]
-        (map (fn [{:keys [tag var]}]
-               [:div.component
-                [:h3 (pr-str [tag])]
-                [:h4 [:code var]]
-                [:pre (-> (if (fn? @var)
-                            (@var {} "")
-                            @var)
-                          util/pp-str)]])
-             (->> "src/clj/nsfw_site"
-                  query-comps
-                  (sort-by :tag)))]]]]]))
+(def exc-css
+  [["*" {:padding 0
+         :margin 0}]
+   [:body {:font-family "\"Helvetica Neue\", Helvetica, sans-serif"
+           :padding 0}]
+   [:header {:width "100%"
+             :background-color :#ccc
+             :padding "10px"}]
+   [:.content {:padding "20px"}]
+   [:pre {:margin-top "20px"}]
+   ["h1,h2,h3,h4,h5,h6" {:font-weight "normal"}]])
+
+(defn show-exceptions-mw [h]
+  (fn [r]
+    (try
+      (h r)
+      (catch Exception e
+        (println "EXCEPTION")
+        (html/response
+         (html/html5
+          [:head
+           (apply html/embed-css exc-css)]
+          [:body
+           [:header
+            "NSFW Console"]
+           [:div.content
+            [:section
+             [:h3 "Stacktrace"]
+             [:pre.stacktrace (cst/pst-str e)]]
+            [:section
+             [:h3 "Request"]
+             [:pre.request (util/pp-str r)]]]]))))))
