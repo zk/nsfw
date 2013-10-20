@@ -214,3 +214,27 @@
     (.toString sw)))
 
 (defn now [] (System/currentTimeMillis))
+
+(defn ms [date]
+  (cond
+   (= java.util.Date (class date)) (.getTime date)
+   :else (.getMillis date)))
+
+(defn timeago [date-or-ms]
+  (let [ms (if (number? date-or-ms)
+             (- (now) date-or-ms)
+             (- (now) (ms date-or-ms)))
+        s (/ ms 1000)
+        m (/ s 60)
+        h (/ m 60)
+        d (/ h 24)
+        y (/ d 365)]
+    (cond
+     (< s 60) "less than a minute"
+     (< m 2) "1 minute"
+     (< h 1) (str (int m) " minutes")
+     (< h 2) "1 hour"
+     (< d 1) (str (int h) " hours")
+     (< d 2) "1 day"
+     (< y 1) (str (int d) " days")
+     :else "over a year")))
