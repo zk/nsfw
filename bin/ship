@@ -6,7 +6,7 @@ REPO=$SCRIPT_DIR/..
 
 set -e
 
-$SCRIPT_DIR/test
+# $SCRIPT_DIR/test
 
 cd $REPO && \
     lein jar && \
