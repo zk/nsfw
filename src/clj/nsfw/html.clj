@@ -155,3 +155,7 @@
                       body-coll)]
       (->> (map #(apply-comps! !components %) body-coll)
            html))))
+
+(defn response [body]
+  {:body body
+   :headers {"Content-Type" "text/html;charset=utf-8"}})
