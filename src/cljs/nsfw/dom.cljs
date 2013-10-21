@@ -8,6 +8,7 @@
             [goog.events :as events]
             [goog.dom.query]
             [goog.dom.forms :as forms]
+            [goog.net.XhrIo]
             [cljs.core :as cc]
             [nsfw.util :as util]
             [cljs.reader :as reader]
