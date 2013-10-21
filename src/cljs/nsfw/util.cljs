@@ -113,3 +113,6 @@
 (defn format-date
   ([pattern date]
      (.format (goog.i18n.DateTimeFormat. pattern) date)))
+
+(defn navigate-to [url]
+  (aset (aget js/window "location") "href" url))
