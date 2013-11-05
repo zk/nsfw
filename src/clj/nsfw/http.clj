@@ -71,3 +71,8 @@
     (let [resp (h r)]
       (when resp
         (vary-meta resp assoc k v)))))
+
+(defn render-edn [body]
+  {:headers {"Content-Type" "application/edn;encoding=utf-8"}
+   :status 200
+   :body (pr-str body)})
