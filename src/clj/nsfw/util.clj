@@ -29,7 +29,6 @@
   (fn [& key-vals]
     (println (format-log-entry (concat [:app-id app-id :ns ns] key-vals)))))
 
-
 (def iso-formatter (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssZ"))
 
 (defn iso-8601 [o]

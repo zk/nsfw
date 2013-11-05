@@ -3,7 +3,6 @@
   (:use [clojure.test])
   (:refer-clojure :exclude (int str)))
 
-
 (deftest test-env
   (is (= (env :user) (System/getenv "USER")))
 
