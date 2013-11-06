@@ -652,39 +652,62 @@
   (when s
     (str/upper-case s)))
 
+(def ajax-defaults
+  {:path "/"
+   :method "GET"
+   :data {}
+   :success (fn []
+              (throw "nsfw.dom/ajax: Unhandled :success callback from AJAX call."))
+   :error (fn []
+            (throw "nsfw.dom/ajax: Unhandled :error callback from AJAX call."))})
+
 (defn ajax [opts]
-  (let [{:keys [path method data headers success error] :as opts}
-        (merge
-         {:path "/"
-          :method "GET"
-          :data {}
-          :headers {"content-type" "application/edn"}
-          :success (fn []
-                     (throw "nsfw.dom/ajax: Unhandled :success callback from AJAX call."))
-          :error (fn []
-                   (throw "nsfw.dom/ajax: Unhandled :error callback from AJAX call."))}
-         opts)]
+  (let [opts (merge ajax-defaults opts)
+        opts (if-not (:headers opts)
+               (assoc opts
+                 :headers (condp = (:data-type opts)
+                            :json {"content-type" "application/json"}
+                            :edn {"content-type" "application/edn"}
+                            {"content-type" "application/edn"}))
+               opts)
+        opts (cond
+               (= :json (:data-type opts))
+               (assoc opts :data (-> (:data opts)
+                                     clj->js
+                                     JSON/stringify))
+
+               (= :edn (:data-type opts))
+               (assoc opts :data (pr-str (:data opts)))
+
+               :else opts)
+        {:keys [path method data headers success error data-type]} opts]
     (validate-ajax-args opts)
     (goog.net.XhrIo/send
-     path
-     (fn [e]
-       (try
-         (let [req (.-target e)
-               data (let [resp (.getResponseText req)]
-                      (when-not (empty? resp)
-                        (reader/read-string resp)))]
-           (if (.isSuccess req)
-             ;; maybe pull js->clj
-             (success data req)
-             (error data req)))
-         (catch js/Object e
-           (.error js/console (.-stack e))
-           (throw e))))
-     (-> method
-         name
-         safe-upper-case)
-     (pr-str data)
-     (clj->js headers))))
+      path
+      (fn [e]
+        (try
+          (let [req (.-target e)
+                data (let [resp (.getResponseText req)
+                           content-type (or (.getResponseHeader req "content-type") "")]
+                       (when-not (empty? resp)
+                         (cond
+                           (re-find #"application/json" content-type)
+                           (.getResponseJson req)
+
+                           (re-find #"application/edn" content-type)
+                           (reader/read-string resp))))]
+            (if (.isSuccess req)
+              ;; maybe pull js->clj
+              (success data req)
+              (error data req)))
+          (catch js/Object e
+            (.error js/console (.-stack e))
+            (throw e))))
+      (-> method
+          name
+          safe-upper-case)
+      data
+      (clj->js headers))))
 
 (defn form-values [$el]
   (let [$els (->> ["input" "select" "textarea"]
