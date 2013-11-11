@@ -113,8 +113,9 @@
 
 (defn val
   ([el]
-     (let [res (forms/getValue (unwrap el))]
-       (when-not (empty? res) res)))
+     (when el
+       (let [res (forms/getValue (unwrap el))]
+         (when-not (empty? res) res))))
   ([el new-value]
      (doseq [el (ensure-coll el)]
        (forms/setValue el new-value))
@@ -239,12 +240,14 @@
 
 (defn add-class [els cls]
   (doseq [el (ensure-coll els)]
-    (classes/add el (name cls)))
+    (when el
+      (classes/add el (name cls))))
   els)
 
 (defn rem-class [els cls]
   (doseq [el (ensure-coll els)]
-    (classes/remove el (name cls)))
+    (when el
+      (classes/remove el (name cls))))
   els)
 
 (defn tog-class [els cls]
@@ -264,10 +267,22 @@
 (defn onload [f]
   (set! (.-onload js/window) f))
 
+(def listen-error-handler (atom nil))
+
+(defn set-listen-error-handler [f]
+  (reset! listen-error-handler f))
+
 (defn listen [els evt f]
-  (doseq [el (ensure-coll els)]
-    (events/listen el (name evt) #(f (ge->map %) el)))
-  els)
+  (when els
+    (doseq [el (ensure-coll els)]
+      (events/listen el (name evt)
+        #(try
+           (f (ge->map %) el)
+           (catch js/Error e
+             (if @listen-error-handler
+               (@listen-error-handler e)
+               (throw e))))))
+    els))
 
 (defn handler [evt]
   (fn
@@ -697,7 +712,6 @@
                            (re-find #"application/edn" content-type)
                            (reader/read-string resp))))]
             (if (.isSuccess req)
-              ;; maybe pull js->clj
               (success data req)
               (error data req)))
           (catch js/Object e
