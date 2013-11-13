@@ -676,6 +676,34 @@
    :error (fn []
             (throw "nsfw.dom/ajax: Unhandled :error callback from AJAX call."))})
 
+(defn parse-headers [s]
+  (when s
+    (->> (str/split s #"\r\n")
+         (mapcat (fn [header]
+                   (->> (str/split header ":")
+                        (map str/trim))))
+         (apply hash-map))))
+
+(defn req->resp [req]
+  {:headers (parse-headers (.getAllResponseHeaders req))
+   :status (.getStatus req)
+   :body (.getResponseText req)
+   :success (.isSuccess req)})
+
+(defn format-body [{:keys [headers body] :as r}]
+  (let [content-type (or (-> headers
+                             (get "content-type"))
+                         (-> headers
+                             (get "Content-Type"))
+                         "")
+        body (condp #(re-find % content-type) content-type
+               #"application/json" (-> body
+                                       JSON/parse
+                                       (js->clj :keywordize-keys true))
+               #"application/edn" (reader/read-string body)
+               body)]
+    (assoc r :body body)))
+
 (defn ajax [opts]
   (let [opts (merge ajax-defaults opts)
         opts (if-not (:headers opts)
@@ -702,18 +730,12 @@
       (fn [e]
         (try
           (let [req (.-target e)
-                data (let [resp (.getResponseText req)
-                           content-type (or (.getResponseHeader req "content-type") "")]
-                       (when-not (empty? resp)
-                         (cond
-                           (re-find #"application/json" content-type)
-                           (.getResponseJson req)
-
-                           (re-find #"application/edn" content-type)
-                           (reader/read-string resp))))]
-            (if (.isSuccess req)
-              (success data req)
-              (error data req)))
+                resp (-> req
+                         req->resp
+                         format-body)]
+            (if (:success resp)
+              (success resp)
+              (error resp)))
           (catch js/Object e
             (.error js/console (.-stack e))
             (throw e))))
@@ -729,11 +751,19 @@
                   (reduce concat))]
     (->> $els
          (map (fn [$el]
-                [(attr $el :name)
-                 (val $el)]))
+                (let [data-type (attr $el :data-type)
+                      v (val $el)
+                      v (if data-type
+                          (try
+                            (condp = data-type
+                              "number" (js/parseFloat v)
+                              v)
+                            (catch js/Error v))
+                          v)]
+                  [(attr $el :name) v])))
          (clojure.core/remove #(nil? (first %)))
          (map #(vector (keyword (first %))
-                       (second %)))
+                 (second %)))
          (into {}))))
 
 (defn parent [el]
