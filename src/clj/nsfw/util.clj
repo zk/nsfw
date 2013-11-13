@@ -219,7 +219,7 @@
 (defn ms [date]
   (cond
     (= java.util.Date (class date)) (.getTime date)
-    (= org.joda.time.DateTime (class date))  (.getTime date)))
+    (= org.joda.time.DateTime (class date))  (.getMillis date)))
 
 (defn timeago [date-or-ms]
   (when date-or-ms
