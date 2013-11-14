@@ -240,3 +240,10 @@
         (< d 2) "1 day"
         (< y 1) (str (int d) " days")
         :else (str (format "%.1f" y) " years")))))
+
+(defn file-md5 [src]
+  (-> src
+      slurp
+      md5))
+
+(def cached-file-md5 (memoize file-md5))
