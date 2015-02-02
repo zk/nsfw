@@ -29,7 +29,7 @@
 (defn refresh-on-change [refresh-fn paths]
   (wt/watcher
    paths
-   (wt/rate 250)
+   (wt/rate 100)
    (wt/on-change (fn [args]
                    (println (->> args
                                  (map #(.getPath %))

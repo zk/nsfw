@@ -1,160 +1,62 @@
 (ns nsfw
-  (:use (ring.middleware file file-info resource params nested-params
-                         keyword-params multipart-params session)
-        [ring.middleware.session.memory :only (memory-store)]
-        [ring.middleware.session.cookie :only (cookie-store)]
-        [ring.middleware.reload :only (wrap-reload)]
-        [clojure.pprint])
-  (:require [nsfw.env :as env]
-            [nsfw.app :as app]
-            [nsfw.server :as server]
+  (:require [nsfw.routing :as routing]
             [nsfw.html :as html]
+            [hiccup.page]
+            [hiccup.core]
             [nsfw.http :as http]
-            [clojure.string :as str]
-            [clojure.tools.nrepl.server :as repl]
-            [ring.middleware.reload-modified :as reload]
-            [net.cgrand.moustache :as moustache]
-            [cheshire.core :as cheshire]))
+            [nsfw.http.response :as resp]
+            [ring.middleware.file :as rm-file]
+            [ring.middleware.file-info :as rm-file-info]
+            [ring.middleware.params :as rm-params]
+            [ring.middleware.session :as rm-session]
+            [ring.middleware.session.cookie :as rm-session-cookie]
+            [ring.middleware.nested-params :as rm-nested-params]
+            [ring.middleware.keyword-params :as rm-keyword-params]
+            [clojure.string :as str]))
 
-;; -- Environment--
+(def router routing/router)
 
-(def env-str env/str)
-(def env-int env/int)
-(def env-bool env/bool)
+(def mount routing/mount)
 
-(defn start-repl [port]
-  (repl/start-server :port port))
+(defn wrap-params [h]
+  (-> h
+      rm-keyword-params/wrap-keyword-params
+      rm-nested-params/wrap-nested-params
+      rm-params/wrap-params))
 
-(defn serve-routes [h path !components]
-  (fn [r]
-    (if path
-      (if-let [res ((app/load-routes path !components) r)]
-        res
-        (h r))
-      (h r))))
+(defn wrap-file [h path & [opts]]
+  (-> h
+      rm-file-info/wrap-file-info
+      (rm-file/wrap-file path opts)))
 
-(defn file-exists? [path]
-  (.exists (java.io.File. path)))
+(def wrap-decode-edn-body http/wrap-decode-edn-body)
 
-(defn catch-all [r]
-  (let [path "resources/public/404.html"]
-    {:status 404
-     :type "text/html;charset=utf-8"
-     :body (if (file-exists? path)
-             (slurp path)
-             "404")}))
+(def wrap-decode-json-body http/wrap-decode-json-body)
 
-(defn handle-errors [h debug-exceptions]
-  (fn [r]
-    (if debug-exceptions
-      ((app/debug-exceptions h true) r)
-      (try
-        (h r)
-        (catch Exception e
-          (let [path "resources/public/500.html"]
-            {:status 500
-             :type "text/html;charset=utf-8"
-             :body (if (file-exists? path)
-                     (slurp path)
-                     "500")}))))))
+(def wrap-render-hiccup http/wrap-render-hiccup)
 
-(defonce !components (atom {}))
+(def html-response resp/html-response)
 
-(defn app [& opts]
-  (let [{:keys [repl-port
-                server-port
-                entry-point
-                app-nss
-                session
-                autoload
-                debug-exceptions
-                session-store]}
-        (apply hash-map opts)]
-    (try (when repl-port
-           (start-repl repl-port))
-         (catch Exception e
-           (println "Can't start REPL on port" repl-port)
-           (println e)))
-    (let [sess (app/session-store (or session-store :encrypted-cookie))]
-      (server/start :entry (moustache/app
-                            (handle-errors debug-exceptions)
-                            (wrap-reload :dirs ["src/clj"])
-                            wrap-file-info
-                            (wrap-file "resources/public" {:allow-symlinks? true})
-                            wrap-params
-                            wrap-nested-params
-                            wrap-keyword-params
-                            (wrap-session (or session {}))
-                            (serve-routes autoload !components)
-                            catch-all)
-                    :port server-port))))
+(def wrap-session rm-session/wrap-session)
 
-(def transform-components (html/mk-transformer !components))
+(def cookie-store rm-session-cookie/cookie-store)
 
-(defn render-html [& body]
-  (when-not (->> body (filter identity) empty?)
-    (-> body
-        transform-components
-        html/html5
-        http/html)))
+;;;
 
-(defn render-edn [body]
-  {:headers {"Content-Type" "application/edn;encoding=utf-8"}
-   :status 200
-   :body (pr-str body)})
+(comment
+  ((-> (fn [r] {:headers {"content-type" "text/html;charset=utf-8"} :body [:html5 [:h1 "hello world"]]})
+       wrap-render-hiccup)
+   {})
 
-(defn render-json [body]
-  {:headers {"Content-Type" "application/json;encoding=utf-8"}
-   :status 200
-   :body (cheshire/generate-string body)})
+  ((-> [:any "/" (fn [r] {:body "hello world"})]
+       router
+       wrap-decode-json-body
+       wrap-decode-edn-body)
+   {:uri "/" :request-method :get})
 
-(defmacro defcomp
-  "Define a html component"
-  [name & rest]
-  `(defn ~(with-meta name (assoc (meta name) :nsfw/comp-tag (keyword name)))
-     ~@rest))
-
-(defn parse-route [route]
-  (cond
-   (string? route) {:path route}
-   (vector? route) (let [[method path] route]
-                     {:method method
-                      :path path})
-   (map? route) route))
-
-
-(defn parse-route-name [route]
-  (let [name (:path route)
-        name (-> name
-                 (str/replace #"/" "")
-                 (str/replace #":" "-")
-                 (str/replace #"\*" "all"))
-        name (if (empty? name)
-               "index"
-               name)
-        name (str (or (:method route) "any") "-" name)
-        name (symbol name)]
-    name))
-
-(defmacro defroute
-  "Define a route var"
-  [route & rest]
-  (let [route# (parse-route route)
-        name# (parse-route-name route#)]
-    `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route#))
-       ~@rest)))
-
-(defmacro defhtml
-  "Define a route var"
-  [route params & rest]
-  (let [route# (parse-route route)
-        name# (parse-route-name route#)]
-    `(defn ~(with-meta name# (assoc (meta name#) :nsfw/route route#)) ~params
-       (render-html ~@rest))))
-
-(defmacro defmiddleware
-  "Define a route var"
-  [name pred & mws]
-  `(def ~(with-meta name (assoc (meta name) :nsfw/middleware true))
-     {:pred ~pred
-      :middleware [~@mws]}))
+  ((-> [:any "/" (fn [r] {:body "hello world"})]
+       router
+       wrap-decode-json-body
+       wrap-decode-edn-body
+       (wrap-file "resources/public"))
+   {:uri "/img/landing-background.jpg" :request-method :get}))

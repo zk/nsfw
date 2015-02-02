@@ -33,3 +33,5 @@
   (if-let [env-var (env sym)]
     (Boolean/parseBoolean env-var)
     default))
+
+(defn resolve [env-schema])

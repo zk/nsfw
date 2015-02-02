@@ -2,7 +2,9 @@
   "Request / response utilities"
   (:use [plumbing.core])
   (:require [plumbing.graph :as pg]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn]
+            [nsfw.util :as util])
+  (:import [com.fasterxml.jackson.core JsonParseException]))
 
 (defn -graph [gmap strategy]
   (let [g (strategy gmap)]
@@ -16,11 +18,11 @@
   (-graph gmap pg/eager-compile))
 
 (defn html [body]
-  {:headers {"Content-Type" "text/html; charset=utf-8"}
+  {:headers {"content-type" "text/html;charset=utf-8"}
    :body body})
 
-(defn clj [body]
-  {:headers {"Content-Type" "text/clj; charset=utf-8"}
+(defn edn [body]
+  {:headers {"content-type" "application/edn;charset=utf-8"}
    :body (pr-str body)})
 
 (def header-for {:html {"Content-Type" "text/html; charset=utf-8"}
@@ -55,7 +57,7 @@
 (defn decode-edn-body [r]
   (-> r response-body edn/read-string))
 
-(defn decode-edn-mw [h]
+(defn wrap-decode-edn-body [h]
   (fn [r]
     (let [content-type-raw (-> r :headers (get "content-type"))]
       (if (and content-type-raw
@@ -63,7 +65,7 @@
         (h (assoc r :edn-body (decode-edn-body r)))
         (h r)))))
 
-(defn tag-response-mw
+(defn wrap-tag-response
   "Middleware for attaching metadata to a response.
    Usage: (-> h (tag-response-mw :handler-ns 'nsfw.http) ...)"
   [h k v]
@@ -73,6 +75,55 @@
         (vary-meta resp assoc k v)))))
 
 (defn render-edn [body]
-  {:headers {"Content-Type" "application/edn;encoding=utf-8"}
+  {:headers {"Content-Type" "application/edn; encoding=utf-8"}
    :status 200
    :body (pr-str body)})
+
+(defn json-content? [req]
+  (when-let [ct (-> req :headers (get "content-type"))]
+    (.contains ct "application/json")))
+
+(defn render-json
+  ([opts body]
+     (merge {:headers {"Content-Type" "application/json;encoding=utf-8"}
+             :status 200
+             :body (util/to-json body)}
+            opts))
+  ([body]
+     (render-json {} body)))
+
+(defn wrap-decode-json-body [h]
+  (fn [r]
+    (if (json-content? r)
+      (try
+        (let [json-body (-> r util/response-body util/from-json)]
+          (h (assoc r :json-body json-body)))
+        (catch JsonParseException e
+          (render-json
+            {:status 400}
+            {:message "Problems parsing JSON"})))
+      (h r))))
+
+(defn html-response? [{:keys [headers body]}]
+  (let [ct (or (get headers "content-type")
+               (get headers "Content-Type"))]
+    (and ct
+         (.contains ct "text/html"))))
+
+(defn hiccup->html-string [body]
+  (if-not (vector? body)
+    body
+    (if (= :html5 (first body))
+      (hiccup.page/html5 (rest body))
+      (hiccup.core/html body))))
+
+(defn wrap-render-hiccup
+  "Render hiccup vector into an HTML string when the content type is
+  text/html."
+  [h]
+  (fn [req]
+    (let [resp (h req)]
+      (if (and (html-response? resp)
+               (vector? (:body resp)))
+        (assoc resp :body (hiccup->html-string (:body resp)))
+        resp))))

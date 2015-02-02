@@ -29,7 +29,7 @@
   (fn [& key-vals]
     (println (format-log-entry (concat [:app-id app-id :ns ns] key-vals)))))
 
-(def iso-formatter (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ssZ"))
+(def iso-formatter (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
 
 (defn iso-8601 [o]
   (cond
@@ -42,8 +42,6 @@
 (defn format-ms [ms format]
   (let [d (Date. ms)]
     (.format (SimpleDateFormat. format) d)))
-
-(defn day-suffix [])
 
 (defn web-stacktrace [e req]
   (str "<html><body>"
@@ -157,7 +155,7 @@
 
 (defn url-encode [s]
   (when s
-    (URLEncoder/encode s)))
+    (java.net.URLEncoder/encode s)))
 
 (defn decode-body [content-length body]
   (when (and content-length
@@ -239,6 +237,7 @@
         (< d 1) (str (int h) " hours")
         (< d 2) "1 day"
         (< y 1) (str (int d) " days")
+        (< y 2) "1 year"
         :else (str (format "%.1f" y) " years")))))
 
 (defn file-md5 [src]
@@ -247,3 +246,53 @@
       md5))
 
 (def cached-file-md5 (memoize file-md5))
+
+(defn kebob-keyword [k]
+  (when k
+    (-> k
+        name
+        (str/replace #"_" "-")
+        keyword)))
+
+(defn kebob [m]
+  (if (map? m)
+    (->> m
+         (map (fn [[k v]]
+                [(kebob-keyword k) (kebob v)]))
+         (into {}))
+    m))
+
+(defn snake-keyword [k]
+  (when k
+    (-> k
+        name
+        (str/replace #"-" "_")
+        keyword)))
+
+(defn snake [m]
+  (if (map? m)
+    (->> m
+         (map (fn [[k v]]
+                [(snake-keyword k) (snake v)]))
+         (into {}))
+    m))
+
+(defn squeeze
+  "Ellipses the middle of a long string."
+  [n s]
+  (let [n (max (- n 3) 0)]
+    (cond
+      (<= (count s) n) s
+      :else (let [len (count s)
+                  half-len (Math/round (/ len 2.0))
+                  to-take-out (- len n)
+                  half-take-out (Math/round (/ to-take-out 2.0))
+                  first-half (take half-len s)
+                  second-half (drop half-len s)]
+              (str (->> first-half
+                        (take (- half-len half-take-out))
+                        (apply str))
+                   "..."
+                   (->> second-half
+                        (drop half-take-out)
+                        (apply str)))))))
