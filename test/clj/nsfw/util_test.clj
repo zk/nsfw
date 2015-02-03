@@ -1,4 +1,4 @@
-(ns nsfw.test.util
+(ns nsfw.util-test
   (:use nsfw.util :reload)
   (:use clojure.test))
 

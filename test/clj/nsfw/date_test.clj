@@ -1,4 +1,4 @@
-(ns nsfw.test.date
+(ns nsfw.date-test
   (:use [nsfw.date] :reload)
   (:use [clojure.test])
   (:refer-clojure :exclude [= > < >= <= pr]))

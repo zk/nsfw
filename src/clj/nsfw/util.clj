@@ -1,11 +1,10 @@
 (ns nsfw.util
-  (:use hiccup.core
-        [hiccup.page :only (doctype)]
-        [clojure.pprint :only (pprint)])
   (:require [clj-stacktrace.repl :as stacktrace]
             [clojure.string :as str]
             [ring.util.response :as resp]
-            [cheshire.custom :as json])
+            [cheshire.custom :as json]
+            [clojure.pprint :refer [pprint]]
+            [hiccup.core :refer [html]])
   (:import [java.util Date]
            [java.text SimpleDateFormat]
            [java.net URLEncoder]

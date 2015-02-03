@@ -20,7 +20,6 @@
                  [org.clojure/tools.namespace "0.2.7"]
                  [org.clojure/tools.nrepl "0.2.3"]
                  [markdown-clj "0.9.62"]
-                 [org.pegdown/pegdown "1.2.1"]
                  [prismatic/plumbing "0.1.0"]
                  [clout "1.1.0"]
                  [org.pegdown/pegdown "1.4.1"]
@@ -30,7 +29,6 @@
   :source-paths ["src/clj" "examples/clj"]
   :test-paths ["test/clj"]
   :jar-name "nsfw.jar"
-  :hooks [leiningen.cljsbuild]
   :cljsbuild {:builds
               [{:source-paths ["src/cljs"]
                 :compiler {:output-to "resources/test.js"

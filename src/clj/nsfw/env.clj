@@ -3,6 +3,8 @@
   (:require [clojure.string :as str])
   (:refer-clojure :exclude (int str)))
 
+(def ^:dynamic *env* (System/getenv))
+
 (defn clj->env [sym-or-str]
   (-> sym-or-str
       name
@@ -11,27 +13,25 @@
 
 (defn env
   "Retrieve environment variables by clojure keyword style.
-   ex. (env :user) ;=> \"zkim\""
-  [sym & [default]]
-  (or (System/getenv (clj->env sym))
-      default))
+   ex. (env :user) ;=> \"zk\"
+   Returns nil if environment variable not set."
+  [sym]
+  (let [res (get *env* (clj->env sym))]
+    (when-not (nil? res)
+      res)))
 
 (defn int
   "Retrieve and parse int env var."
-  [sym & [default]]
-  (if-let [env-var (env sym)]
-    (Integer/parseInt env-var)
-    default))
+  [sym]
+  (when-let [v (env sym)]
+    (Integer/parseInt v)))
 
 (defn str
   "Retrieve and parse string env var."
-  [sym & [default]]
-  (env sym default))
+  [sym]
+  (env sym))
 
 (defn bool
-  [sym & [default]]
-  (if-let [env-var (env sym)]
-    (Boolean/parseBoolean env-var)
-    default))
-
-(defn resolve [env-schema])
+  [sym]
+  (when-let [v (env sym)]
+    (Boolean/parseBoolean v)))

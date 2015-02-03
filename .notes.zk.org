@@ -1,3 +1,9 @@
+* NSFW (No Such Framework)
+
+A library to lower the friction associated with building
+production-quality internet apps.
+
+
 * 2012-12-17 Mon 20:55
 
 Ok, looking to make serving a clojurescript app as easy as possible,
@@ -1234,3 +1240,74 @@ Think we're gonna need some sort of introspection on the events stuff,
 running into a thing where the ordering of event handlers across
 multiple behavior functions is causing a bug. Need a way to visualize
 that.
+
+
+<2015-02-02 Mon 16:23>
+
+Hey old friend, I'm back!
+
+Learned a lot about clojure web dev over the past couple of
+years, and have finally gotten frustrated enough at hand-rolling
+dozens of times to put stuff back in this lib.
+
+On a side note, It's really interesting to read through some of the
+history here.
+
+Starting over, somewhat from scratch. Some things have changed, like
+clojurescript dev via figwheel, the new ubiquity of react, and the
+desire for async by default. The addition of mobile dev via Vee makes
+things a bit more interesting.
+
+
+Some notes on how my dev tooling has changed.
+
++ Still using emacs, but there are some good options on the
+  horizon. Cursive is the stand-out.
++ I've somewhat adopted the tools.namespace stuff into my workflow,
+  hopefully some of the rough edges will get ironed out eventually.
++ HTML generation is now pretty much exculsively done on the frontend,
+  not to say there aren't still facilities for server-side
+  rendering. Right now that means hiccup, but hopefully React will get
+  ported to the JVM soon.
++ I've switched from doing CSS generation via the nsfw.html namespace
+  to Sass, and now to LESS. Still have hopes for using Clojure to
+  generate CSS, as it obviates the need to learn a separate language.
+
+
+Some stuff has held up nicely:
+
++ nsfw.env is great, have used it, or something like it on virtually
+  every project I've done in the past 2 years.
++ Util is pretty good, especially `timeago`.
++ GitHub auth helpers are really nice.
++ Putting things in the request map is a good way to carry context
+  through the handling chain.
++ Some date stuff, specifically iso-8601 handling.
+
+
+Some general thoughts as I peruse the codebase:
+
++ There's so much stuff here, need to focus on reducing the API
+  surface area. The ideal number of functions in an API is 0.
++ Providing a collection of default middleware is a good idea. So much
+  frustration from `use`ing all the disparate middleware
+  namespaces. Hard to fault the ring author as the API reflects best
+  practices from when the lib was written.
++ Refresher is still interesting, but possible not done at the code
+  level. There are tools like LiveReload that will watch a file tree
+  and refresh the browser. Also partially conflicts with Figwheel.
++ Routes + documentation seems like a good idea. There are a few
+  places to put this, including in-structure and metadata. The goal
+  here is a flexible routing structure that supports web and API
+  routes with documentation. In other words, routes should be
+  self-documenting.
++ nsfw.server will change completely. Backending into an async
+  framework like aleph changes the whole API.
+
+
+Axing namespaces:
++ nsfw.app
++ nsfw.repl
++ nsfw.refresher
++ nsfw.spy
++ nsfw.twitter

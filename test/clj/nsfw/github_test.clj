@@ -1,15 +1,12 @@
-(ns nsfw.test.github
+(ns nsfw.github-test
   (:use [nsfw.github] :reload)
   (:use [clojure.test])
   (:require [nsfw.server :as server]
-            [nsfw.html :as html]
-            [nsfw.app :as app]))
+            [nsfw.html :as html]))
 
 (deftest test-auth-redirect-url
   (is (= "https://github.com/login/oauth/authorize?client_id=c%2Fi&redirect_uri=r%2Fi&scope=f%2Fb%2Cbstate=s%2Fe"
          (auth-redirect-url "c/i" "r/i" ["f/b" "b"] "s/e"))))
-
-
 
 
 ;;; Integration testing for github token exchange
@@ -103,11 +100,7 @@
                        [:div.name name]
                        [:div.email email]])])]]])})))
 
-(def entry-point
-  (app/route
-   [""] (page :step1)
-   ["exchange"] (page :step2)))
-
-(server/start :name server-name
-              :port server-port
-              :entry entry-point)
+#_(def entry-point
+    (app/route
+      [""] (page :step1)
+      ["exchange"] (page :step2)))

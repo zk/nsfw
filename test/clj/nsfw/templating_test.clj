@@ -1,4 +1,4 @@
-(ns nsfw.test.templating
+(ns nsfw.templating-test
   (:use nsfw.templating :reload)
   (:use clojure.test)
   (:require [clojure.zip :as zip]))
@@ -28,5 +28,3 @@
     (is (= [[:link {:rel "stylesheet" :href "foo.css"}]
             [:link {:rel "stylesheet" :href "bar.css"}]]
            (:css-coll res)))))
-
-

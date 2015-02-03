@@ -3,7 +3,11 @@
   (:use [plumbing.core])
   (:require [plumbing.graph :as pg]
             [clojure.edn :as edn]
-            [nsfw.util :as util])
+            [nsfw.util :as util]
+            [hiccup.page]
+            [hiccup.core]
+            [cognitect.transit :as transit]
+            [clojure.string :as str])
   (:import [com.fasterxml.jackson.core JsonParseException]))
 
 (defn -graph [gmap strategy]
@@ -127,3 +131,49 @@
                (vector? (:body resp)))
         (assoc resp :body (hiccup->html-string (:body resp)))
         resp))))
+
+
+(defn from-transit [s]
+  (transit/read
+    (transit/reader
+      (if (string? s)
+        (java.io.ByteArrayInputStream. (.getBytes s "UTF-8"))
+        s)
+      :json)))
+
+(defn to-transit [o]
+  (let [bs (java.io.ByteArrayOutputStream.)]
+    (transit/write
+      (transit/writer bs :json)
+      o)
+    (.toString bs)))
+
+(defn content-type [request]
+  (when-let [cts (get-in request [:headers "Content-Type"])]
+    (let [parts (str/split cts #";")
+          media-type (some->
+                       (first parts)
+                       str/trim)]
+      {:media-type media-type
+       :params (->> parts
+                    rest
+                    (map str/trim)
+                    (remove empty?)
+                    (map #(str/split % #"="))
+                    (map (fn [[k v]]
+                           [(keyword k) v]))
+                    (into {}))})))
+
+(defn wrap-transit-response [h]
+  (fn [r]
+    (let [res (h r)]
+      (-> res
+          (update-in [:body] to-transit)
+          (assoc-in [:headers "Content-Type"] "application/transit+json;charset=utf-8")))))
+
+(defn wrap-transit-request [h]
+  (fn [r]
+    (if (= "application/transit+json"
+           (:media-type (content-type r)))
+      (h (update-in r [:body] from-transit))
+      (h r))))

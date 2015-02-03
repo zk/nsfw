@@ -1,4 +1,4 @@
-(ns nsfw.test.http
+(ns nsfw.http-test
   (:use [nsfw.http] :reload)
   (:use [clojure.test]
         [plumbing.core]))
@@ -16,3 +16,12 @@
      (-> (html "foo")
          :headers
          (get "Content-Type"))))
+
+(deftest test-content-type
+  (is (= {:media-type "application/json"
+          :params {:charset "utf-8"
+                   :foo "bar"}}
+         (content-type
+           {:headers
+            {"Content-Type"
+             "application/json; charset=utf-8; foo=bar"}}))))

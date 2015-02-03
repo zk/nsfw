@@ -1,4 +1,4 @@
-(ns nsfw.test.mongo
+(ns nsfw.mongo-test
   (:use [nsfw.mongo :as mon] :reload)
   (:use [clojure.test]))
 
@@ -17,4 +17,3 @@
           :port 123
           :db "db"}
          (parse-mongo-url "mongodb://user:pass@host:123/db"))))
-

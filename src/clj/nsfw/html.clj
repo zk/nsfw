@@ -23,12 +23,18 @@
   (let [sels (reverse (rest (reverse rule)))
         props (last rule)]
     (str (apply str (interpose " " (map name sels)))
-         "{" (apply str (map #(str (name (key %))
-                                   ":"
-                                   (if (keyword? (val %))
-                                     (name (val %))
-                                     (val %))
-                                   ";") props)) "}")))
+         "{"
+         (->> props
+              (partition 2)
+              (map (fn [[k v]]
+                     (str (name k)
+                          ":"
+                          (if (keyword? v)
+                            (name v)
+                            v)
+                          ";")))
+              (apply str))
+         "}")))
 
 (defn css
   "ex.
