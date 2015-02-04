@@ -13,7 +13,7 @@
 
 (deftest test-html
   (= "text/html"
-     (-> (html "foo")
+     (-> (html-resp "foo")
          :headers
          (get "Content-Type"))))
 
@@ -24,4 +24,13 @@
          (content-type
            {:headers
             {"Content-Type"
+             "application/json; charset=utf-8; foo=bar"}})))
+
+  ;; lower-case "content-type"
+  (is (= {:media-type "application/json"
+          :params {:charset "utf-8"
+                   :foo "bar"}}
+         (content-type
+           {:headers
+            {"content-type"
              "application/json; charset=utf-8; foo=bar"}}))))

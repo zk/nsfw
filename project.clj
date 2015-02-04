@@ -25,7 +25,8 @@
                  [org.pegdown/pegdown "1.4.1"]
                  [com.draines/postal "1.10.2"]
                  [om "0.8.0-rc1"]
-                 [sablono "0.3.1"]]
+                 [sablono "0.3.1"]
+                 [bidi "1.15.0"]]
   :source-paths ["src/clj" "examples/clj"]
   :test-paths ["test/clj"]
   :jar-name "nsfw.jar"

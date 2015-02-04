@@ -7,7 +7,18 @@
             [hiccup.page]
             [hiccup.core]
             [cognitect.transit :as transit]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [bidi.ring :as bidi]
+            [ring.middleware
+             file
+             file-info
+             session
+             params
+             nested-params
+             multipart-params
+             keyword-params]
+            [ring.middleware.session.cookie :only (cookie-store)]
+            [ring.util.response :only (response content-type)])
   (:import [com.fasterxml.jackson.core JsonParseException]))
 
 (defn -graph [gmap strategy]
@@ -21,7 +32,7 @@
 (defn graph-eager [gmap]
   (-graph gmap pg/eager-compile))
 
-(defn html [body]
+(defn html-resp [body]
   {:headers {"content-type" "text/html;charset=utf-8"}
    :body body})
 
@@ -61,7 +72,7 @@
 (defn decode-edn-body [r]
   (-> r response-body edn/read-string))
 
-(defn wrap-decode-edn-body [h]
+(defn wrap-edn-request [h]
   (fn [r]
     (let [content-type-raw (-> r :headers (get "content-type"))]
       (if (and content-type-raw
@@ -69,23 +80,31 @@
         (h (assoc r :edn-body (decode-edn-body r)))
         (h r)))))
 
-(defn wrap-tag-response
-  "Middleware for attaching metadata to a response.
-   Usage: (-> h (tag-response-mw :handler-ns 'nsfw.http) ...)"
-  [h k v]
-  (fn [r]
-    (let [resp (h r)]
-      (when resp
-        (vary-meta resp assoc k v)))))
-
 (defn render-edn [body]
   {:headers {"Content-Type" "application/edn; encoding=utf-8"}
    :status 200
    :body (pr-str body)})
 
+(defn content-type [request]
+  (when-let [cts (or (get-in request [:headers "Content-Type"])
+                     (get-in request [:headers "content-type"]))]
+    (let [parts (str/split cts #";")
+          media-type (some->
+                       (first parts)
+                       str/trim)]
+      {:media-type media-type
+       :params (->> parts
+                    rest
+                    (map str/trim)
+                    (remove empty?)
+                    (map #(str/split % #"="))
+                    (map (fn [[k v]]
+                           [(keyword k) v]))
+                    (into {}))})))
+
 (defn json-content? [req]
-  (when-let [ct (-> req :headers (get "content-type"))]
-    (.contains ct "application/json")))
+  (= "application/json"
+     (:media-type (content-type req))))
 
 (defn render-json
   ([opts body]
@@ -108,11 +127,9 @@
             {:message "Problems parsing JSON"})))
       (h r))))
 
-(defn html-response? [{:keys [headers body]}]
-  (let [ct (or (get headers "content-type")
-               (get headers "Content-Type"))]
-    (and ct
-         (.contains ct "text/html"))))
+(defn html-response? [r]
+  (= "text/html"
+     (:media-type (content-type r))))
 
 (defn hiccup->html-string [body]
   (if-not (vector? body)
@@ -121,7 +138,7 @@
       (hiccup.page/html5 (rest body))
       (hiccup.core/html body))))
 
-(defn wrap-render-hiccup
+(defn wrap-html-response
   "Render hiccup vector into an HTML string when the content type is
   text/html."
   [h]
@@ -129,9 +146,8 @@
     (let [resp (h req)]
       (if (and (html-response? resp)
                (vector? (:body resp)))
-        (assoc resp :body (hiccup->html-string (:body resp)))
+        (update-in resp [:body] hiccup->html-string)
         resp))))
-
 
 (defn from-transit [s]
   (transit/read
@@ -148,22 +164,6 @@
       o)
     (.toString bs)))
 
-(defn content-type [request]
-  (when-let [cts (get-in request [:headers "Content-Type"])]
-    (let [parts (str/split cts #";")
-          media-type (some->
-                       (first parts)
-                       str/trim)]
-      {:media-type media-type
-       :params (->> parts
-                    rest
-                    (map str/trim)
-                    (remove empty?)
-                    (map #(str/split % #"="))
-                    (map (fn [[k v]]
-                           [(keyword k) v]))
-                    (into {}))})))
-
 (defn wrap-transit-response [h]
   (fn [r]
     (let [res (h r)]
@@ -177,3 +177,27 @@
            (:media-type (content-type r)))
       (h (update-in r [:body] from-transit))
       (h r))))
+
+
+(defn routes->bidi [routes]
+  ["" (->> routes
+           (group-by :path)
+           (map (fn [[path route-fragments]]
+                  [path (->> route-fragments
+                             (map (fn [{:keys [method handler]}]
+                                    [method handler]))
+                             (into {}))]))
+           (into {}))])
+
+(defn routes->handler [routes]
+  (bidi/make-handler (routes->bidi routes)))
+
+(defn wrap-404 [h]
+  (fn [r]
+    (let [res (h r)]
+      (if-not (nil? res)
+        res
+        {:status 404 :body "not found!!"}))))
+
+
+#_(def wrap-file (comp wrap-file wrap-file-info))
