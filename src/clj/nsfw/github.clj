@@ -17,6 +17,7 @@
    more information."
 
   (:require [nsfw.http-client :as hc]
+            [nsfw.http :as http]
             [nsfw.util :as u]))
 
 (def login-base-url "https://github.com/login/oauth")
@@ -57,3 +58,25 @@
                            :url "https://api.github.com/user"
                            :query-params {:access_token token}})]
       (-> res :body u/from-json))))
+
+(defn orgs [token]
+  (when token
+    (let [res (hc/request {:method :get
+                           :url "https://api.github.com/user/orgs"
+                           :query-params {:access_token token}})]
+      (-> res :body u/from-json))))
+
+(defn callback-route [path
+                      success-redirect-to
+                      fail-redirect-to
+                      client-id client-secret]
+  {:method :get
+   :path path
+   :handler (fn [r]
+              (let [code (-> r :params :code)
+                    {:keys [access_token] :as res}
+                    (exchange-code client-id client-secret code)]
+                (prn res)
+                (if access_token
+                  (http/redirect success-redirect-to)
+                  (http/redirect fail-redirect-to))))})

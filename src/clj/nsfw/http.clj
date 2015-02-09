@@ -48,11 +48,11 @@
 
 (def html-header (headers :html))
 
-(defn redirect [loc & opts]
+(defn redirect [loc opts]
   (merge
-   {:headers {"Location" loc}
-    :status 301}
-   (apply hash-map opts)))
+    {:headers {"Location" loc}
+     :status 301}
+    opts))
 
 (defn decode-body [content-length body]
   (when (and content-length
@@ -169,7 +169,8 @@
     (let [res (h r)]
       (-> res
           (update-in [:body] to-transit)
-          (assoc-in [:headers "Content-Type"] "application/transit+json;charset=utf-8")))))
+          (assoc-in [:headers "Content-Type"]
+            "application/transit+json;charset=utf-8")))))
 
 (defn wrap-transit-request [h]
   (fn [r]
@@ -199,5 +200,21 @@
         res
         {:status 404 :body "not found!!"}))))
 
+(defn wrap-params [h]
+  (-> h
+      ring.middleware.keyword-params/wrap-keyword-params
+      ring.middleware.multipart-params/wrap-multipart-params
+      ring.middleware.nested-params/wrap-nested-params
+      ring.middleware.params/wrap-params))
 
-#_(def wrap-file (comp wrap-file wrap-file-info))
+(defn wrap-file [h dir]
+  (-> h
+      (ring.middleware.file/wrap-file dir)
+      (ring.middleware.file-info/wrap-file-info)))
+
+(defn wrap-cookie-session [h domain key]
+  (-> h
+      (ring.middleware.session/wrap-session
+        {:store (ring.middleware.session.cookie/cookie-store
+                  {:domain domain
+                   :key key})})))
