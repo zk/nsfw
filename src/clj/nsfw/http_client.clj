@@ -44,7 +44,6 @@
       cl/wrap-redirects
       cl/wrap-decompression
       wrap-input-coercion
-      cl/wrap-output-coercion
       cl/wrap-basic-auth
       cl/wrap-accept
       cl/wrap-accept-encoding
@@ -77,4 +76,5 @@
   request
   (wrap-request #'core/request))
 
-
+(defmacro with-connection-pool [& body]
+  `(cl/with-connection-pool ~@body))

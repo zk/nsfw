@@ -1,4 +1,4 @@
-(defproject nsfw "0.8.1"
+(defproject nsfw "0.8.2"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2371"]
@@ -27,7 +27,7 @@
                  [om "0.8.0-rc1"]
                  [sablono "0.3.1"]
                  [bidi "1.15.0" :exclusions [org.clojure/clojure]]]
-  :source-paths ["src/clj" "examples/clj"]
+  :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :jar-name "nsfw.jar"
   :cljsbuild {:builds

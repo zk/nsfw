@@ -31,10 +31,11 @@
   * `stop-app-sym` -- FQ symbol of a 1-arg
   function which stops the environment. The result of calling the
   start app function is passed in as it's first parameter
-  * `test-regex` -- Run tests after reload for all namespaces matching"
+  * `tests-regex` -- Run tests after reload for all namespaces matching"
 
   [{:keys [start-app-sym stop-app-sym tests-regex]}]
-  (intern 'user 'reup-app nil)
+  (when-not (resolve 'user/reup-app)
+      (intern 'user 'reup-app nil))
   (require (ns-for-sym start-app-sym) :reload)
   (require (ns-for-sym stop-app-sym) :reload)
 
