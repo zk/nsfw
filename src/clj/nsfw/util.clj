@@ -4,7 +4,8 @@
             [ring.util.response :as resp]
             [cheshire.custom :as json]
             [clojure.pprint :refer [pprint]]
-            [hiccup.core :refer [html]])
+            [hiccup.core :refer [html]]
+            [clojure.java.io :as io])
   (:import [java.util Date]
            [java.text SimpleDateFormat]
            [java.net URLEncoder]
@@ -149,8 +150,10 @@
 (defn to-json [o]
   (json/generate-string o))
 
-(defn from-json [s]
-  (json/parse-string s true))
+(defn from-json [o]
+  (if (string? o)
+    (json/parse-string o true)
+    (json/parse-stream (io/reader o) true)))
 
 (defn url-encode [s]
   (when s
