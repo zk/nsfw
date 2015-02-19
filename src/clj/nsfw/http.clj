@@ -149,6 +149,21 @@
         (update-in resp [:body] hiccup->html-string)
         resp))))
 
+(defn wrap-json-response [h]
+  (fn [r]
+    (let [res (h r)]
+      (-> res
+          (update-in [:body] util/to-json)
+          (assoc-in [:headers "Content-Type"]
+            "application/transit+json;charset=utf-8")))))
+
+(defn wrap-json-request [h]
+  (fn [r]
+    (if (= "application/json"
+           (:media-type (content-type r)))
+      (h (update-in r [:body] util/from-json))
+      (h r))))
+
 (defn from-transit [s]
   (transit/read
     (transit/reader
@@ -178,7 +193,6 @@
            (:media-type (content-type r)))
       (h (update-in r [:body] from-transit))
       (h r))))
-
 
 (defn routes->bidi [routes]
   ["" (->> routes
