@@ -209,7 +209,7 @@
 
 (defn wrap-file [h dir]
   (-> h
-      (ring.middleware.file/wrap-file dir)
+      (ring.middleware.file/wrap-file dir {:allow-symlinks? true})
       (ring.middleware.file-info/wrap-file-info)))
 
 (defn wrap-cookie-session [h domain key]
