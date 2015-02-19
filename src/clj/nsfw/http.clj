@@ -85,22 +85,25 @@
    :status 200
    :body (pr-str body)})
 
+(defn decode-content-type [cts]
+  (let [parts (str/split cts #";")
+        media-type (some->
+                     (first parts)
+                     str/trim)]
+    {:media-type media-type
+     :params (->> parts
+                  rest
+                  (map str/trim)
+                  (remove empty?)
+                  (map #(str/split % #"="))
+                  (map (fn [[k v]]
+                         [(keyword k) v]))
+                  (into {}))}))
+
 (defn content-type [request]
   (when-let [cts (or (get-in request [:headers "Content-Type"])
                      (get-in request [:headers "content-type"]))]
-    (let [parts (str/split cts #";")
-          media-type (some->
-                       (first parts)
-                       str/trim)]
-      {:media-type media-type
-       :params (->> parts
-                    rest
-                    (map str/trim)
-                    (remove empty?)
-                    (map #(str/split % #"="))
-                    (map (fn [[k v]]
-                           [(keyword k) v]))
-                    (into {}))})))
+    (decode-content-type cts)))
 
 (defn json-content? [req]
   (= "application/json"
@@ -155,7 +158,7 @@
       (-> res
           (update-in [:body] util/to-json)
           (assoc-in [:headers "Content-Type"]
-            "application/transit+json;charset=utf-8")))))
+            "application/json;charset=utf-8")))))
 
 (defn wrap-json-request [h]
   (fn [r]
