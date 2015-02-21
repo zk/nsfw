@@ -207,8 +207,20 @@
                              (into {}))]))
            (into {}))])
 
+(defn apply-middleware [{:keys [handler middleware] :as route}]
+  (assoc route
+    :handler
+    (reduce
+      (fn [h mw]
+        (mw h))
+      handler
+      middleware)))
+
 (defn routes->handler [routes]
-  (bidi/make-handler (routes->bidi routes)))
+  (->> routes
+       (map apply-middleware)
+       routes->bidi
+       bidi/make-handler))
 
 (defn wrap-404 [h]
   (fn [r]
