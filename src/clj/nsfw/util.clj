@@ -5,7 +5,8 @@
             [cheshire.custom :as json]
             [clojure.pprint :refer [pprint]]
             [hiccup.core :refer [html]]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [hashids.core :as hashids])
   (:import [java.util Date]
            [java.text SimpleDateFormat]
            [java.net URLEncoder]
@@ -298,3 +299,9 @@
                    (->> second-half
                         (drop half-take-out)
                         (apply str)))))))
+
+(defn to-short-id [id salt-str]
+  (hashids/encrypt id salt-str))
+
+(defn from-short-id [short-id salt-str]
+  (hashids/decrypt short-id salt-str))
