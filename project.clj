@@ -29,7 +29,8 @@
                  [sablono "0.3.1"]
                  [bidi "1.15.0" :exclusions [org.clojure/clojure]]
                  [hashobject/hashids "0.2.0"]
-                 [org.clojure/java.classpath "0.2.2"]]
+                 [org.clojure/java.classpath "0.2.2"]
+                 [prismatic/schema "0.3.7" :exclusions [potemkin]]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
