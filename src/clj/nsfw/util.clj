@@ -6,7 +6,9 @@
             [clojure.pprint :refer [pprint]]
             [hiccup.core :refer [html]]
             [clojure.java.io :as io]
-            [hashids.core :as hashids])
+            [hashids.core :as hashids]
+            [byte-transforms :as bt]
+            [byte-streams :as bs])
   (:import [java.util Date]
            [java.text SimpleDateFormat]
            [java.net URLEncoder]
@@ -305,3 +307,15 @@
 
 (defn from-short-id [short-id salt-str]
   (hashids/decrypt short-id salt-str))
+
+(defn to-base64 [s & [o]]
+  (when s
+    (bs/to-string (bt/encode s :base64 o))))
+
+(defn from-base64 [s & [o]]
+  (when s
+    (bs/to-string (bt/decode s :base64 o))))
+
+(defn sha256 [s & [o]]
+  (when s
+    (bs/to-string (bt/hash s :sha256 o))))
