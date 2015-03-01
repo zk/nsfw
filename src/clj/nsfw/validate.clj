@@ -1,4 +1,5 @@
 (ns nsfw.validate
+  (:require [schema.core :as s])
   (:refer-clojure :exclude [key]))
 
 (defn run [payload vs]
@@ -17,5 +18,14 @@
                        (reduce #(and %1 %2)))]
         (if-not pass?
           {k [msg]})))))
+
+(defn response [payload vs]
+  (when-let [errors (run payload vs)]
+    {:status 422 :errors errors}))
+
+(defn schema [sch & [error]]
+  (fn [pl]
+    (when-let [res (s/check sch pl)]
+      (or error res))))
 
 (def not-empty? #(not (empty? %)))
