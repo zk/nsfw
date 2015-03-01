@@ -247,3 +247,7 @@
         {:store (ring.middleware.session.cookie/cookie-store
                   {:domain domain
                    :key key})})))
+
+(defn wrap-context [h ctx]
+  (fn [r]
+    (h (assoc r :ctx ctx))))
