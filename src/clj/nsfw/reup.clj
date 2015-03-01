@@ -2,6 +2,8 @@
   "Utilities for supporting a clojure.tools.namespace reloading dev
   lifecycle."
   (:require [clojure.tools.namespace.repl :as repl]
+            [clojure.tools.namespace.find :as ns-find]
+            [clojure.java.classpath :as cp]
             [clojure.string :as str]))
 
 (defn exception? [e]
@@ -34,35 +36,43 @@
   * `tests-regex` -- Run tests after reload for all namespaces matching"
 
   [{:keys [start-app-sym stop-app-sym tests-regex]}]
-  (when-not (resolve 'user/reup-app)
+  (when start-app-sym
+    (when-not (resolve 'user/reup-app)
       (intern 'user 'reup-app nil))
-  (require (ns-for-sym start-app-sym) :reload)
-  (require (ns-for-sym stop-app-sym) :reload)
+    (require (ns-for-sym start-app-sym) :reload)
+    (require (ns-for-sym stop-app-sym) :reload)
 
-  (when-not (resolve start-app-sym)
-    (throw (Exception. (str "Can't resolve start-app-sym: " start-app-sym))))
+    (when-not (resolve start-app-sym)
+      (throw (Exception. (str "Can't resolve start-app-sym: " start-app-sym))))
 
-  (when-not (resolve stop-app-sym)
-    (throw (Exception. (str "Can't resolve stop-app-sym: " stop-app-sym))))
+    (when-not (resolve stop-app-sym)
+      (throw (Exception. (str "Can't resolve stop-app-sym: " stop-app-sym)))))
 
   (fn []
     (time
       (do
-        (binding [*ns* (find-ns 'user)]
-          (do
-            (try
-              (@(resolve stop-app-sym) @(resolve 'user/reup-app))
-              (catch Exception e
-                (println "Exception stopping app:" e)))))
-        (alter-var-root (resolve 'user/reup-app) (constantly nil))
+        (when start-app-sym
+          (binding [*ns* (find-ns 'user)]
+            (do
+              (try
+                (@(resolve stop-app-sym) @(resolve 'user/reup-app))
+                (catch Exception e
+                  (println "Exception stopping app:" e)))))
+          (alter-var-root (resolve 'user/reup-app) (constantly nil)))
         (let [res (repl/refresh)]
           (println "EXCEPTION" (exception? res))
           (when (exception? res)
             (throw res)))
-        (binding [*ns* (find-ns 'user)]
-          (alter-var-root (resolve 'user/reup-app)
-            (constantly (@(resolve start-app-sym)))))
-        (.mkdir (java.io.File. "./.livereload"))
-        (spit ".livereload/update.rf" (System/currentTimeMillis))
+        (when start-app-sym
+          (binding [*ns* (find-ns 'user)]
+            (alter-var-root (resolve 'user/reup-app)
+              (constantly (@(resolve start-app-sym)))))
+          (.mkdir (java.io.File. "./.livereload"))
+          (spit ".livereload/update.rf" (System/currentTimeMillis)))
         (when tests-regex
+          (doseq [ns-sym (->> (cp/classpath-directories)
+                              ns-find/find-namespaces
+                              (filter #(re-find tests-regex (str %))))]
+            (require ns-sym))
+          (prn "RUNNING TESTS")
           (clojure.test/run-all-tests tests-regex))))))

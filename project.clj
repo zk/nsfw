@@ -28,7 +28,9 @@
                  [om "0.8.0-rc1"]
                  [sablono "0.3.1"]
                  [bidi "1.15.0" :exclusions [org.clojure/clojure]]
-                 [hashobject/hashids "0.2.0"]]
+                 [hashobject/hashids "0.2.0"]
+                 [org.clojure/java.classpath "0.2.2"]]
+  :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
   :jar-name "nsfw.jar"
