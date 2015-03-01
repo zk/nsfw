@@ -234,6 +234,15 @@
         (< y 2) "1 year"
         :else (str (format "%.1f" y) " years")))))
 
+(defn md5
+  "Compute the hex MD5 sum of a string."
+  [o & [opts]]
+  (when o
+    (.toString
+      (new BigInteger 1
+        (bt/hash o :md5 opts))
+      16)))
+
 (defn file-md5 [src]
   (-> src
       slurp
@@ -308,12 +317,3 @@
 (defn sha256 [s & [o]]
   (when s
     (bs/to-string (bt/hash s :sha256 o))))
-
-(defn md5
-  "Compute the hex MD5 sum of a string."
-  [o & [opts]]
-  (when o
-    (.toString
-      (new BigInteger 1
-        (bt/hash o :md5 opts))
-      16)))
