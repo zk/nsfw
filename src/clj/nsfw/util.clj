@@ -123,17 +123,6 @@
          (map #(Integer/toHexString (bit-and % 0xff)))
          (apply str))))
 
-(defn md5
-  "Compute the hex MD5 sum of a string."
-  [#^String str]
-  (let [alg (doto (java.security.MessageDigest/getInstance "MD5")
-              (.reset)
-              (.update (.getBytes str)))]
-    (try
-      (.toString (new BigInteger 1 (.digest alg)) 16)
-      (catch java.security.NoSuchAlgorithmException e
-        (throw (new RuntimeException e))))))
-
 (defn grav-url-for [email & [_ size]]
   (let [email (->> (or email "")
                    (str/trim)
@@ -319,3 +308,12 @@
 (defn sha256 [s & [o]]
   (when s
     (bs/to-string (bt/hash s :sha256 o))))
+
+(defn md5
+  "Compute the hex MD5 sum of a string."
+  [o & [opts]]
+  (when o
+    (.toString
+      (new BigInteger 1
+        (bt/hash o :md5 opts))
+      16)))
