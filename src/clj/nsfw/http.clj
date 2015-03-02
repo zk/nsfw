@@ -229,12 +229,12 @@
         res
         {:status 404 :body "not found!!"}))))
 
-(defn wrap-params [h]
+(defn wrap-params [h & [opts]]
   (-> h
       ring.middleware.keyword-params/wrap-keyword-params
-      ring.middleware.multipart-params/wrap-multipart-params
-      ring.middleware.nested-params/wrap-nested-params
-      ring.middleware.params/wrap-params))
+      (ring.middleware.nested-params/wrap-nested-params opts)
+      (ring.middleware.multipart-params/wrap-multipart-params opts)
+      (ring.middleware.params/wrap-params opts)))
 
 (defn wrap-file [h dir]
   (-> h
