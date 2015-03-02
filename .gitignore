@@ -12,3 +12,4 @@ out
 TAGS
 pom.xml.asc
 .nrepl-port
+.lein-repl-history
