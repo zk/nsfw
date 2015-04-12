@@ -39,6 +39,14 @@
   (when start-app-sym
     (when-not (resolve 'user/reup-app)
       (intern 'user 'reup-app nil))
+    (when-not (resolve 'user/after-reup)
+      (intern 'user 'after-reup
+        (fn []
+          (when start-app-sym
+            (binding [*ns* (find-ns 'user)]
+              (alter-var-root (resolve 'user/reup-app)
+                (constantly (@(resolve start-app-sym)))))))))
+
     (require (ns-for-sym start-app-sym) :reload)
     (require (ns-for-sym stop-app-sym) :reload)
 
@@ -59,20 +67,14 @@
                 (catch Exception e
                   (println "Exception stopping app:" e)))))
           (alter-var-root (resolve 'user/reup-app) (constantly nil)))
-        (let [res (repl/refresh)]
-          (println "EXCEPTION" (exception? res))
+        (prn "USING AFTER")
+        (let [res (repl/refresh :after 'user/after-reup)]
           (when (exception? res)
             (throw res)))
-        (when start-app-sym
-          (binding [*ns* (find-ns 'user)]
-            (alter-var-root (resolve 'user/reup-app)
-              (constantly (@(resolve start-app-sym)))))
-          (.mkdir (java.io.File. "./.livereload"))
-          (spit ".livereload/update.rf" (System/currentTimeMillis)))
+
         (when tests-regex
           (doseq [ns-sym (->> (cp/classpath-directories)
                               ns-find/find-namespaces
                               (filter #(re-find tests-regex (str %))))]
             (require ns-sym))
-          (prn "RUNNING TESTS")
           (clojure.test/run-all-tests tests-regex))))))
