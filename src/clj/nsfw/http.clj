@@ -241,6 +241,12 @@
       (ring.middleware.file/wrap-file dir {:allow-symlinks? true})
       (ring.middleware.file-info/wrap-file-info)))
 
+(defn wrap-resource [h dir]
+  (-> h
+      (ring.middleware.resource/wrap-resource dir)
+      ring.middleware.file-info/wrap-file-info
+      ring.middleware.content-type/wrap-content-type))
+
 (defn wrap-cookie-session [h domain key]
   (-> h
       (ring.middleware.session/wrap-session
