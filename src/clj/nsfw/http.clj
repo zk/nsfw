@@ -16,7 +16,9 @@
              params
              nested-params
              multipart-params
-             keyword-params]
+             keyword-params
+             resource
+             content-type]
             [ring.middleware.session.cookie :only (cookie-store)]
             [ring.util.response :only (response content-type)])
   (:import [com.fasterxml.jackson.core JsonParseException]))
