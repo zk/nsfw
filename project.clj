@@ -1,4 +1,4 @@
-(defproject nsfw "0.8.15"
+(defproject nsfw "0.8.16"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2665"]
@@ -7,7 +7,7 @@
                  [hiccup "1.0.2"]
                  [congomongo "0.3.3"]
                  [ring "1.3.2"]
-                 [org.clojure/core.async "0.1.267.0-0d7780-alpha"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.cognitect/transit-cljs "0.8.192"]
                  [com.cognitect/transit-clj "0.8.259"]
                  [aleph "0.4.0-beta3"]
