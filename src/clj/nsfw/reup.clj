@@ -67,7 +67,6 @@
                 (catch Exception e
                   (println "Exception stopping app:" e)))))
           (alter-var-root (resolve 'user/reup-app) (constantly nil)))
-        (prn "USING AFTER")
         (let [res (repl/refresh :after 'user/after-reup)]
           (when (exception? res)
             (throw res)))
