@@ -26,7 +26,7 @@
                  [org.pegdown/pegdown "1.4.1"]
                  [com.draines/postal "1.10.2"]
                  [om "0.8.0-rc1"]
-                 [sablono "0.3.1" :exclusions [cljsjs/react]]
+                 [sablono "0.3.1"]
                  [bidi "1.15.0" :exclusions [org.clojure/clojure]]
                  [hashobject/hashids "0.2.0"]
                  [org.clojure/java.classpath "0.2.2"]
