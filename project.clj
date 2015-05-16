@@ -1,4 +1,4 @@
-(defproject nsfw "0.8.18"
+(defproject nsfw "0.8.19"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojure/clojurescript "0.0-2665"]
@@ -25,7 +25,7 @@
                  [clout "1.1.0"]
                  [org.pegdown/pegdown "1.4.1"]
                  [com.draines/postal "1.10.2"]
-                 [om "0.8.0-rc1"]
+                 [org.omcljs/om "0.8.8"]
                  [sablono "0.3.1"]
                  [bidi "1.15.0" :exclusions [org.clojure/clojure]]
                  [hashobject/hashids "0.2.0"]
