@@ -127,10 +127,12 @@
   "Compute the hex MD5 sum of a string."
   [o & [opts]]
   (when o
-    (.toString
-      (new BigInteger 1
-        (bt/hash o :md5 opts))
-      16)))
+    (let [md5-str (.toString
+                    (new BigInteger 1
+                      (bt/hash o :md5 opts))
+                    16)
+          pad (apply str (repeat (- 32 (count md5-str)) "0"))]
+      (str pad md5-str))))
 
 (defn grav-url-for [email & [_ size]]
   (let [email (->> (or email "")
