@@ -1,6 +1,6 @@
 (defproject nsfw "0.8.20"
   :description "No Such Framework -- Experimental"
-  :dependencies [[org.clojure/clojure "1.6.0"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "0.0-2665"]
                  [clj-stacktrace "0.2.5"]
                  [cheshire "5.2.0"]
