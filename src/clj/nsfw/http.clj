@@ -6,7 +6,6 @@
             [nsfw.util :as util]
             [hiccup.page]
             [hiccup.core]
-            [cognitect.transit :as transit]
             [clojure.string :as str]
             [bidi.ring :as bidi]
             [ring.middleware
@@ -169,26 +168,11 @@
       (h (update-in r [:body] util/from-json))
       (h r))))
 
-(defn from-transit [s]
-  (transit/read
-    (transit/reader
-      (if (string? s)
-        (java.io.ByteArrayInputStream. (.getBytes s "UTF-8"))
-        s)
-      :json)))
-
-(defn to-transit [o]
-  (let [bs (java.io.ByteArrayOutputStream.)]
-    (transit/write
-      (transit/writer bs :json)
-      o)
-    (.toString bs)))
-
 (defn wrap-transit-response [h]
   (fn [r]
     (let [res (h r)]
       (-> res
-          (update-in [:body] to-transit)
+          (update-in [:body] util/to-transit)
           (assoc-in [:headers "Content-Type"]
             "application/transit+json;charset=utf-8")))))
 
@@ -196,7 +180,7 @@
   (fn [r]
     (if (= "application/transit+json"
            (:media-type (content-type r)))
-      (h (update-in r [:body] from-transit))
+      (h (update-in r [:body] util/from-transit))
       (h r))))
 
 (defn routes->bidi [routes]

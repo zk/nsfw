@@ -3,6 +3,7 @@
             [clojure.string :as str]
             [ring.util.response :as resp]
             [cheshire.custom :as json]
+            [cognitect.transit :as transit]
             [clojure.pprint :refer [pprint]]
             [hiccup.core :refer [html]]
             [clojure.java.io :as io]
@@ -158,6 +159,21 @@
     (json/parse-string o true)
     (json/parse-stream (io/reader o) true)))
 
+(defn from-transit [s]
+  (transit/read
+    (transit/reader
+      (if (string? s)
+        (java.io.ByteArrayInputStream. (.getBytes s "UTF-8"))
+        s)
+      :json)))
+
+(defn to-transit [o]
+  (let [bs (java.io.ByteArrayOutputStream.)]
+    (transit/write
+      (transit/writer bs :json)
+      o)
+    (.toString bs)))
+
 (defn url-encode [s]
   (when s
     (java.net.URLEncoder/encode s)))
@@ -204,7 +220,8 @@
     (when s
       (.markdownToHtml pgp (str/replace s #"!\[\]" "![ ]")))))
 
-(def pp pprint)
+(defn pp [& args]
+  (apply pprint args))
 
 (defn pp-str [o]
   (let [w (java.io.StringWriter.)]

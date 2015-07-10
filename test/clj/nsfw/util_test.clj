@@ -17,3 +17,19 @@
 
 (deftest test-url-encode
   (is (= "http%3A%2F%2Fgoogle.com" (url-encode "http://google.com"))))
+
+(deftest test-transit
+  (is (= (from-transit
+           (to-transit
+             {:nil nil
+              :bool [true false]
+              :string "hello world"
+              :char \c
+              :sym 'foo
+              :keyword :foo
+              :int 10
+              :float 1.5
+              :list '()
+              :vec []
+              :map {:foo "bar"}
+              :set #{1 2 3}})))))
