@@ -1,6 +1,10 @@
 (ns nsfw.reup
   "Utilities for supporting a clojure.tools.namespace reloading dev
-  lifecycle."
+  lifecycle.
+
+  Add the following to your project.clj
+
+  `:repl-options {:init (load-file \"reup.clj\")}`"
   (:require [clojure.tools.namespace.repl :as repl]
             [clojure.tools.namespace.find :as ns-find]
             [clojure.java.classpath :as cp]

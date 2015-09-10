@@ -1,4 +1,4 @@
-(defproject nsfw "0.9.1"
+(defproject nsfw "0.9.2"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "0.0-3308"]
@@ -27,7 +27,8 @@
                  [hashobject/hashids "0.2.0"]
                  [org.clojure/java.classpath "0.2.2"]
                  [prismatic/schema "0.4.3" :exclusions [potemkin]]
-                 [garden "1.2.6"]]
+                 [garden "1.2.6" :exclusions [org.clojure/clojure]]
+                 [reagent "0.5.1-rc3"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj"]
   :test-paths ["test/clj"]
