@@ -4,25 +4,15 @@
             [clojure.string :as str]
             [nsfw.crypt :as crypt]
             [goog.date :as gd]
-            [goog.i18n.DateTimeFormat]))
-
-(defn log [& args]
-  (.log js/console (if args (to-array args) nil)))
-
-(defn log-pass [res]
-  (log res)
-  res)
-
-(defn lpr [& args]
-  (.log js/console (to-array (map pr-str args))))
+            [goog.i18n.DateTimeFormat]
+            [cognitect.transit :as t]
+            [goog.string :as gstring]
+            [camel-snake-kebab.core :as csk]))
 
 (defn ensure-coll [el]
   (if (coll? el)
     el
     [el]))
-
-(defn to-json [data]
-  (.stringify js/JSON (clj->js data)))
 
 (defn timeout [f delta]
   (js/setTimeout f delta))
@@ -33,60 +23,11 @@
 (defn clear-timeout [timeout]
   (js/clearTimeout timeout))
 
-(defn uuid []
-  #_(cljs-uuid-utils/make-random-uuid)
-  (gensym))
-
-(defn page-data [key & [default]]
-  (try
-    (reader/read-string (aget js/window (-> key
-                                            name
-                                            (str/replace #"-" "_")
-                                            str/upper-case)))
-    (catch js/Error e
-      (if default
-        default
-        (throw (str "Couldn't find page data " key))))))
-
-(defn run-once [f]
-  (let [did-run (atom false)]
-    (fn [& args]
-      (when-not @did-run
-        (reset! did-run true)
-        (apply f args)))))
-
-(defn toggle [f0 f1]
-  (let [!a (atom false)]
-    (fn [& args]
-      (let [res (if-not @!a (apply f0 args) (apply f1 args))]
-        (swap! !a not)
-        res))))
-
 (defn ms [date]
   (.getTime date))
 
 (defn now []
-  (ms (js/Date.)))
-
-
-(defn timeago [date-or-ms]
-  (let [ms (if (number? date-or-ms)
-             (- (now) date-or-ms)
-             (- (now) (ms date-or-ms)))
-        s (/ ms 1000)
-        m (/ s 60)
-        h (/ m 60)
-        d (/ h 24)
-        y (/ d 365)]
-    (cond
-     (< s 60) "less than a minute"
-     (< m 2) "1 minute"
-     (< h 1) (str (int m) " minutes")
-     (< d 1) (str (int h) " hours")
-     (< h 2) "1 hour"
-     (< d 2) "1 day"
-     (< y 1) (str (int d) " days")
-     :else "over a year")))
+  (.now js/Date))
 
 (defn ref? [o]
   (instance? cljs.core/Atom o))
@@ -114,5 +55,131 @@
   ([pattern date]
      (.format (goog.i18n.DateTimeFormat. pattern) date)))
 
-(defn navigate-to [url]
-  (aset (aget js/window "location") "href" url))
+(defn navigate-to [& parts]
+  (aset (aget js/window "location") "href" (apply str parts)))
+
+(def reader (t/reader :json))
+(def writer (t/writer :json))
+
+(defn to-transit [o]
+  (t/write writer o))
+
+(defn from-transit [s]
+  (t/read reader s))
+
+(defn to-json [o]
+  (.stringify js/JSON o))
+
+(defn from-json [o]
+  (js->clj (.parse js/JSON o) :keywordize-keys true))
+
+(defn ellipsis [n s]
+  (when s
+    (let [len (count s)]
+      (if (> len n)
+        (str (->> s
+                  (take n)
+                  (apply str))
+             "...")
+        s))))
+
+
+
+(defn format-phone [phone]
+  (when phone
+    (let [phone (str/replace phone #"[^\d]" "")
+          pc (count phone)]
+      (str
+        (when (> pc 3)
+          "(")
+        (->> phone (take 3) (apply str))
+        (when (> (count phone) 3)
+          (str
+            ") "
+            (->> phone (drop 3) (take 3) (apply str))))
+        (when (> (count phone) 6)
+          (str
+            "-"
+            (->> phone (drop 6) (apply str))))))))
+
+
+(defn gen-uuid []
+  (let [d (now)
+        uuid-str "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"]
+    (str/replace uuid-str
+      #"[xy]"
+      (fn [c]
+        (let [r (bit-or (mod (+ d (* (.random js/Math) 16)) 16) 0)
+              d (.floor js/Math (/ d 16.0))]
+          (.toString
+            (if (= "x" c)
+              r
+              (bit-or
+                (bit-and 0x3 r)
+                0x8))
+            16))))))
+
+(defn initials [s]
+  (when s
+    (let [ps (-> s
+                 str/trim
+                 (str/split #"\s+"))]
+      (str/upper-case
+        (str
+          (first (first ps))
+          (when (> (count ps) 1)
+            (first (last ps))))))))
+
+(defn sformat [& args]
+  (apply gstring/format args))
+
+(defn timeago [millis]
+  (when millis
+    (let [ms (- (now) millis)
+          s (/ ms 1000)
+          m (/ s 60)
+          h (/ m 60)
+          d (/ h 24)
+          y (/ d 365.0)]
+      (cond
+        (< s 60) "less than a minute"
+        (< m 2) "1 minute"
+        (< h 1) (str (int m) " minutes")
+        (< h 2) "1 hour"
+        (< d 1) (str (int h) " hours")
+        (< d 2) "1 day"
+        (< y 1) (str (int d) " days")
+        :else (str (sformat "%.1f" y) " years")))))
+
+(defn exact-timeago [millis]
+  (when millis
+    (let [ms (- (now) millis)
+          s (/ ms 1000)
+          m (/ s 60)
+          h (/ m 60)
+          d (/ h 24)
+          y (/ d 365.0)]
+      (cond
+        (< s 60) (str (int s) "s")
+        (< m 2) "1m"
+        (< h 1) (str (int m) "m")
+        (< h 2) "1h"
+        (< d 1) (str (int h) "h")
+        (< d 2) "1d"
+        (< y 1) (str (int d) "d")
+        :else (str (sformat "%.1f" y) "y")))))
+
+(defn kebab-case [o]
+  (csk/->kebab-case o))
+
+(defn env-case [o]
+  (csk/->SCREAMING_SNAKE_CASE o))
+
+(defn page-data [key & [default]]
+  (try
+    (from-transit
+      (aget js/window (env-case (name key))))
+    (catch js/Error e
+      (if default
+        default
+        (throw (js/Error. (str "Couldn't find page data " key)))))))

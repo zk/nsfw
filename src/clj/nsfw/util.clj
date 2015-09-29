@@ -9,7 +9,8 @@
             [clojure.java.io :as io]
             [hashids.core :as hashids]
             [byte-transforms :as bt]
-            [byte-streams :as bs])
+            [byte-streams :as bs]
+            [camel-snake-kebab.core :as csk])
   (:import [java.util Date]
            [java.text SimpleDateFormat]
            [java.net URLEncoder]
@@ -336,3 +337,18 @@
 (defn sha256 [s & [o]]
   (when s
     (bs/to-string (bt/hash s :sha256 o))))
+
+(defn kebab-case [o]
+  (csk/->kebab-case o))
+
+(defn env-case [o]
+  (csk/->SCREAMING_SNAKE_CASE o))
+
+(defn write-page-data [key payload]
+  (str "var "
+       (env-case (name key))
+       "="
+       (-> payload
+           to-transit
+           to-json)
+       ";"))

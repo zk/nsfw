@@ -243,3 +243,24 @@
 (defn wrap-context [h ctx]
   (fn [r]
     (h (assoc r :ctx ctx))))
+
+(defn cljs-page-template [{:keys [js css env data body-class]}]
+  (html-resp
+    [:html5
+     (vec
+       (concat
+         [:head]
+         (for [css css]
+           (if (string? css)
+             [:link {:rel "stylesheet" :href css}]
+             css))
+         [(vec
+             (concat
+               [:body
+                {:class body-class}]
+               (when env
+                 [[:script {:type "text/javascript"}
+                   (util/write-page-data :env env)]])
+               (for [js js]
+                 (if (string? js)
+                   [:script {:type "text/javascript" :src js}]))))]))]))
