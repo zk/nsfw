@@ -16,6 +16,18 @@
       :value (get-in @!app path)}
      opts)])
 
+(defn bound-select [!app path opts children]
+  (vec
+    (concat
+      [:select
+       (merge
+         {:on-change (fn [e]
+                       (prn "SEL CHANGE")
+                       (swap! !app assoc-in path (.. e -target -value)))
+          :value (get-in @!app path)}
+         opts)]
+      children)))
+
 #_(defn input [& [opts]]
     (let [adtl-opt-keys [:cursor :path :parse-value :format-value]
           {:keys [cursor path parse-value format-value valid-char-code?]} opts

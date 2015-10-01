@@ -1,7 +1,7 @@
 (defproject nsfw "0.9.4"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "0.0-3308"]
+                 [org.clojure/clojurescript "1.7.122"]
                  [clj-stacktrace "0.2.8"]
                  [cheshire "5.5.0"]
                  [hiccup "1.0.5"]
@@ -31,7 +31,9 @@
                  [reagent "0.5.1-rc3"]
                  [cljs-http "0.1.37"]
                  [camel-snake-kebab "0.3.2"]
-                 [clj-jwt "0.1.1"]]
+                 [clj-jwt "0.1.1"]
+                 [clj-mailgun "0.2.0"]
+                 [clj-aws-s3 "0.3.10"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj"]

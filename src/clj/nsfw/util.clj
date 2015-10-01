@@ -352,3 +352,9 @@
            to-transit
            to-json)
        ";"))
+
+(defn stacktrace->string [e]
+  (let [sw (java.io.StringWriter.)
+        pw (java.io.PrintWriter. sw)]
+    (.printStackTrace e pw)
+    (.toString sw)))
