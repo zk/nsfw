@@ -358,3 +358,6 @@
         pw (java.io.PrintWriter. sw)]
     (.printStackTrace e pw)
     (.toString sw)))
+
+(defn hex-str->byte-array [s]
+  (.toByteArray (BigInteger. s 16)))

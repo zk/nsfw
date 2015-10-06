@@ -7,7 +7,9 @@
             [goog.i18n.DateTimeFormat]
             [cognitect.transit :as t]
             [goog.string :as gstring]
-            [camel-snake-kebab.core :as csk]))
+            [camel-snake-kebab.core :as csk]
+            [cljs.pprint :as pprint])
+  (:import [goog.string StringBuffer]))
 
 (defn ensure-coll [el]
   (if (coll? el)
@@ -183,3 +185,9 @@
       (if default
         default
         (throw (js/Error. (str "Couldn't find page data " key)))))))
+
+(defn pp-str [o]
+  (let [sb (StringBuffer.)
+        sbw (StringBufferWriter. sb)]
+    (pprint/pprint o sbw)
+    (str sb)))
