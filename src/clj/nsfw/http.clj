@@ -208,12 +208,15 @@
        routes->bidi
        bidi/make-handler))
 
-(defn wrap-404 [h]
+(defn wrap-404 [h handler]
   (fn [r]
     (let [res (h r)]
       (if-not (nil? res)
         res
-        {:status 404 :body "not found!!"}))))
+        (if handler
+          (handler res)
+          {:status 404
+           :body "not found!!"})))))
 
 (defn wrap-params [h & [opts]]
   (-> h
@@ -239,6 +242,13 @@
         {:store (ring.middleware.session.cookie/cookie-store
                   {:domain domain
                    :key key})})))
+
+(defn wrap-exception [h handler]
+  (fn [r]
+    (try
+      (h r)
+      (catch Exception e
+        (handler (assoc r :exception e))))))
 
 (defn wrap-context [h ctx]
   (fn [r]
