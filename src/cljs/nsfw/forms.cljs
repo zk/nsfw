@@ -71,14 +71,15 @@
     [:input.form-control (merge adtl-opts html-opts)]))
 
 (defn card-type [s]
-  (condp #(re-find %1 %2) s
-    #"^4[0-9]{6,}$" :visa
-    #"^5[1-5][0-9]{5,}$" :mastercard
-    #"^3[47][0-9]{5,}$" :amex
-    #"^3(?:0[0-5]|[68][0-9])[0-9]{4,}$" :diners
-    #"^6(?:011|5[0-9]{2})[0-9]{3,}$" :discover
-    #"^(?:2131|1800|35[0-9]{3})[0-9]{3,}$" :jcb
-    nil))
+  (when s
+    (condp #(re-find %1 %2) s
+      #"^4[0-9]{6,}$" :visa
+      #"^5[1-5][0-9]{5,}$" :mastercard
+      #"^3[47][0-9]{5,}$" :amex
+      #"^3(?:0[0-5]|[68][0-9])[0-9]{4,}$" :diners
+      #"^6(?:011|5[0-9]{2})[0-9]{3,}$" :discover
+      #"^(?:2131|1800|35[0-9]{3})[0-9]{3,}$" :jcb
+      nil)))
 
 (defn numbers-only [s]
   (when s
