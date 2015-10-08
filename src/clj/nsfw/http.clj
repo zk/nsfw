@@ -254,23 +254,27 @@
   (fn [r]
     (h (assoc r :ctx ctx))))
 
-(defn cljs-page-template [{:keys [js css env data body-class]}]
+(defn cljs-page-template [{:keys [js css env data body-class head meta-named]}]
   (html-resp
     [:html5
      (vec
        (concat
          [:head]
+         head
+         (->> meta-named
+              (map (fn [[k v]]
+                     [:meta {:name k :content v}])))
          (for [css css]
            (if (string? css)
              [:link {:rel "stylesheet" :href css}]
              css))
          [(vec
-             (concat
-               [:body
-                {:class body-class}]
-               (when env
-                 [[:script {:type "text/javascript"}
-                   (util/write-page-data :env env)]])
-               (for [js js]
-                 (if (string? js)
-                   [:script {:type "text/javascript" :src js}]))))]))]))
+            (concat
+              [:body
+               {:class body-class}]
+              (when env
+                [[:script {:type "text/javascript"}
+                  (util/write-page-data :env env)]])
+              (for [js js]
+                (if (string? js)
+                  [:script {:type "text/javascript" :src js}]))))]))]))

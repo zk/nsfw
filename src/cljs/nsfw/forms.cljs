@@ -107,6 +107,7 @@
   (input
     (merge
       {:valid-char-code? number-char?
+       :pattern "\\d*"
        :format-value (fn [v]
                        (when v
                          (->> v
