@@ -31,3 +31,11 @@
 
 (defn href []
   (.. js/window -location -href))
+
+(defn fq-url [& parts]
+  (let [loc (.-location js/window)]
+    (apply str
+      (.-protocol loc)
+      "//"
+      (.-host loc)
+      parts)))

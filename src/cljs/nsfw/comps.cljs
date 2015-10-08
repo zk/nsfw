@@ -86,3 +86,13 @@
                       (if render
                         (render data data)
                         data))])))])]])
+
+(defn $search [{:keys [on-change]}]
+  [:div.search
+   [:form
+    [:input
+     {:name "search-query"
+      :on-change (fn [e]
+                   (.preventDefault e)
+                   (on-change (.. e -target -value)))
+      :placeholder "Search"}]]])

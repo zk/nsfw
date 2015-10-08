@@ -31,3 +31,6 @@
 
 (defn align-self [v]
   (prefix [:align-self v]))
+
+(defn flex-grow [v]
+  (prefix [:flex-grow v]))
