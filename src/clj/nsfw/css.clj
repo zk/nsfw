@@ -1,4 +1,5 @@
-(ns nsfw.css)
+(ns nsfw.css
+  (:require [clojure.string :as str]))
 
 (def display-flex
   {:display ^:prefix #{"flex" "-webkit-flex"
@@ -34,3 +35,12 @@
 
 (defn flex-grow [v]
   (prefix [:flex-grow v]))
+
+(defn transition [v]
+  {:transition v
+   :-webkit-transition (if (string? v)
+                         (str/replace v #"transform" "-webkit-transform")
+                         v)
+   :-moz-transition v
+   :-ms-transition v
+   :-o-transition v})
