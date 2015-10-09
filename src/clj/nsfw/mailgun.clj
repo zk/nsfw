@@ -6,8 +6,16 @@
   "creds: :api-key, :domain\n
    mail: :from, :to, :subject, :text"
   [creds mail]
-  (let [res (mg/send-email
-              creds
-              mail)]
-    {:success? (= 200 (:status res))
-     :result (util/from-json (:body res))}))
+  (try
+    (let [res (mg/send-email
+                creds
+                mail)]
+      (merge
+        {:from (:from mail)
+         :to (:to mail)}
+        {:success? (= 200 (:status res))
+         :result (util/from-json (:body res))}))
+    (catch Exception e
+      {:success? false
+       :from (:from mail)
+       :to (:to mail)})))
