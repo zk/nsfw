@@ -122,3 +122,39 @@
                              (take 20)
                              (apply str))))}
       opts)))
+
+(defn format-number [s]
+  (when s
+    (let [cleaned (str/replace
+                    (str s)
+                    #"[^\d]+"
+                    "")]
+      (if (empty? cleaned)
+        nil
+        (->> cleaned
+             reverse
+             (partition-all 3)
+             (interpose [","])
+             (apply concat)
+             reverse
+             (apply str))))))
+
+(defn format-price [s]
+  (when s
+    (let [formatted (format-number s)]
+      (if (empty? formatted)
+        nil
+        (str "$" formatted)))))
+
+(defn parse-int [s]
+  (when s
+    (try
+      (let [res (js/parseInt
+                  (str/replace
+                    (str s)
+                    #"[^\d]+"
+                    ""))]
+        (if (js/isNaN res)
+          nil
+          res))
+      (catch js/Error e nil))))
