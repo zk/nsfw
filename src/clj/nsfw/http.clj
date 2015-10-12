@@ -254,12 +254,16 @@
   (fn [r]
     (h (assoc r :ctx ctx))))
 
-(defn cljs-page-template [{:keys [js css env data body-class head meta-named]}]
+(defn cljs-page-template [{:keys [js css env data
+                                  body-class head meta-named
+                                  title]}]
   (html-resp
     [:html5
      (vec
        (concat
-         [:head]
+         [:head
+          (when title
+            [:title title])]
          head
          (->> meta-named
               (map (fn [[k v]]
