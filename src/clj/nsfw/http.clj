@@ -55,6 +55,12 @@
      :status 301}
     opts))
 
+(defn temp-redirect [loc opts]
+  (merge
+    {:headers {"Location" loc}
+     :status 302}
+    opts))
+
 (defn decode-body [content-length body]
   (when (and content-length
              (> content-length 0))
