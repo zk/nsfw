@@ -34,7 +34,7 @@
 
 (defn input [& [opts]]
   (let [adtl-opt-keys [:!cursor :path :parse-value :format-value]
-        {:keys [!cursor path parse-value format-value valid-char-code?]} opts
+        {:keys [!cursor path parse-value format-value valid-char-code? type]} opts
         html-opts (apply dissoc opts adtl-opt-keys)
         parse-value (or parse-value identity)
         format-value (or format-value identity)
@@ -46,8 +46,17 @@
                                  meta?
                                  (valid-char-code? code value))
                              true))
-        adtl-opts {:value (when !cursor
-                            (format-value (get-in @!cursor path)))}
+        checkbox? (when type
+                    (= "checkbox" (name type)))
+        adtl-opts (if checkbox?
+                    {:checked (when !cursor
+                                (get-in @!cursor path))}
+                    {:value (when !cursor
+                              (format-value (get-in @!cursor path)))})
+
+        class (if checkbox?
+                {}
+                {:class "form-control"})
         adtl-opts (if !cursor
                     (merge
                       adtl-opts
@@ -63,12 +72,19 @@
                              (.stopPropagation e))))
                        :on-change
                        (fn [e]
-                         (swap! !cursor
-                           assoc-in path
-                           (parse-value (.. e -target -value)))
+                         (if checkbox?
+                           (swap! !cursor
+                             assoc-in path
+                             (.. e -target -checked))
+                           (swap! !cursor
+                             assoc-in path
+                             (parse-value (.. e -target -value))))
                          (.preventDefault e))})
                     adtl-opts)]
-    [:input.form-control (merge adtl-opts html-opts)]))
+    [:input (merge
+              adtl-opts
+              class
+              html-opts)]))
 
 (defn card-type [s]
   (when s
