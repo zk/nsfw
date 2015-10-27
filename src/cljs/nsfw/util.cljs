@@ -9,7 +9,8 @@
             [goog.string :as gstring]
             [camel-snake-kebab.core :as csk]
             [cljs.pprint :as pprint])
-  (:import [goog.string StringBuffer]))
+  (:import [goog.string StringBuffer])
+  (:refer-clojure :exclude [uuid]))
 
 (defn ensure-coll [el]
   (if (coll? el)
@@ -105,7 +106,7 @@
             (->> phone (drop 6) (apply str))))))))
 
 
-(defn gen-uuid []
+(defn uuid []
   (let [d (now)
         uuid-str "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"]
     (str/replace uuid-str

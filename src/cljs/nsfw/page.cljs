@@ -1,5 +1,6 @@
 (ns nsfw.page
-  (:require [nsfw.util :as util]))
+  (:require [nsfw.util :as util]
+            [bidi.bidi :as bidi]))
 
 (defn start-app [handlers]
   (let [entry-key (:js-entry (util/page-data :env))]
@@ -39,3 +40,15 @@
       "//"
       (.-host loc)
       parts)))
+
+(defn dispatch-route [routes on-path]
+  (let [{:keys [route-params handler] :as match}
+        (bidi/match-route routes (pathname))]
+    (when handler
+      (on-path handler route-params))))
+
+(defn path-for [routes handler]
+  (bidi/path-for routes handler))
+
+(defn push-route [routes handler]
+  (push-path (path-for routes handler)))

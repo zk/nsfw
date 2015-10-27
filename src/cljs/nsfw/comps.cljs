@@ -41,11 +41,12 @@
                     :on-click
                     (fn [e]
                       (.preventDefault e)
-                      (on-update
-                        (decode text)
-                        (fn []
-                          (swap! !comp assoc
-                            :editing? false)))
+                      (when on-update
+                        (on-update
+                          (decode text)
+                          (fn []
+                            (swap! !comp assoc
+                              :editing? false))))
                       nil)}
                 "Save"]
                [:span.disabled "Save"])]
