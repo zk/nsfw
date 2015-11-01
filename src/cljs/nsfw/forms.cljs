@@ -139,21 +139,38 @@
                              (apply str))))}
       opts)))
 
-(defn format-number [s]
+(defn format-number [s & [{:keys [round]}]]
   (when s
-    (let [cleaned (str/replace
-                    (str s)
-                    #"[^\d]+"
-                    "")]
-      (if (empty? cleaned)
+    (let [round (or round 2)
+          s (str s)
+          parts (str/split s #"\.")
+          whole (first parts)
+          frac (second parts)
+          cleaned-whole (str/replace
+                          (str whole)
+                          #"[^\d]+"
+                          "")
+          cleaned-frac (str/replace
+                         (str frac)
+                         #"[^\d]+"
+                         "")
+          cleaned-frac (if round
+                         (->> cleaned-frac
+                              (take round)
+                              (apply str))
+                         cleaned-frac)]
+      (if (and (empty? cleaned-whole) (empty? cleaned-frac))
         nil
-        (->> cleaned
-             reverse
-             (partition-all 3)
-             (interpose [","])
-             (apply concat)
-             reverse
-             (apply str))))))
+        (str
+          (->> cleaned-whole
+               reverse
+               (partition-all 3)
+               (interpose [","])
+               (apply concat)
+               reverse
+               (apply str))
+          (when-not (empty? cleaned-frac)
+            (str "." cleaned-frac)))))))
 
 (defn format-price [s]
   (when s

@@ -20,13 +20,24 @@
 (defn bus [context handlers]
   (let [!handlers (atom handlers)
         !ctx (atom context)
-        ch (chan)
         !debug-fns (atom {})
         bus (reify
               Dispatcher
-              (send [_ op]
-                (put! ch {::op op}))
+              (send [this op]
+                (send this op nil))
               (send [_ op data]
+                (when-let [msg {::op op ::data data}]
+                  (let [op (or (::op msg) (:op msg))]
+                    (if-let [f (get @!handlers op)]
+                      (do
+                        #_(println "[nsfw.ops] Dispatching" op)
+                        (f (merge {:bus bus}
+                                  @!ctx
+                                  (::data msg))))
+                      (println "[nsfw.ops] No handler for op" msg))
+                    (when-not (empty? @!debug-fns)
+                      (doseq [f (vals @!debug-fns)]
+                        (f op)))))
                 (put! ch {::op op ::data data}))
               (bind! [_ kw->f]
                 (swap! !handlers merge kw->f))
@@ -41,21 +52,6 @@
                 (swap! !debug-fns assoc id f))
               (clear-debug! [_ id]
                 (swap! !debug-fns dissoc id)))]
-    (go-loop []
-      (when-let [msg (<! ch)]
-        (let [op (or (::op msg) (:op msg))]
-          (if-let [f (get @!handlers op)]
-            (do
-              (println "[nsfw.ops] Dispatching" op)
-              (f (merge {:bus bus}
-                        @!ctx
-                        (::data msg))))
-            (println "[nsfw.ops] No handler for op" msg))
-          (when-not (empty? @!debug-fns)
-            (doseq [f (vals @!debug-fns)]
-              (f op))))
-        (recur))
-      (println "[nsfw.ops] Stopping dispatcher"))
     bus))
 
 (defn data [op]
