@@ -12,8 +12,8 @@
     (.. js/document -documentElement -clientHeight)
     (.. js/document -documentElement -offsetHeight)))
 
-(defn calc-el-top [$el $scroller margin offset-top]
-  (let [{:keys [width height top left]} (dommy/bounding-client-rect $el)
+(defn calc-el-top [$el $scroller margin offset-top client-rect]
+  (let [{:keys [width height top left]} client-rect
         scroll-top (if (= js/window $scroller)
                      (.-scrollTop (sel1 :body))
                      (.-scrollTop $scroller))
@@ -31,9 +31,14 @@
                        :or {offset-top 0
                             offset-bottom 0}
                        :as prev}]
-  (let [{:keys [width height top left]} (dommy/bounding-client-rect $el)
-        scroll-height (page-height) #_(:height (bounding-client-rect (sel1 :body)))
-        {:keys [el-top scroll-top]} (calc-el-top $el $target margin offset-top)
+  (let [{:keys [width height top left] :as client-rect}
+        (dommy/bounding-client-rect $el)
+
+        scroll-height (page-height)
+
+        {:keys [el-top scroll-top]}
+        (calc-el-top $el $target margin offset-top client-rect)
+
         state (or state :affix-top)]
     (cond
       (and (= state :affix-top)
@@ -41,6 +46,7 @@
       (merge
         prev
         {:state :affix-top
+         :offset 0
          :orig-top el-top})
 
       (and (= state :affix-top)
@@ -48,21 +54,28 @@
       (merge
         prev
         {:state :affix
+         :offset 0
          :orig-top orig-top})
 
       (and (= state :affix)
            (> scroll-top orig-top))
-      prev
+      (merge
+        prev
+        {:offset (- scroll-top orig-top)})
 
       (and (= state :affix)
            (<= scroll-top orig-top))
       (merge
         prev
-        {:state :affix-top})
+        {:state :affix-top
+         :offset 0})
 
       :else prev)))
 
-(defn $wrap [{:keys [scroller margin] :as opts} & children]
+(defn $wrap [{:keys [scroller
+                     margin
+                     preserve-height?
+                     on-offset] :as opts} & children]
   (rea/create-class
     {:component-will-receive-props (fn [& args] true)
      :component-did-mount
@@ -70,10 +83,14 @@
        (let [$scroller (if scroller (sel1 scroller) js/window)
              margin (or margin 0)
              with-state (:with-state opts)
-             $el (rea/dom-node this)
+             $preserve (rea/dom-node this)
+             $el (.item (.-children $preserve) 0)
              !prev (atom (merge
                            (select-keys opts [:offset-top])
-                           {:orig-top (:el-top (calc-el-top $el $scroller margin 0))}))
+                           {:orig-top
+                            (:el-top
+                             (calc-el-top $el $scroller margin 0
+                               (dommy/bounding-client-rect $el)))}))
              handler (fn [e]
                        (let [prev @!prev
                              current (check-position $el $scroller margin prev)]
@@ -81,6 +98,13 @@
                            (with-state prev current))
                          (when (not= (:state prev) (:state current))
                            (let [state (or (:state current) :affix-top)]
+                             (when (and
+                                     preserve-height?
+                                     (= :affix state))
+                               (let [height (:height (dommy/bounding-client-rect $el))]
+                                 (dommy/set-style!
+                                   $preserve
+                                   :height (str height "px"))))
                              (dommy/add-class! $el state)
                              (doseq [c (disj
                                          #{:affix-top :affix-bottom :affix}
@@ -91,6 +115,10 @@
                              :top (if (:top current)
                                     (str (:top current) "px")
                                     (:top current))))
+                         (when (and
+                                 on-offset
+                                 (not= (:offset prev) (:offset current)))
+                           (on-offset (:offset current)))
                          (reset! !prev current)))]
          (handler #js {:target $scroller})
          (listen! $scroller :scroll handler)
@@ -106,10 +134,11 @@
 
      :reagent-render
      (fn []
-       [:div.affix-wrapper
-        (first children)
-        #_(doall
-            (map-indexed
-              (fn [i c]
-                (with-meta c {:key i}))
-              children))])}))
+       [:div.affix-preserve
+        [:div.affix-wrapper
+         (first children)
+         #_(doall
+             (map-indexed
+               (fn [i c]
+                 (with-meta c {:key i}))
+               children))]])}))
