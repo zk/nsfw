@@ -1,5 +1,6 @@
 (ns nsfw.affix
   (:require [reagent.core :as rea]
+            [nsfw.util :as util]
             [dommy.core :as dommy
              :refer [listen! unlisten!]
              :refer-macros [sel1]]))
@@ -72,6 +73,29 @@
 
       :else prev)))
 
+(defn throttle [f delta]
+  (let [last (atom nil)
+        to (atom nil)]
+    (fn [& args]
+      (cond
+        (not @last) (do
+                      (reset! last (util/now))
+                      (reset! to nil)
+                      (apply f args))
+        (> @last 0) (let [now (util/now)]
+                      (if (> (- now @last) delta)
+                        (do
+                          (reset! last now)
+                          (apply f args))
+                        (do
+                          (js/clearTimeout @to)
+                          (reset! to
+                            (js/setTimeout
+                              (fn []
+                                (reset! last (+ delta @last))
+                                (apply f args))
+                              (- delta (- now @last)))))))))))
+
 (defn $wrap [{:keys [scroller
                      margin
                      preserve-height?
@@ -119,7 +143,8 @@
                                  on-offset
                                  (not= (:offset prev) (:offset current)))
                            (on-offset (:offset current)))
-                         (reset! !prev current)))]
+                         (reset! !prev current)))
+             handler (throttle handler 16)]
          (handler #js {:target $scroller})
          (listen! $scroller :scroll handler)
          (rea/set-state this

@@ -36,7 +36,7 @@
 (defn flex-grow [v]
   (prefix [:flex-grow v]))
 
-1(defn transition [v]
+(defn transition [v]
   {:transition v
    :-webkit-transition (if (string? v)
                          (str/replace v #"transform" "-webkit-transform")
