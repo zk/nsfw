@@ -33,10 +33,29 @@
 
 
 (defn handler [opts f]
-  (fn [r] (f (exchange r opts))))
+  (fn [r] (f r (exchange r opts))))
+
+(defn button [])
 
 #_(exchange
     {:params {:code "foo"}}
     {:client-id "485322283358-kb9f73crtfsdqkseh60ko09nojj6654b.apps.googleusercontent.com"
      :client-secret "LRuB8djiGO_68TVz7uz1BzcO"
      :redirect-uri "http://localhost:8080/admin-login/callback"})
+
+(defn sign-in-url [{:keys [client-id redirect-uri]}]
+  (str
+    "https://accounts.google.com/o/oauth2/auth?"
+    "response_type=code"
+    "&"
+    "client_id=" client-id
+    "&"
+    "redirect_uri=" (util/url-encode redirect-uri)
+    "&"
+    "scope=email"))
+
+(defn sign-in-link [opts & children]
+  (vec
+    (concat
+      [:a.ga-sign-in {:href (sign-in-url opts)}]
+      children)))

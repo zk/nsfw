@@ -1,9 +1,13 @@
 (ns nsfw.page
   (:require [nsfw.util :as util]
+            [nsfw.ops :as ops]
             [bidi.bidi :as bidi]))
 
 (defn start-app [handlers]
-  (let [entry-key (:js-entry (util/page-data :env))]
+  (let [entry-key (try
+                    (:js-entry (util/page-data :env))
+                    (catch js/Error e
+                      nil))]
     (if-let [handler (get handlers entry-key)]
       (handler
         (util/page-data :env))

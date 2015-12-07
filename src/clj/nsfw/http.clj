@@ -49,11 +49,19 @@
 
 (def html-header (headers :html))
 
-(defn redirect [loc opts]
+(defn temp-redirect [loc opts]
+  (merge
+    {:headers {"Location" loc}
+     :status 302}
+    opts))
+
+(defn perm-redirect [loc opts]
   (merge
     {:headers {"Location" loc}
      :status 301}
     opts))
+
+(def redirect temp-redirect)
 
 (defn temp-redirect [loc opts]
   (merge
@@ -263,6 +271,100 @@
 (defn cljs-page-template [{:keys [js css env data
                                   body-class head meta-named
                                   title]}]
+  (html-resp
+    [:html5
+     (vec
+       (concat
+         [:head
+          (when title
+            [:title title])]
+         head
+         (->> meta-named
+              (map (fn [[k v]]
+                     [:meta {:name k :content v}])))
+         (for [css css]
+           (if (string? css)
+             [:link {:rel "stylesheet" :href css}]
+             css))
+         [(vec
+            (concat
+              [:body
+               {:class body-class}]
+              (when env
+                [[:script {:type "text/javascript"}
+                  (util/write-page-data :env env)]])
+              (for [js js]
+                (if (string? js)
+                  [:script {:type "text/javascript" :src js}]))))]))]))
+
+(def bootstrap3
+  {:css [{:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          :integrity "sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7"
+          :crossorigin "anonymous"}]
+   :js []
+   :head []
+   :body []})
+
+(defn apply-middleware [mw routes-map]
+  (->> routes-map
+       (map (fn [[k v]]
+              [k (mw v)]))
+       (into {})))
+
+(defn compile-spec [specs]
+  (apply
+    merge-with
+    (fn [v1 v2]
+      (if (and (map? v1) (map? v2))
+        (merge v1 v2)
+        (concat v1 v2)))
+    specs))
+
+(defn css-html [csss]
+  (->> csss
+       (remove nil?)
+       (map (fn [css]
+              [:link
+               (merge
+                 {:rel "stylesheet"}
+                 (if (string? css)
+                   {:href css}
+                   css))]))))
+
+(defn js-html [jss]
+  (->> jss
+       (remove nil?)
+       (map (fn [js]
+              [:script
+               (merge
+                 {:type "text/javascript"}
+                 (if (string? js)
+                   {:href js}
+                   js))]))))
+
+(defn render-spec [specs]
+  (let [{:keys [css js head body env body-attrs]} (compile-spec specs)]
+    (html-resp
+      [:html5
+       (vec
+         (concat
+           [:head]
+           (css-html css)
+           head))
+       (vec
+         (concat
+           [:body
+            body-attrs]
+           body
+           (when env
+             [[:script {:type "text/javascript"}
+               (util/write-page-data :env env)]])
+           (js-html js)))])))
+
+(defn cljs-page-template
+  [{:keys [js css env data
+           body-class head meta-named
+           title]}]
   (html-resp
     [:html5
      (vec

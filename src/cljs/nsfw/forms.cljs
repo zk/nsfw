@@ -9,24 +9,31 @@
       :value (get-in @!app path)}
      opts)])
 
-(defn bound-textarea [!app path opts]
+(defn textarea [{:keys [!cursor path opts]}]
   [:textarea
    (merge
      {:on-change (fn [e]
-                   (swap! !app assoc-in path (.. e -target -value)))
-      :value (get-in @!app path)}
+                   (when !cursor
+                     (swap! !cursor assoc-in path (.. e -target -value))))
+      :value (when !cursor
+               (get-in @!cursor path))
+      :class "form-control"}
      opts)])
 
-(defn bound-select [!app path opts children]
+(defn select [{:keys [!cursor path opts]} children]
   (vec
     (concat
       [:select
        (merge
          {:on-change (fn [e]
-                       (swap! !app assoc-in path (.. e -target -value)))
-          :value (get-in @!app path)}
+                       (when !cursor
+                         (swap! !cursor assoc-in path (.. e -target -value))))
+          :value (if !cursor (get-in @!cursor path))}
          opts)]
-      children)))
+      (for [{:keys [text value]} children]
+        ^{:key (or value text)}
+        [:option {:value (or value text)}
+         text]))))
 
 (defn number-char? [n]
   (and (>= n 48)
