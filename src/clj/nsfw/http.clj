@@ -339,7 +339,7 @@
                (merge
                  {:type "text/javascript"}
                  (if (string? js)
-                   {:href js}
+                   {:src js}
                    js))]))))
 
 (defn render-spec [specs]
