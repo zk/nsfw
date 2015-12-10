@@ -9,31 +9,33 @@
       :value (get-in @!app path)}
      opts)])
 
-(defn textarea [{:keys [!cursor path opts]}]
-  [:textarea
-   (merge
-     {:on-change (fn [e]
-                   (when !cursor
-                     (swap! !cursor assoc-in path (.. e -target -value))))
-      :value (when !cursor
-               (get-in @!cursor path))
-      :class "form-control"}
-     opts)])
+(defn textarea [{:keys [!cursor path] :as opts}]
+  (let [html-opts (dissoc opts :!cursor :path)]
+    [:textarea
+     (merge
+       {:on-change (fn [e]
+                     (when !cursor
+                       (swap! !cursor assoc-in path (.. e -target -value))))
+        :value (when !cursor
+                 (get-in @!cursor path))
+        :class "form-control"}
+       html-opts)]))
 
-(defn select [{:keys [!cursor path opts]} children]
-  (vec
-    (concat
-      [:select
-       (merge
-         {:on-change (fn [e]
-                       (when !cursor
-                         (swap! !cursor assoc-in path (.. e -target -value))))
-          :value (if !cursor (get-in @!cursor path))}
-         opts)]
-      (for [{:keys [text value]} children]
-        ^{:key (or value text)}
-        [:option {:value (or value text)}
-         text]))))
+(defn select [{:keys [!cursor path] :as opts} children]
+  (let [html-opts (dissoc opts :!cursor :path)]
+    (vec
+      (concat
+        [:select
+         (merge
+           {:on-change (fn [e]
+                         (when !cursor
+                           (swap! !cursor assoc-in path (.. e -target -value))))
+            :value (if !cursor (get-in @!cursor path))}
+           html-opts)]
+        (for [{:keys [text value]} children]
+          ^{:key (or value text)}
+          [:option {:value (or value text)}
+           text])))))
 
 (defn number-char? [n]
   (and (>= n 48)
@@ -43,7 +45,11 @@
   (let [adtl-opt-keys [:!cursor :path :parse-value :format-value]
         {:keys [!cursor path parse-value format-value valid-char-code? type]} opts
         html-opts (apply dissoc opts adtl-opt-keys)
-        parse-value (or parse-value identity)
+        parse-value (or parse-value
+                        (fn [s]
+                          (if (empty? s)
+                            nil
+                            s)))
         format-value (or format-value identity)
         valid-char-code? (fn [{:keys [code ctrl? meta?]} value]
                            (if valid-char-code?
@@ -198,3 +204,18 @@
           nil
           res))
       (catch js/Error e nil))))
+
+(defn format-us-phone [s]
+  (when s
+    (let [numbers (numbers-only s)]
+      (->> [(take 3 numbers)
+            (->> numbers
+                 (drop 3)
+                 (take 3))
+            (->> numbers
+                 (drop 6)
+                 (take 4))]
+           (remove empty?)
+           (interpose "-")
+           flatten
+           (apply str)))))

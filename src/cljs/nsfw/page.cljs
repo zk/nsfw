@@ -56,3 +56,12 @@
 
 (defn push-route [routes handler]
   (push-path (path-for routes handler)))
+
+
+(defn link [{:keys [title on-click]}]
+  [:a {:href "#"
+       :on-click (fn [e]
+                   (.preventDefault e)
+                   (on-click e)
+                   e)}
+   title])

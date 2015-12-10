@@ -264,9 +264,9 @@
       (catch Exception e
         (handler (assoc r :exception e))))))
 
-(defn wrap-context [h ctx]
+(defn wrap-context [h k v]
   (fn [r]
-    (h (assoc r :ctx ctx))))
+    (h (assoc r k v))))
 
 (defn cljs-page-template [{:keys [js css env data
                                   body-class head meta-named
