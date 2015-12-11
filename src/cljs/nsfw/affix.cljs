@@ -154,7 +154,6 @@
 
      :component-will-unmount
      (fn [this]
-       (prn "WILL UNMOUNT")
        (let [{:keys [$scroller handler] :as state} (rea/state this)]
          (unlisten! $scroller :scroll handler)))
 
