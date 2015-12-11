@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Script Dir
+pushd `dirname $0` > /dev/null
+SP=`pwd`
+popd > /dev/null
+
+pushd $SP/.. > /dev/null
+
+bin/clean
+
+echo " * Starting development server..."
+
+env PORT=4999 foreman start -f Procfile.dev # lein repl :headless
+
+popd > /dev/null
