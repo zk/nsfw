@@ -57,11 +57,22 @@
 (defn push-route [routes handler]
   (push-path (path-for routes handler)))
 
-
 (defn link [{:keys [title on-click]}]
+  ^{:key title}
   [:a {:href "#"
        :on-click (fn [e]
                    (.preventDefault e)
                    (on-click e)
                    e)}
    title])
+
+(defn nav [bus children]
+  [:ul.nav
+   (->> children
+        (map (fn [{:keys [title view-key]}]
+               ^{:key view-key}
+               [:li
+                (link {:title title
+                       :on-click
+                       (fn [e]
+                         (ops/send bus ::nav {:view-key view-key}))})])))])
