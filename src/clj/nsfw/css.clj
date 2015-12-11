@@ -44,3 +44,24 @@
    :-moz-transition v
    :-ms-transition v
    :-o-transition v})
+
+(defn checkerboard [{:keys [light-bg dark-bg]}]
+  (let [light-bg "#fafafa"
+        dark-bg "#f3f3f3"]
+    {:background-color light-bg
+     :background-image (str "linear-gradient(45deg, "
+                            dark-bg
+                            " 25%, transparent 25%, transparent 75%, "
+                            dark-bg
+                            " 75%, "
+                            dark-bg
+                            "),
+linear-gradient(45deg, "
+                            dark-bg
+                            " 25%, transparent 25%, transparent 75%, "
+                            dark-bg
+                            " 75%, "
+                            dark-bg
+                            ")")
+     :background-size "60px 60px"
+     :background-position "0 0, 30px 30px"}))
