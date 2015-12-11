@@ -99,7 +99,8 @@
 (defn $wrap [{:keys [scroller
                      margin
                      preserve-height?
-                     on-offset] :as opts} & children]
+                     on-offset] :as opts}
+             child]
   (rea/create-class
     {:component-will-receive-props (fn [& args] true)
      :component-did-mount
@@ -161,9 +162,4 @@
      (fn []
        [:div.affix-preserve
         [:div.affix-wrapper
-         (first children)
-         #_(doall
-             (map-indexed
-               (fn [i c]
-                 (with-meta c {:key i}))
-               children))]])}))
+         child]])}))
