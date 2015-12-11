@@ -5,7 +5,8 @@
             [nsfw.util :as util]
             [nsfw.forms :as forms]
             [reagent.core :as rea]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [devguide.spas :as spas]))
 
 (enable-console-print!)
 
@@ -174,6 +175,7 @@
        [:code "nsfw.affix"]
        (->> ["cljs" "reagent"]
             (map (fn [s]
+                   ^{:key s}
                    [:span.badge s])))]]
      [:p "Keep stuff on the screen as you scroll."]
      [:p "Similar to Bootstrap's affix plugin, this allows you to fix content at certain scroll points. " [:em "Contents will not be re-rendered on atoms that are derefed outside the scope of the call to " [:code "$wrap"] "."]
@@ -193,7 +195,7 @@
         :scroller "Element or selector, optional. Used to calculate scroll relative to. Defaults to the Window object."
         :on-offset "Event callback. Called with the current offset of something in pixels."})]]])
 
-(defn $page []
+(defn $page [views nav !app bus]
   [:div.container
    [:div.row
     [:div.col-sm-12
@@ -207,22 +209,67 @@
     [:div.col-sm-3.col-md-2
      [affix/$wrap
       {:margin 10}
-      [:ul.nav
-       [:li "Reqeust Rendering"]
-       [:li "Layout"]
-       [:li "Forms"]]]]
+      (->> nav
+           (page/nav bus))]]
     [:div.col-sm-9.col-md-10
-     [:div.sec1
-      layout-section
-      forms-section]]]])
+     [(or (:render (get views (-> @!app :view-key)))
+          (fn [!state bus]
+            [:div.sec1
+             layout-section
+             forms-section]))
+      (rea/cursor !app [:state])
+      bus]]]])
+
+(defn $layout [!state bus]
+  [:div.sec1
+   layout-section
+   forms-section])
 
 (defn main [env]
   (let [!app (rea/atom {})
+        views (merge
+                spas/views
+                {:request-rendering
+                 {:render (fn [!state bus]
+                            [:h1 "request rendering"])
+                  :route "/request-rendering"
+                  :nav-title "Request Rendering"}
+                 :layout
+                 {:render $layout
+                  :route "/layout"
+                  :nav-title "Layout"}})
+
+        nav (->> views
+                 (map (fn [[k {:keys [nav-title]}]]
+                        (when nav-title
+                          {:view-key k
+                           :title nav-title})))
+                 (remove nil?))
+
+        routes ["" (->> views
+                        (map (fn [[k {:keys [route]}]]
+                               (when route
+                                 {route k})))
+                        (remove nil?)
+                        (reduce merge))]
+
+        _ (prn routes)
+
         bus (ops/bus
               {:!app !app}
-              {})]
+              {:nsfw.page/nav (fn [{:keys [!app view-key]}]
+                                (let [{:keys [route]} (get views view-key)]
+                                  (when route
+                                    (page/push-route routes view-key))
+                                  (swap! !app assoc-in [:view-key] view-key)))})]
+    (page/dispatch-route routes
+        (fn [handler route-params]
+          (swap! !app
+            #(-> %
+                 (assoc-in [:view-key] handler)
+                 (update-in [:state] merge route-params)))))
     (rea/render-component
-      [$page !app bus]
+      [$page views nav !app bus]
       (.-body js/document))
     (fn [])))
 

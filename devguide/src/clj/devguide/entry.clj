@@ -61,7 +61,7 @@
       :env {:js-entry :main}}]))
 
 (defn routes []
-  ["/" {"" cljs}])
+  ["/" {[#".*"] cljs}])
 
 (defn handler []
   (-> (routes)
