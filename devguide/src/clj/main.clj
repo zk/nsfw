@@ -1,32 +1,14 @@
 (ns main
   (:require [nsfw.server :as server]
             [devguide.config :as config]
-            [devguide.entry :as entry]
-            [garden.core :as garden]
-            [devguide.css :as css]))
+            [devguide.entry :as entry]))
 
 
-(defn compile-css []
-  (garden/css
-    {:output-to "resources/public/css/app.css"
-     :pretty-print? false
-     :vendors ["webkit" "moz" "ms"]
-     :auto-prefix #{:justify-content
-                    :align-items
-                    :flex-direction
-                    :flex-wrap
-                    :align-self
-                    :transition
-                    :transform}}
-    css/app))
+(def start-app
+  (server/gen-start-app
+    {:create-handler entry/handler
+     :create-ctx entry/create-ctx
+     :destroy-ctx entry/destroy-ctx
+     :server-opts {:port config/port}}))
 
-(defn start-app []
-  (compile-css)
-  (let [res (server/start-aleph
-              (entry/handler)
-              {:port config/port})]
-    (prn "*** Server Up ***")
-    res))
-
-(defn stop-app [app]
-  (server/stop-aleph app))
+(def stop-app (server/gen-stop-app))

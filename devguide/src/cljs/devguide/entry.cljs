@@ -6,22 +6,13 @@
             [nsfw.forms :as forms]
             [reagent.core :as rea]
             [clojure.string :as str]
-            [devguide.spas :as spas]))
+            [devguide.common :as com]
+            [devguide.intro :as intro]
+            [devguide.request-handling :as request-handling]
+            [devguide.spas :as spas]
+            [devguide.markdown :as markdown]))
 
 (enable-console-print!)
-
-(defn $options [opts]
-  [:div.sec4
-   [:h5 "Options (first arg)"]
-   [:div.options-table
-    (->> opts
-         (map (fn [[k v]]
-                ^{:key k}
-                [:div.row
-                 [:div.col-xs-4.key.col-md-3
-                  (str k)]
-                 [:div.col-xs-8.val.col-md-9
-                  v]])))]])
 
 (def forms-section
   [:div.dg-section
@@ -36,10 +27,10 @@
       [:div
        [:code "nsfw.forms/input"]]]
      [:p "For generating the html " [:code "input"] " element. Supports 'binding' to a cursor and optional path for easy data updates, and input / update formatters (for validation / masking)."]
-     ($options {:!cursor "Backing cursor"
-                :path "Vector path into backing cursor"
-                :parse-value "Function called with value of input before update to backing cursor."
-                :format-value "Function called to format value shown in input."})
+     (com/$options {:!cursor "Backing cursor"
+                    :path "Vector path into backing cursor"
+                    :parse-value "Function called with value of input before update to backing cursor."
+                    :format-value "Function called to format value shown in input."})
      [:h5 "Basic Usage"]
      (let [!c (rea/atom
                 {:full-name "Zachary Kim"
@@ -189,7 +180,7 @@
                       [:ul.nav
                        [:li "Reqeust Rendering"]
                        [:li "Layout"]]])]]
-     ($options
+     (com/$options
        {:margin "Distance from top in pixels"
         :preserve-height? "Bool, will leave a wrapper div on the page with a height equivalent to the affixed element. Useful for using affix with in-page-flow elements."
         :scroller "Element or selector, optional. Used to calculate scroll relative to. Defaults to the Window object."
@@ -209,8 +200,10 @@
     [:div.col-sm-3.col-md-2
      [affix/$wrap
       {:margin 10}
-      (->> nav
-           (page/nav bus))]]
+      [page/nav
+       {:!view-key (rea/cursor !app [:view-key])
+        :bus bus}
+       nav]]]
     [:div.col-sm-9.col-md-10
      [(or (:render (get views (-> @!app :view-key)))
           (fn [!state bus]
@@ -228,13 +221,16 @@
 (defn main [env]
   (let [!app (rea/atom {})
         views (merge
-                spas/views
+                intro/views
+                request-handling/views
                 {:request-rendering
                  {:render (fn [!state bus]
                             [:h1 "request rendering"])
                   :route "/request-rendering"
-                  :nav-title "Request Rendering"}
-                 :layout
+                  :nav-title "Static Rendering"}}
+                markdown/views
+                spas/views
+                {:layout
                  {:render $layout
                   :route "/layout"
                   :nav-title "Layout"}})
@@ -253,15 +249,11 @@
                         (remove nil?)
                         (reduce merge))]
 
-        _ (prn routes)
-
         bus (ops/bus
               {:!app !app}
-              {:nsfw.page/nav (fn [{:keys [!app view-key]}]
-                                (let [{:keys [route]} (get views view-key)]
-                                  (when route
-                                    (page/push-route routes view-key))
-                                  (swap! !app assoc-in [:view-key] view-key)))})]
+              (page/nav-handlers
+                {:views views
+                 :routes routes}))]
     (page/dispatch-route routes
         (fn [handler route-params]
           (swap! !app

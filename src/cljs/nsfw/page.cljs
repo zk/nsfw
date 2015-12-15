@@ -57,22 +57,34 @@
 (defn push-route [routes handler]
   (push-path (path-for routes handler)))
 
-(defn link [{:keys [title on-click]}]
+(defn link [{:keys [title on-click class]}]
   ^{:key title}
   [:a {:href "#"
+       :class class
        :on-click (fn [e]
                    (.preventDefault e)
                    (on-click e)
                    e)}
    title])
 
-(defn nav [bus children]
+(defn nav [{:keys [!view-key bus]} children]
   [:ul.nav
    (->> children
         (map (fn [{:keys [title view-key]}]
                ^{:key view-key}
                [:li
                 (link {:title title
+                       :class (str "nav-link"
+                                (when (= @!view-key view-key) " active"))
                        :on-click
                        (fn [e]
-                         (ops/send bus ::nav {:view-key view-key}))})])))])
+                         (ops/send bus ::nav {:view-key view-key}))})]))
+        doall)])
+
+(defn nav-handlers [{:keys [views routes]}]
+  {::nav (fn [{:keys [!app view-key]}]
+           (let [{:keys [route]} (get views view-key)]
+             (when route
+               (push-route routes view-key)
+               (.scrollTo js/window 0 0))
+             (swap! !app assoc-in [:view-key] view-key)))})

@@ -33,7 +33,7 @@
     (nc/prefix [:align-items 'center])
     {:font-family "'', 'Helvetica Neue', Arial, sans-serif"}
     [:h1 :h2 :h3 {:padding 0 :margin 0}]
-    [:h1 {:font-weight 'bold
+    [:h1 {:font-weight 'normal
           :font-size "70px"
           :margin-right "3px"
           :letter-spacing "2px"}]
@@ -51,7 +51,7 @@
    [:.dg-section
     {:margin-bottom "50px"}
     [:.badge {:margin-left "3px"}]
-    [:h1 :h2 :h3 :h4 :h5 :h6 {:margin-bottom "10px"}]
+    [:h1 :h2 :h3 :h4 :h5 :h6 {:margin-bottom "20px"}]
     [:h3
      nc/display-flex
      (nc/prefix [:justify-content 'space-between])]
@@ -67,7 +67,14 @@
     (nc/checkerboard {})
     {:padding "20px"}]])
 
+(def nav
+  [[:.nav
+    [:.nav-link {:border-left "solid transparent 2px"}]
+    [:.active {:border-left "solid #ccc 2px"
+               :background-color "#eee"}]]])
+
 (def app
   [reset
+   nav
    layout
    page])

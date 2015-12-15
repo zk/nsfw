@@ -1,8 +1,24 @@
 (ns devguide.entry
   (:require [bidi.ring :refer [make-handler]]
             [devguide.config :as config]
+            [devguide.css :as css]
             [nsfw.http :as http]
-            [nsfw.util :as util]))
+            [nsfw.util :as util]
+            [garden.core :as garden]))
+
+(defn compile-css []
+  (garden/css
+    {:output-to "resources/public/css/app.css"
+     :pretty-print? false
+     :vendors ["webkit" "moz" "ms"]
+     :auto-prefix #{:justify-content
+                    :align-items
+                    :flex-direction
+                    :flex-wrap
+                    :align-self
+                    :transition
+                    :transform}}
+    css/app))
 
 (defn four-oh-four [r]
   (merge
@@ -58,12 +74,18 @@
      open-sans
      {:css ["/css/app.css"]}
      {:js ["/cljs/app.js"]
-      :env {:js-entry :main}}]))
+      :env {:js-entry :main
+            :content {}}}]))
 
 (defn routes []
   ["/" {[#".*"] cljs}])
 
-(defn handler []
+(defn create-ctx []
+  (compile-css))
+
+(defn destroy-ctx [ctx])
+
+(defn handler [context]
   (-> (routes)
       make-handler
       (http/wrap-cookie-session
