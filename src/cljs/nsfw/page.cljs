@@ -1,7 +1,11 @@
 (ns nsfw.page
   (:require [nsfw.util :as util]
             [nsfw.ops :as ops]
-            [bidi.bidi :as bidi]))
+            [reagent.core :as rea]
+            [bidi.bidi :as bidi]
+            [cljs.core.async :as async
+             :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defn start-app [handlers]
   (let [entry-key (try
@@ -45,17 +49,29 @@
       (.-host loc)
       parts)))
 
-(defn dispatch-route [routes on-path]
-  (let [{:keys [route-params handler] :as match}
-        (bidi/match-route routes (pathname))]
-    (when handler
-      (on-path handler route-params))))
+(defn views->routes [views]
+  ["" (->> views
+           (map (fn [[k {:keys [route]}]]
+                  (when route
+                    {route k})))
+           (remove nil?)
+           (reduce merge))])
 
-(defn path-for [routes handler]
-  (bidi/path-for routes handler))
+(defn views->handlers [views]
+  (->> views
+       (map second)
+       (map :handlers)
+       (apply merge)))
 
-(defn push-route [routes handler]
-  (push-path (path-for routes handler)))
+(defn path-for [routes handler & [params]]
+  (apply
+    bidi/path-for
+    routes
+    handler
+    (mapcat identity params)))
+
+(defn push-route [routes handler & [params]]
+  (push-path (path-for routes handler params)))
 
 (defn link [{:keys [title on-click class]}]
   ^{:key title}
@@ -67,7 +83,7 @@
                    e)}
    title])
 
-(defn nav [{:keys [!view-key bus]} children]
+(defn $nav [{:keys [!view-key bus]} children]
   [:ul.nav
    (->> children
         (map (fn [{:keys [title view-key]}]
@@ -81,10 +97,47 @@
                          (ops/send bus ::nav {:view-key view-key}))})]))
         doall)])
 
+(defn nav-to-key [bus key & [route-params]]
+  (ops/send bus ::nav {:view-key key
+                       :route-params route-params}))
+
 (defn nav-handlers [{:keys [views routes]}]
-  {::nav (fn [{:keys [!app view-key]}]
-           (let [{:keys [route]} (get views view-key)]
-             (when route
-               (push-route routes view-key)
-               (.scrollTo js/window 0 0))
-             (swap! !app assoc-in [:view-key] view-key)))})
+  (let [routes (or routes
+                   (views->routes views))]
+    {::nav (fn [{:keys [!app view-key route-params]}]
+             (let [{:keys [route <state state]} (get views view-key)]
+               (when route
+                 (push-route routes view-key route-params)
+                 (.scrollTo js/window 0 0))
+               (cond
+                 <state (go
+                          (let [state (<! (<state @!app route-params))]
+                            (swap! !app
+                              #(-> %
+                                   (assoc-in [:view-key] view-key)
+                                   (assoc-in [:state] state)))))
+                 state (swap! !app
+                         #(-> %
+                              (assoc-in [:view-key] view-key)
+                              (assoc-in [:state] (state @!app route-params))))
+                 :else (swap! !app
+                         #(-> %
+                              (assoc-in [:view-key] view-key))))))}))
+
+(defn dispatch-route [routes on-path]
+  (let [{:keys [route-params handler] :as match}
+        (bidi/match-route routes (pathname))]
+    (when handler
+      (on-path handler route-params))))
+
+(defn dispatch-view [views !app bus]
+  (let [routes (views->routes views)]
+    (dispatch-route routes
+      (fn [handler route-params]
+        (nav-to-key bus handler route-params)))))
+
+
+(defn render-view [views !app bus]
+  (let [render (:render (get views (:view-key @!app)))]
+    (when render
+      [render (rea/cursor !app [:state]) bus])))
