@@ -3,7 +3,7 @@
 
 (defn $render [!app bus]
   [:div.dg-section
-   [:h1 "A Magical Journey"]
+   [:h1 "A Magical Journey Into Web Land"]
    [:p "NSFW is a kitchen-sink style library that helps you build solid webapps quickly and robustly. There are many, many assumptions built into these set of tools that may not apply to your particular use case, so probably don't use this."]
    [:h2 "General Dev Cycle"]
    [:p "One of the more important parts of efficient development is having very short change-check cycles. In other words, the amount of time between making a change and seeing the result of that change should be as short as possible. NSFW provides several mechanisms to help with this."]
