@@ -20,13 +20,13 @@
               Dispatcher
               (send [this op]
                 (send this op nil))
-              (send [_ op data]
+              (send [this op data]
                 (when-let [msg {::op op ::data data}]
                   (let [op (or (::op msg) (:op msg))]
                     (if-let [f (get @!handlers op)]
                       (do
                         #_(println "[nsfw.ops] Dispatching" op)
-                        (f (merge {:bus bus}
+                        (f (merge {:bus this}
                                   @!ctx
                                   (::data msg))))
                       (println "[nsfw.ops] No handler for op" msg))
