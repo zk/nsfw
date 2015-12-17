@@ -1,5 +1,6 @@
 (ns nsfw.dropzone
-  (:require [com.dropzonejs]
+  (:require [nsfw.util :as util]
+            [com.dropzonejs]
             [reagent.core :as rea]))
 
 (defn $dropzone [{:keys [url
@@ -7,7 +8,8 @@
                          on-success
                          on-error
                          on-uploadprogress
-                         allow-multiple?]}]
+                         allow-multiple?
+                         response-type]}]
   (let [!state (rea/atom {:message (or message "Drop Files Here")
                           :loading? false})]
     [(with-meta
@@ -29,8 +31,12 @@
               (fn [file response-str]
                 (swap! !state assoc :loading? false)
                 (when on-success
-                  (on-success {:file file
-                               :response-str response-str}))))
+                  (on-success
+                    (merge
+                      {:file file
+                       :response-str response-str}
+                      (when (= :transit response-type)
+                        {:body (util/from-transit response-str)}))))))
             (.on dz "error"
               (fn [file response-str]
                 (swap! !state
