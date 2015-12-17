@@ -37,9 +37,4 @@
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj"]
-  :jar-name "nsfw.jar"
-  :cljsbuild {:builds
-              [{:source-paths ["src/cljs"]
-                :compiler {:output-to "resources/test.js"
-                           :optimizations :whitespace}
-                :jar true}]})
+  :jar-name "nsfw.jar")
