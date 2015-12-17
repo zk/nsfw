@@ -1,5 +1,6 @@
 (ns nsfw.css
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [garden.def :refer [defkeyframes]]))
 
 (def display-flex
   {:display ^:prefix #{"flex" "-webkit-flex"
@@ -65,3 +66,35 @@ linear-gradient(45deg, "
                             ")")
      :background-size "60px 60px"
      :background-position "0 0, 30px 30px"}))
+
+
+
+;; Spinners
+
+(defkeyframes sk-bouncedelay
+  ["0%" "80%" "100%" {:transform "scale(0)"
+                      :-webkit-transform "scale(0)"}]
+  ["40%" {:transform "scale(1.0)"
+          :-webkit-transform "scale(1.0)"}])
+
+(defn ellipsis-spinner [{:keys [size color]}]
+  (let [color (or color "rgba(0,0,0,0.4)")
+        size (or size 14)]
+    [sk-bouncedelay
+     [:.ellipsis-spinner
+      {:text-align 'center
+       :display 'inline-block}
+      ["> div"
+       {:width (str size "px")
+        :height (str size "px")
+        :margin (str (max (/ size 10) 1) "px")
+        :background-color color
+
+        :border-radius "100%"
+        :display 'inline-block
+        :-webkit-animation "sk-bouncedelay 1.4s infinite ease-in-out both"
+        :animation "sk-bouncedelay 1.4s infinite ease-in-out both"}]
+      [:.bounce1 {:-webkit-animation-delay "-0.32s"
+                  :animation-delay "-0.32s"}]
+      [:.bounce2 {:-webkit-animation-delay "-0.16s"
+                  :animation-delay "-0.16s"}]]]))
