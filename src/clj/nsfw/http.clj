@@ -7,7 +7,8 @@
             [hiccup.page]
             [hiccup.core]
             [clojure.string :as str]
-            [bidi.ring :as bidi]
+            [bidi.ring :as bidi-ring]
+            [bidi.bidi :as bidi]
             [ring.middleware
              file
              file-info
@@ -220,7 +221,7 @@
   (->> routes
        (map apply-middleware)
        routes->bidi
-       bidi/make-handler))
+       bidi-ring/make-handler))
 
 (defn wrap-404 [h handler]
   (fn [r]
@@ -390,3 +391,29 @@
               (for [js js]
                 (if (string? js)
                   [:script {:type "text/javascript" :src js}]))))]))]))
+
+(defn compile-handlers [handlers]
+  (->> handlers
+       (map (fn [[k fn-or-map]]
+              [k (if (map? fn-or-map)
+                   (let [{:keys [middleware data render]} fn-or-map
+                         middleware (or middleware identity)
+                         data (or data identity)]
+                     (middleware
+                       (fn [req]
+                         (render (data req)))))
+                   fn-or-map)]))
+       (into {})))
+
+(defn gen-handler [routes handlers]
+  (let [compiled-handlers (compile-handlers handlers)]
+    (fn [{:keys [uri path-info] :as req}]
+      (let [path (or path-info uri)
+            {:keys [handler route-params] :as match-context}
+            (bidi/match-route* routes path req)
+            handler-fn (get compiled-handlers handler)]
+        (when handler-fn
+          (handler-fn
+            (-> req
+                (update-in [:params] merge route-params)
+                (update-in [:route-params] merge route-params))))))))
