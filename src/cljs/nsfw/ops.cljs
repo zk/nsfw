@@ -56,3 +56,32 @@
    ::on-ack on-ack
    ::auth auth
    ::on-error on-error})
+
+
+(defn kit [context handlers]
+  )
+
+(comment
+  (fn [{:keys [!app]}])
+
+  {:handler-key (->> $calc-state
+                     run-sync-or-async
+                     update-something
+                     update-something-else)}
+
+
+
+
+  ;; Middleware Solution
+
+  (defn run-sync-or-async [!app res]
+    )
+
+  (fn [{:keys [!app]}])
+
+
+  {:state (fn [{:keys [!app]}])
+   :post []}
+
+
+  (fn [{:keys [!app]}]))

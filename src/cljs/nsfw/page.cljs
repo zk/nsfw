@@ -51,10 +51,12 @@
 
 (defn views->routes [views]
   ["" (->> views
-           (map (fn [[k {:keys [route]}]]
-                  (when route
-                    {route k})))
-           (remove nil?)
+           (mapcat (fn [[k {:keys [route routes]}]]
+                     (->> (concat [route] routes)
+                          (remove nil?)
+                          (map (fn [route]
+                                 {route k})))))
+           (#(do (prn %) %))
            (reduce merge))])
 
 (defn views->handlers [views]
@@ -104,25 +106,25 @@
 (defn nav-handlers [{:keys [views routes]}]
   (let [routes (or routes
                    (views->routes views))]
-    {::nav (fn [{:keys [!app view-key route-params]}]
-             (let [{:keys [route <state state]} (get views view-key)]
-               (when route
-                 (push-route routes view-key route-params)
-                 (.scrollTo js/window 0 0))
-               (cond
-                 <state (go
-                          (let [state (<! (<state @!app route-params))]
-                            (swap! !app
-                              #(-> %
-                                   (assoc-in [:view-key] view-key)
-                                   (assoc-in [:state] state)))))
-                 state (swap! !app
-                         #(-> %
-                              (assoc-in [:view-key] view-key)
-                              (assoc-in [:state] (state @!app route-params))))
-                 :else (swap! !app
-                         #(-> %
-                              (assoc-in [:view-key] view-key))))))}))
+    {::nav (fn [{:keys [!app routes view-key route-params]}]
+             (let [{:keys [<state state] :as view} (get views view-key)]
+               (push-route routes view-key route-params)
+               (.scrollTo js/window 0 0)
+               (if state
+                 (swap! !app
+                   #(-> %
+                        (assoc-in [:view-key] view-key)
+                        (assoc-in [:state] (state @!app route-params))))
+                 (swap! !app
+                   #(-> %
+                        (assoc-in [:view-key] view-key))))
+               (when <state
+                 (go
+                   (let [state (<! (<state @!app route-params))]
+                     (swap! !app
+                       #(-> %
+                            (assoc-in [:view-key] view-key)
+                            (assoc-in [:state] state))))))))}))
 
 (defn dispatch-route [routes on-path]
   (let [{:keys [route-params handler] :as match}
@@ -130,14 +132,22 @@
     (when handler
       (on-path handler route-params))))
 
-(defn dispatch-view [views !app bus]
-  (let [routes (views->routes views)]
-    (dispatch-route routes
-      (fn [handler route-params]
-        (nav-to-key bus handler route-params)))))
-
+(defn dispatch-view [views routes !app bus]
+  (dispatch-route routes
+    (fn [handler route-params]
+      (nav-to-key bus handler route-params))))
 
 (defn render-view [views !app bus]
   (let [render (:render (get views (:view-key @!app)))]
     (when render
       [render (rea/cursor !app [:state]) bus])))
+
+(defn start-popstate-handler [views routes !app bus]
+  (let [on-pop (fn [_]
+                 (dispatch-view routes views !app bus))]
+    (aset js/window "onpopstate" on-pop)
+    (fn []
+      (aset js/window "onpopstate" nil))))
+
+(defn stop-popstate-handler [f]
+  (f))
