@@ -1312,3 +1312,145 @@ Axing namespaces:
 + nsfw.spy
 + nsfw.twitter
 + nsfw
+
+
+* <2015-12-19 Sat 13:53>
+
+Whew, been a while since I updated this. Working on SPA code structure.
+
+
+
+  -------------------------------------------------
+  v                                               ^
+Event -> State (Sync / Async) -> Side Effects -> Render
+
+Rendering is taken care of by React, so really, we're
+
+State -> State, then multiple application functions. Should be a
+
+How to do async?
+
+
+** Assumptions
+
++ One atom representing app state
++ Context for things like connections / env info
++ State is updated based on previous state and context (for things like config, connections, etc). State can be synchronously calculated (returns a map), or asynchronously calculated (returns a channel).
++ Handler Types: Sync, Asyc, Side Effectful
+
++ Sync -> map
++ Async -> channel
++ Se -> nil (args are different)
+
+Sync / Async params - [state params ctx]
+
+SE params - [!state params ctx]
+
+(fn [ctx params])
+
+So the post-processor thing (or middleware) only works for sync /
+async (and differently for those two). For side effectful handlers
+there's no way to know when the processing is done
+
+Way to cancel? Close the channel Send multiples?
+
+Ooh, so can do multiple state updates by sending multiples to channel,
+but channel will be held onto until closed?
+
+= Pros =
++ Can handle multiple updates to state
++ is cancellable from inside (closing channel) and outside (escaping loop).
+
+= Cons =
++ Will hold a reference to that channel until it's closed by the
+  called code. Can't think of a failsafe to close from the outside.
+
+Oh, that's interesting. What if you put another channel on the
+channel. Well the state update wouldn't work but could send a tuple
+
+[state ch]. That's super interesting. Weird at first, but still
+
+map, vec, nil
+
+Ugh, the return values types thing feels harmful.
+
+
+Ok, converging on a good solution. The missing piece was rendering URL
+off of state (I think).
+
+
+Nav needs to run a handler, I think
+
+Fuck, so clobbering state on first call vs subsequent calls. Let's see
+if we can do this without expicitly derefing.
+
+Ok, bandaided, and not so bad, just have to do subsequent ops off of
+recalculated state:
+
+(defn <admin-landing [state]
+  (let [ch (chan)
+        state (assoc state
+                :main-view-key :landing
+                :loading? true)]
+    (go
+      (let [{:keys [success? result]}
+            (<! (data/query
+                  {:companies {:type :company
+                               :result :list
+                               :query [:sort {:created-at 1} :limit 10]
+                               :subs {:pi-count
+                                      {:type :investor
+                                       :result :count
+                                       :query [:where {:company-id '$/_id}]}}}}))]
+        (if success?
+          (put! ch [(merge state result {:loading? false}) nil])
+          (put! ch [(merge state {:loading? false :global-error "Couldn't get initial data"}) nil]))))
+    [state ch]))
+
+
+Ok, so need a way to run side-effectful code off of a state transition
+
+For sync operations this is pretty straightforward, specify a function
+to run after the state transition.
+
+For async operations it's a bit more tricky-- there can be multiple
+state transitions based on how many times a channel is sent down.
+
++ Don't provide an affordance for this, can be accomplished in the
+  handlers themselves -- actually this isn't bad, if there's a way to
+  specify a top-level post-state handler. Can try this easily.
++ Specify handler as map, with keys pointing to the state transition
+  function and post-state side effectful function
++ Create a protocol
+
+
+Can we wrap sync and async? I suppose.
+
+Might need to change handlers from [arg arg arg] to {:keys [arg arg
+arg]} to support middleware.
+
+Might need to revisit the closing the channel discussion, would make
+middlware much easier to write.
+
+Otherwise can have a helper that is triggered on state changes at the
+handler level whether synchronous or asynchronous.
+
+This kind of feels like a use case for transducers, I'll have to look
+into that.
+
+Man really in the weeds on this side effect stuff.
+
+Ok, so what did we learn?
+
++ Core abstractions weren't good enough
++ Page abstraction is not great for SPAs
++ URLs are UI, and should be rendered from state
++ Event -> Handler -> State -> UI only
+  + Page load is an event, URL change is not (at least one that we
+    care about). i.e. URL changes should not cause state update, other
+    way around.
++ Sync / Async state updates are how to think about handlers
++ Need better ways to:
+  + Cause side affects off of state changes in a composable way
+  + Specify
++ Code-org-wise, handlers and UI should not be combined.

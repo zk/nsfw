@@ -2,7 +2,11 @@
   "Provides message-based dispatching and context sharing. This helps
   with decoupling disparate parts of an app while sharing a common
   context (e.g. app state, windows, connections) between those parts."
-  (:require [nsfw.util :as util]))
+  (:require [nsfw.util :as util]
+            [cljs.core.async :as async
+             :refer [<! >! chan close! sliding-buffer put! take!
+                     alts! timeout pipe mult tap]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defprotocol Dispatcher
   (send [this op] [this op data])
@@ -25,10 +29,10 @@
                   (let [op (or (::op msg) (:op msg))]
                     (if-let [f (get @!handlers op)]
                       (do
-                        #_(println "[nsfw.ops] Dispatching" op)
-                        (f (merge {:bus this}
-                                  @!ctx
-                                  (::data msg))))
+                        (f
+                          (merge {:bus this}
+                                 @!ctx)
+                          (::data msg)))
                       (println "[nsfw.ops] No handler for op" msg))
                     (when-not (empty? @!debug-fns)
                       (doseq [f (vals @!debug-fns)]
@@ -57,31 +61,52 @@
    ::auth auth
    ::on-error on-error})
 
-
-(defn kit [context handlers]
-  )
-
-(comment
-  (fn [{:keys [!app]}])
-
-  {:handler-key (->> $calc-state
-                     run-sync-or-async
-                     update-something
-                     update-something-else)}
-
-
-
-
-  ;; Middleware Solution
-
-  (defn run-sync-or-async [!app res]
-    )
-
-  (fn [{:keys [!app]}])
+(defn wrap-with-state
+  ([with-state]
+   (fn [h]
+     (wrap-with-state h with-state)))
+  ([h with-state & args]
+   (fn [state params ctx]
+     (let [res (h state params ctx)]
+       (cond
+         (map? res) (do (with-state res) res)
+         (vector? res) (let [[state ch] res]
+                         (with-state state)
+                         [state
+                          (async/map
+                            (fn [state]
+                              (with-state state)
+                              state)
+                            [ch])]))))))
 
 
-  {:state (fn [{:keys [!app]}])
-   :post []}
-
-
-  (fn [{:keys [!app]}]))
+(defn kit [!state ctx handlers & [side-effect-fns]]
+  (let [run-ses (fn [state params]
+                  (doseq [f side-effect-fns]
+                    (f state params))
+                  state)]
+    (bus
+      (assoc ctx :!state !state)
+      (->> handlers
+           (map (fn [[k v]]
+                  [k (fn [{:keys [!state] :as ctx} params]
+                       (let [res (v @!state params ctx)]
+                         (cond
+                           (map? res) (run-ses
+                                        (reset! !state res)
+                                        params)
+                           (vector? res) (let [[state ch] res]
+                                           (go-loop [ch ch]
+                                             (when ch
+                                               (let [[state ch] (<! ch)]
+                                                 (when state
+                                                   (run-ses
+                                                     (reset! !state state)
+                                                     params))
+                                                 (when ch
+                                                   (recur ch)))))
+                                           (when state
+                                             (run-ses
+                                               (reset! !state state)
+                                               params))))))]))
+           (into {})))))

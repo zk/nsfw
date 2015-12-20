@@ -25,35 +25,3 @@ render your page should passed forward in this manner, including user
 data and API keys. Don't be lazy and fire off an ajax call from the
 frontend to grab data for that initial render, that makes for a poor
 user experience.
-
-
-
-# Scratch
-  ---------------------------------
-  v                               ^
-Event -> State (Sync / Async) -> Side Effects -> Render
-
-Rendering is taken care of by React, so really, we're
-
-
-State -> State, then multiple application functions. Should be a
-
-
-How to do async?
-
-
-## Assumptions
-
-* One atom representing app state
-* Context for things like connections / env info
-* State is updated based on previous state and context (for things like config, connections, etc). State can be synchronously calculated (returns a map), or asynchronously calculated (returns a channel).
-* Handler Types: Sync, Asyc, Side Effectful
-
-* Sync -> map
-* Async -> channel
-* Se -> nil (args are different)
-
-
-Sync / Async params - [state params ctx
-
-SE params - [!state params ctx
