@@ -142,12 +142,17 @@
     (when render
       [render (rea/cursor !app [:state]) bus])))
 
-(defn start-popstate-handler [views routes !app bus]
-  (let [on-pop (fn [_]
-                 (dispatch-view routes views !app bus))]
-    (aset js/window "onpopstate" on-pop)
-    (fn []
-      (aset js/window "onpopstate" nil))))
+(defn start-popstate-handler [on-pop]
+  (aset js/window "onpopstate" on-pop)
+  (fn []
+    (aset js/window "onpopstate" nil)))
 
 (defn stop-popstate-handler [f]
   (f))
+
+(defn render-key [!state path views]
+  (let [view-key (get-in @!state path)
+        $view (get views view-key)]
+    (if $view
+      $view
+      (fn []))))

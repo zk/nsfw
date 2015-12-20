@@ -1446,9 +1446,7 @@ Ok, so what did we learn?
 + Page abstraction is not great for SPAs
 + URLs are UI, and should be rendered from state
 + Event -> Handler -> State -> UI only
-  + Page load is an event, URL change is not (at least one that we
-    care about). i.e. URL changes should not cause state update, other
-    way around.
+  + Page load is an event, URL change (onpopstate) is an event.
 + Sync / Async state updates are how to think about handlers
 + Need better ways to:
   + Cause side affects off of state changes in a composable way
