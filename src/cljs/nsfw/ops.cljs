@@ -80,6 +80,13 @@
                             [ch])]))))))
 
 
+(defn apply-state [!state state params post]
+  (let [state' (cond
+                 (fn? state) (state @!state)
+                 :else state)]
+    (post (reset! !state state') params)))
+
+
 (defn kit [!state ctx handlers & [side-effect-fns]]
   (let [run-ses (fn [state params]
                   (doseq [f side-effect-fns]
@@ -92,21 +99,32 @@
                   [k (fn [{:keys [!state] :as ctx} params]
                        (let [res (v @!state params ctx)]
                          (cond
-                           (map? res) (run-ses
-                                        (reset! !state res)
-                                        params)
+                           (map? res) (apply-state
+                                        !state
+                                        res
+                                        params
+                                        run-ses)
                            (vector? res) (let [[state ch] res]
                                            (go-loop [ch ch]
                                              (when ch
                                                (let [[state ch] (<! ch)]
                                                  (when state
-                                                   (run-ses
-                                                     (reset! !state state)
-                                                     params))
+                                                   (apply-state
+                                                     !state
+                                                     state
+                                                     params
+                                                     run-ses))
                                                  (when ch
                                                    (recur ch)))))
                                            (when state
-                                             (run-ses
-                                               (reset! !state state)
-                                               params))))))]))
+                                             (apply-state
+                                               !state
+                                               state
+                                               params
+                                               run-ses)))
+                           (fn? res) (apply-state
+                                       !state
+                                       res
+                                       params
+                                       run-ses))))]))
            (into {})))))

@@ -1452,3 +1452,140 @@ Ok, so what did we learn?
   + Cause side affects off of state changes in a composable way
   + Specify
 + Code-org-wise, handlers and UI should not be combined.
+
+
+Nice to have the ability to decide in-function whether or not to make
+the async call.
+
+
+* <2015-12-19 Sat 21:50>
+
+Next thing to investigate, infinite scrolling. Hopefully these
+abstractions will be able to handle it gracefully.
+
+I think it's possible with the event system, just a matter of figuring
+out how to specify in a good way.
+
+Have to figure out how to handle multiple simultaneous updates (second
+update call comes in when first update is in flight)
+
++ Infinite scrolling
++ Multiple, simultaneous updates
++ Periodic recalcs (timeago)
+
+
+* <2015-12-20 Sun 14:00>
+
+The multiple updates thing is really bugging me, basically you've got
+some pretty important cases where you need to wait until all updates
+are done before completing.
+
+Basically the case I've got right now is that the intermediate updates
+shouldn't be applied:
+
+http://cl.ly/0l2v1r3N1Y1z/Screen%20Recording%202015-12-20%20at%2002.05%20PM.gif
+
+What should happen? The last update wins, as long as it's based off of
+the previous state changes, which it is. Here's the handler for
+reference:
+
+#+BEGIN_SRC clojure
+
+(fn [state company]
+  (let [errors (validate-company company)]
+    (if-not (empty? errors)
+      (assoc state :update-errors errors)
+      (let [ch (chan)
+            state (assoc state :update-loading? true)
+            orig-company (:company state)
+            updated-company (dissoc company
+                              :pis
+                              :pi-count)]
+        (go
+          (let [{:keys [success? obj]}
+                (<! (data/mutate {:type :company
+                                  :obj updated-company}))]
+            (if success?
+              (put! ch [(assoc state
+                          :company (merge company obj)
+                          :update-loading? false)
+                        nil])
+              (put! ch [(assoc state
+                          :update-error
+                          "There was a problem updating this company. Please try again."
+                          :update-loading? false
+                          :company orig-company)
+                        nil]))))
+        [(assoc state
+           :company company) ch]))))
+
+#+END_SRC
+
+State with the updated company is immediately returned, thus the
+second update that comes in works off of this updated state.
+
+The problem is that the state may have been updated before the first
+call returns. The solution is simple in the case of the first call
+succeeding, we've already applied the new state, and if the update
+call does not come back with any new information, we've got the
+updated state. This feels leaky, though.
+
+Ah, but we do need to return some state, which is to disable
+loading. So, we do need a mechanism to prevent intermediate state
+updates.
+
+Options
++ Provide a throttle / debounce mechanism
++ Provide a way to specify rules for updates
+  + Last success wins
+  + Intermediate updates aren't applied
++ Counter for in-flight requests? (via context?)
+  + Could use state for that too...
+
+What if you could scope handlers to a path as well?  What if you could
+return a function that would be applied to state?  Wow, this is just
+getting out of hand now. But I'm going to try that, because it sounds
+awesome.
+
+Ok, the function thing worked pretty well. And by pretty well I mean
+the code is a mess:
+
+#+BEGIN_SRC clojure
+
+(defn <update-company [state updated-company]
+  (let [errors (validate-company updated-company)]
+    (if-not (empty? errors)
+      ;; Update errors, no backend calls.
+      (assoc state :update-errors errors)
+
+      ;; Local validations ok, proceed
+      (let [ch (chan)
+
+            prev-company (:company state)
+            local-state (assoc state
+                          :company updated-company
+                          :update-loading? true)
+
+            clean-updated-company (dissoc updated-company :pis :pi-count)]
+        (go
+          (let [{success? :success?}
+                (<! (data/mutate {:type :company
+                                  :obj clean-updated-company}))]
+            (if success?
+              (put! ch [(fn [state]
+                          (assoc state :update-loading? false)) nil])
+              (put! ch [(fn [state]
+                          (assoc state :update-error "There was a problem updating this company. Please try again."
+                            :update-loading? false
+                            :company prev-company))
+                        nil]))))
+        [local-state ch]))))
+
+#+END_SRC
+
+
+I'm wondering if the
+channel thing could be replaced with some recursive call via bus.
+
+Shit, forgot you still need URLs on internal nav links. Need routes in
+scope for that. Should put things like links in state?
