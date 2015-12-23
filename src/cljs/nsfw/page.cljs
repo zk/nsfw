@@ -103,6 +103,9 @@
   (ops/send bus ::nav {:view-key key
                        :route-params route-params}))
 
+(defn scroll-top []
+  (.scrollTo js/window 0 0))
+
 (defn nav-handlers [{:keys [views routes]}]
   (let [routes (or routes
                    (views->routes views))]

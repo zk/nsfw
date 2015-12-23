@@ -197,3 +197,10 @@
   (if (= 1 n)
     singular
     plural))
+
+(defn lookup-map [coll key]
+  (->> coll
+       (map (fn [o]
+              [(get o key)
+               o]))
+       (into {})))

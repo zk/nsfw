@@ -1589,3 +1589,19 @@ channel thing could be replaced with some recursive call via bus.
 
 Shit, forgot you still need URLs on internal nav links. Need routes in
 scope for that. Should put things like links in state?
+
+
+* <2015-12-21 Mon 14:55>
+
+Calling handlers from other handlers probably is not the right way to
+do things.
+
++ Infinite scrolling
++ Multiple, simultaneous updates
++ Periodic recalcs (timeago)
++ Mutation engine delete, validations
++ Fine-grained auth for query / mutation (global auth is in).
+
+
+Need to allow single thing to come off the channel. Wait, I think I
+allow that already.

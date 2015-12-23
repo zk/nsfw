@@ -37,6 +37,14 @@
 (defn flex-grow [v]
   (prefix [:flex-grow v]))
 
+(defn flex-box [opts]
+  (merge
+    display-flex
+    (->> opts
+         (map (fn [[k v]]
+                (prefix [k v])))
+         (reduce merge))))
+
 (defn transition [v]
   {:transition v
    :-webkit-transition (if (string? v)
