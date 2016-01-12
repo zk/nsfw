@@ -204,3 +204,6 @@
               [(get o key)
                o]))
        (into {})))
+
+(defn url-encode [s]
+  (js/encodeURIComponent s))

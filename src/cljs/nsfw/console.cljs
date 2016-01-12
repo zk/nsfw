@@ -3,7 +3,7 @@
             [reagent.core :as rea]
             [nsfw.util :as util]))
 
-(defn $page [!console !state test-states]
+(defn $page [!console !state test-states filter]
   (let [{:keys [open?]} @!console]
     [:div
      {:style {:position 'fixed
@@ -11,6 +11,7 @@
               :bottom 0
               :left 0
               :right 0
+              :z-index 10000
               :background-color "rgba(255,255,255,0.8)"
               :display (if open? 'block 'none)
               ;;:transform (if open? "translateY(0)" "translateY(100%)")
@@ -26,7 +27,7 @@
         [:pre
          {:style {:background-color 'transparent
                   :border 'none}}
-         (util/pp-str @!state)]]
+         (util/pp-str (filter @!state))]]
        [:div.col-sm-3.col-md-2
         (for [{:keys [title state]} test-states]
           ^{:key title}
@@ -38,20 +39,24 @@
                             nil)}
             title]])]]]]))
 
-(defn attach [!state test-states]
+(defn attach [!state {:keys [filter-keys test-states]}]
   (let [body (sel1 :body)
         $el (dommy/create-element :div)
         !console (rea/atom {:open? false})
+        filter (fn [s]
+                 (let [s (if filter-keys
+                           (apply dissoc s filter-keys)
+                           s)]
+                   s))
         on-key (fn [e]
                  (let [key? (= 4 (.-keyCode e))
                        ctrl-key? (.-ctrlKey e)]
-                   #_(prn (.-keyCode e))
                    (when (and key? ctrl-key?)
                      (.preventDefault e)
                      (swap! !console update-in [:open?] not)
                      (if (:open? @!console)
                        (rea/render-component
-                         [$page !console !state test-states]
+                         [$page !console !state test-states filter]
                          $el)
                        (rea/unmount-component-at-node $el)))))]
     (dommy/append! body $el)

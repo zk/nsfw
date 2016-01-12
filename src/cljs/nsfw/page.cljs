@@ -3,6 +3,7 @@
             [nsfw.ops :as ops]
             [reagent.core :as rea]
             [bidi.bidi :as bidi]
+            [dommy.core :as dommy]
             [cljs.core.async :as async
              :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
@@ -159,3 +160,31 @@
     (if $view
       $view
       (fn []))))
+
+(defn viewport []
+  {:width (or (.. js/document -documentElement -clientWidth)
+              (.-innerWidth js/window)
+              0)
+   :height (or (.. js/document -documentElement -clientHeight)
+               (.-innerHeight js/window)
+               0)})
+
+(defn aspect-ratio []
+  (let [{:keys [width height]}
+        (viewport)]
+    (/ width height)))
+
+(defn on-resize [f]
+  (dommy/listen! js/window :resize f)
+  (fn []
+    (dommy/unlisten! js/window :resize f)))
+
+(defn on-scroll [f]
+  (dommy/listen! js/window :scroll f)
+  (fn []
+    (dommy/unlisten! js/window :scroll f)))
+
+
+
+;;var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+;;var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)

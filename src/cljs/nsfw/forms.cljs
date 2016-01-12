@@ -9,13 +9,16 @@
       :value (get-in @!app path)}
      opts)])
 
-(defn textarea [{:keys [!cursor path] :as opts}]
-  (let [html-opts (dissoc opts :!cursor :path)]
+(defn textarea [{:keys [!cursor path on-change] :as opts}]
+  (let [html-opts (dissoc opts :!cursor :path :on-change)]
     [:textarea
      (merge
        {:on-change (fn [e]
                      (when !cursor
-                       (swap! !cursor assoc-in path (.. e -target -value))))
+                       (swap! !cursor assoc-in path (.. e -target -value)))
+                     (when on-change
+                       (on-change e))
+                     nil)
         :value (when !cursor
                  (get-in @!cursor path))
         :class "form-control"}
@@ -42,8 +45,10 @@
        (<= n 57)))
 
 (defn input [& [opts]]
-  (let [adtl-opt-keys [:!cursor :path :parse-value :format-value]
-        {:keys [!cursor path parse-value format-value valid-char-code? type]} opts
+  (let [adtl-opt-keys [:!cursor :path :parse-value :format-value
+                       :on-change]
+        {:keys [!cursor path parse-value format-value
+                valid-char-code? type on-change]} opts
         html-opts (apply dissoc opts adtl-opt-keys)
         parse-value (or parse-value
                         (fn [s]
@@ -92,6 +97,8 @@
                            (swap! !cursor
                              assoc-in path
                              (parse-value (.. e -target -value))))
+                         (when on-change
+                           (on-change e))
                          (.preventDefault e))})
                     adtl-opts)]
     [:input (merge
