@@ -3,6 +3,8 @@
             [reagent.core :as rea]
             [nsfw.util :as util]))
 
+
+
 (defn $page [!console !state test-states filter]
   (let [{:keys [open?]} @!console]
     [:div
@@ -53,12 +55,21 @@
                        ctrl-key? (.-ctrlKey e)]
                    (when (and key? ctrl-key?)
                      (.preventDefault e)
-                     (swap! !console update-in [:open?] not)
-                     (if (:open? @!console)
-                       (rea/render-component
-                         [$page !console !state test-states filter]
-                         $el)
-                       (rea/unmount-component-at-node $el)))))]
+                     (enable-console-print!)
+                     (let [w (.open js/window "" "DEBUG")]
+                       (.write (.-document w)
+                         (str
+                           "<pre>~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ "
+                           (pr-str (js/Date.))
+                           "\n"
+                           (util/pp-str (filter @!state))
+                           "\n==========================================</pre><br><br><br>")))
+                     #_(swap! !console update-in [:open?] not)
+                     #_(if (:open? @!console)
+                         (rea/render-component
+                           [$page !console !state test-states filter]
+                           $el)
+                         (rea/unmount-component-at-node $el)))))]
     (dommy/append! body $el)
     (dommy/listen! js/window :keypress on-key)
 

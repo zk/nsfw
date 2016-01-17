@@ -1,6 +1,8 @@
 (ns nsfw.css
   (:require [clojure.string :as str]
-            [garden.def :refer [defkeyframes]]))
+            [garden.def :refer [defkeyframes]]
+            [garden.units :refer [px px-]]
+            [garden.stylesheet :refer [at-media]]))
 
 (def display-flex
   {:display ^:prefix #{"flex" "-webkit-flex"
@@ -106,3 +108,34 @@ linear-gradient(45deg, "
                   :animation-delay "-0.32s"}]
       [:.bounce2 {:-webkit-animation-delay "-0.16s"
                   :animation-delay "-0.16s"}]]]))
+
+(def screen-lg-min (px 1200))
+
+(def screen-md-min (px 992))
+(def screen-md-max (px- screen-lg-min 1))
+
+(def screen-sm-min (px 768))
+(def screen-sm-max (px- screen-md-min 1))
+
+(def screen-xs-min (px 480))
+(def screen-xs-max (px- screen-sm-min 1))
+
+(def key->breakpoint
+  {:xs {:max-width screen-xs-max}
+   :>sm {:min-width screen-sm-min}
+   :<md {:max-width screen-md-min}
+   :<lg {:max-width screen-lg-min}
+   :sm {:min-width screen-sm-min
+        :max-width screen-sm-max}
+   :md {:min-width screen-md-min
+        :max-width screen-md-max}
+   :lg {:min-width screen-lg-min}})
+
+(defn at-bp [breakpoint-key & rules]
+  (let [rules (if (map? (first rules))
+                [(vec (concat [:&] rules))]
+                rules)]
+    (apply
+      at-media
+      (key->breakpoint breakpoint-key)
+      rules)))

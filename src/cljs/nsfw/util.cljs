@@ -193,6 +193,9 @@
     (pprint/pprint o sbw)
     (str sb)))
 
+(defn pp [o]
+  (println (pp-str o)))
+
 (defn pluralize [n singular plural]
   (if (= 1 n)
     singular

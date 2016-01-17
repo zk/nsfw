@@ -68,3 +68,30 @@
     (mon/mongo! :host host :db db :port port)
     (when username
       (mon/authenticate username password))))
+
+(defn existing-or-now [v]
+  (or v (util/now)))
+
+(defn update-timestamps [p]
+  (-> p
+      (update-in
+        [:created-at]
+        existing-or-now)
+      (assoc-in
+        [:updated-at]
+        (util/now))))
+
+(defn format-for-transit-storage [obj query-paths]
+  (let [mongo-obj (->> query-paths
+                       (reduce
+                         (fn [m path]
+                           (let [path (if (coll? path)
+                                        path
+                                        [path])]
+                             (assoc-in
+                               m
+                               path
+                               (get-in obj path))))
+                         {}))
+        transit-str (util/to-transit obj)]
+    (assoc mongo-obj :transit transit-str)))

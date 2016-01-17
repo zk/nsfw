@@ -188,3 +188,18 @@
 
 ;;var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
 ;;var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+
+
+(defn smooth-scroll-to [el pos]
+  )
+
+
+(defn high-density-screen? []
+  (and (.-matchMedia js/window)
+       (or
+         (.-matches
+           (.matchMedia js/window
+             "only screen and (min-resolution: 124dpi), only screen and (min-resolution: 1.3dppx), only screen and (min-resolution: 48.8dpcm)"))
+         (.-matches
+           (.matchMedia js/window
+             "only screen and (-webkit-min-device-pixel-ratio: 1.3), only screen and (-o-min-device-pixel-ratio: 2.6/2), only screen and (min--moz-device-pixel-ratio: 1.3), only screen and (min-device-pixel-ratio: 1.3)")))))
