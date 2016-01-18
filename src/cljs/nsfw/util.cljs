@@ -210,3 +210,6 @@
 
 (defn url-encode [s]
   (js/encodeURIComponent s))
+
+(defn abs [n]
+  (.abs js/Math n))

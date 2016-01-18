@@ -184,16 +184,6 @@
   (fn []
     (dommy/unlisten! js/window :scroll f)))
 
-
-
-;;var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
-;;var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
-
-
-(defn smooth-scroll-to [el pos]
-  )
-
-
 (defn high-density-screen? []
   (and (.-matchMedia js/window)
        (or
