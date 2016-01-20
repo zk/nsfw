@@ -1,4 +1,4 @@
-var Hammer = function(el, opts);
+var Hammer = function(el, opts){};
 
 Hammer.DIRECTION_VERTICAL = {};
 
