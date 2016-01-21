@@ -68,7 +68,6 @@
   (.print
     (DateTimeFormat/forPattern pattern)
     (let [res (from date)]
-      (prn res)
       res)))
 
 (defn buckets
