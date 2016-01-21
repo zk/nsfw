@@ -3,7 +3,8 @@
   (:import [org.joda.time
             DateTime
             DateTimeZone
-            DateMidnight]
+            DateMidnight
+            ReadableDateTime]
            [org.joda.time.format
             DateTimeFormatter
             ISODateTimeFormat
@@ -17,14 +18,14 @@
 
 (defn from [o]
   (cond
-   (cc/= DateTime (class o)) o
-   (cc/= Date (class o)) (DateTime. o)
-   (cc/= :now o) (DateTime.)
-   (cc/= :yesterday o) (.minusDays (DateTime.) 1)
-   (cc/= :tomorrow o) (.plusDays (DateTime.) 1)
-   (string? o) (.parseDateTime iso-parser o)
-   (number? o) (DateTime. o)
-   :else nil))
+    (instance? ReadableDateTime o) o
+    (cc/= Date (class o)) (DateTime. o)
+    (cc/= :now o) (DateTime.)
+    (cc/= :yesterday o) (.minusDays (DateTime.) 1)
+    (cc/= :tomorrow o) (.plusDays (DateTime.) 1)
+    (string? o) (.parseDateTime iso-parser o)
+    (number? o) (DateTime. o)
+    :else nil))
 
 
 (defn midnight [o]
@@ -64,8 +65,11 @@
            (< date high)))))
 
 (defn pr [date pattern]
-  (.print (DateTimeFormat/forPattern pattern)
-          (from date)))
+  (.print
+    (DateTimeFormat/forPattern pattern)
+    (let [res (from date)]
+      (prn res)
+      res)))
 
 (defn buckets
   "Generates a vector of date-tuples."

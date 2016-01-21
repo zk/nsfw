@@ -295,8 +295,10 @@
                 [[:script {:type "text/javascript"}
                   (util/write-page-data :env env)]])
               (for [js js]
-                (if (string? js)
-                  [:script {:type "text/javascript" :src js}]))))]))]))
+                (cond
+                  (string? js) [:script {:type "text/javascript" :src js}]
+                  (map? js) [:script js]
+                  :else js))))]))]))
 
 (def bootstrap3
   {:css [{:href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
@@ -336,12 +338,10 @@
   (->> jss
        (remove nil?)
        (map (fn [js]
-              [:script
-               (merge
-                 {:type "text/javascript"}
-                 (if (string? js)
-                   {:src js}
-                   js))]))))
+              (cond
+                (string? js) [:script {:type "text/javascript" :src js}]
+                (map? js) [:script js]
+                :else js)))))
 
 (defn render-spec [specs]
   (let [{:keys [css js head body env body-attrs]} (compile-spec specs)]
