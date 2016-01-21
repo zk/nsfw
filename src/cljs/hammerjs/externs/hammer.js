@@ -1,6 +1,7 @@
 var Hammer = function(el, opts){};
 
 Hammer.DIRECTION_VERTICAL = {};
+Hammer.DIRECTION_ALL = {};
 
 Hammer.Manager = function(el, opts){};
 Hammer.Manager.set = function(opts){};
