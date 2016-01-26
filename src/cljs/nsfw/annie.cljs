@@ -35,16 +35,33 @@
 
 (defn raf [f] (.requestAnimationFrame js/window f))
 
-(defn run [from to callback]
+(defn -run [continue? from to callback]
   (let [k 118
         b 18]
     (letfn [(do-frame [x v]
-              (if (not= x to)
+              (if (and (continue?) (not= x to))
                 (let [[next-x next-v] (step (/ ms-per-frame 1000) x v to k b)]
                   (callback next-x)
                   (raf (fn []
                          (do-frame next-x next-v))))))]
       (do-frame from 0))))
+
+(defn run [!anims from to callback]
+  (let [!run-anim? (atom true)
+        keep-running? (fn [] @!run-anim?)
+        stop-anim (fn []
+                    (reset! !run-anim? false))]
+    (swap! !anims assoc (gensym) stop-anim)
+    (-run
+      keep-running?
+      from
+      to
+      callback)))
+
+(defn stop-all [!anims]
+  (doseq [[k v] @!anims]
+    (v))
+  (reset! !anims {}))
 
 #_(enable-console-print!)
 
