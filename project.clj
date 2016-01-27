@@ -10,7 +10,7 @@
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.cognitect/transit-cljs "0.8.220"]
                  [com.cognitect/transit-clj "0.8.275"]
-                 [aleph "0.4.0"]
+                 [aleph "0.4.1-beta2"]
                  [byte-transforms "0.1.4"]
                  [slingshot "0.12.2"]
                  [clj-http "1.1.2"]
