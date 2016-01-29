@@ -90,14 +90,13 @@ linear-gradient(45deg, "
 (defn ellipsis-spinner [{:keys [size color]}]
   (let [color (or color "rgba(0,0,0,0.4)")
         size (or size 14)]
-    [sk-bouncedelay
-     [:.ellipsis-spinner
+    [[:.ellipsis-spinner
       {:text-align 'center
        :display 'inline-block}
       ["> div"
        {:width (str size "px")
         :height (str size "px")
-        :margin (str (max (/ size 10) 1) "px")
+        :margin (str (max (/ size 5) 1) "px")
         :background-color color
 
         :border-radius "100%"

@@ -116,10 +116,7 @@
 
 (defn mk-mutate-engine [spec]
   (fn [{:keys [type obj]} auth]
-    (let [handler (get spec type)
-          obj (-> obj
-                  ensure-id
-                  update-timestamps)]
+    (let [handler (get spec type)]
       (if handler
         (handler obj auth)
         {:success? false
