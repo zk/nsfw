@@ -36,6 +36,9 @@
 (defn zone-offset [o zone-str]
   (.getOffset (DateTimeZone/forID zone-str) o))
 
+(defn default-zone-offset [o]
+  (.getOffset (DateTimeZone/getDefault) o))
+
 (defn midnight [o]
   (DateMidnight. (from o)))
 
