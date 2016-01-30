@@ -1,5 +1,6 @@
 (ns nsfw.date
-  (:require [clojure.core :as cc])
+  (:require [clojure.core :as cc]
+            [nsfw.util :as util])
   (:import [org.joda.time
             DateTime
             DateTimeZone
@@ -27,9 +28,19 @@
     (number? o) (DateTime. o)
     :else nil))
 
+(defn to-zone [o zone-str]
+  (.withZone
+    (from o)
+    (DateTimeZone/forID zone-str)))
+
+(defn zone-offset [o zone-str]
+  (.getOffset (DateTimeZone/forID zone-str) o))
 
 (defn midnight [o]
   (DateMidnight. (from o)))
+
+(defn start-of-day-ms [o]
+  (.getMillis (.withTimeAtStartOfDay (from o))))
 
 (defn to-iso [dt]
   (cond
