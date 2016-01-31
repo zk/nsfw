@@ -5,12 +5,18 @@
             [clojure.string :as str]))
 
 (defn fetch-source [url source-cache]
-  (or (get source-cache url)
-      (-> @(http/get url
-             {:headers {"User-Agent" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
-              :connection-timeout 5000})
-          :body
-          bs/to-string)))
+  (let [req (if (string? url)
+              {:method :get
+               :url url}
+              url)]
+    (or (get source-cache req)
+        (-> @(http/request
+               (merge
+                 {:headers {"User-Agent" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
+                  :connection-timeout 5000}
+                 req))
+            :body
+            bs/to-string))))
 
 (defn process [scrapers spec state]
   (let [{:keys [url scraper-key]
