@@ -184,6 +184,57 @@
   (fn []
     (dommy/unlisten! js/window :scroll f)))
 
+(defn throttle [f delta]
+  (let [last (atom nil)
+        to (atom nil)]
+    (fn [& args]
+      (cond
+        (not @last) (do
+                      (reset! last (util/now))
+                      (reset! to nil)
+                      (apply f args))
+        (> @last 0) (let [now (util/now)]
+                      (if (> (- now @last) delta)
+                        (do
+                          (reset! last now)
+                          (apply f args))
+                        (do
+                          (js/clearTimeout @to)
+                          (reset! to
+                            (js/setTimeout
+                              (fn []
+                                (reset! last (+ delta @last))
+                                (apply f args))
+                              (- delta (- now @last)))))))))))
+
+(defn debounce [f delay]
+  (let [last (atom nil)
+        to (atom nil)]
+    (fn [& args]
+      (when @to
+        (js/clearTimeout @to))
+      (reset! to
+        (js/setTimeout
+          (fn []
+            (reset! to nil)
+            (apply f args))
+          delay)))))
+
+(defn scroll-source [bus {throttle-ms :throttle
+                          debounce-ms :debounce
+                          op-key :op-key}]
+  (let [f (fn [e]
+            (ops/send bus (or op-key ::scroll)
+              #_(.. e -target -pageYOffset)
+              (.. js/window -scrollY)))
+        f (if throttle-ms
+            (throttle f throttle-ms)
+            f)
+        f (if debounce-ms
+            (debounce f debounce-ms)
+            f)]
+    (on-scroll f)))
+
 (defn high-density-screen? []
   (and (.-matchMedia js/window)
        (or
