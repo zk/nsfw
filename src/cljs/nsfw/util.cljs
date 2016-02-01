@@ -136,9 +136,9 @@
 (defn sformat [& args]
   (apply gstring/format args))
 
-(defn timeago [millis]
-  (when millis
-    (let [ms (- (now) millis)
+(defn time-delta-desc [delta]
+  (when delta
+    (let [ms delta
           s (/ ms 1000)
           m (/ s 60)
           h (/ m 60)
@@ -153,6 +153,17 @@
         (< d 2) "1 day"
         (< y 1) (str (int d) " days")
         :else (str (sformat "%.1f" y) " years")))))
+
+(defn timeago [millis]
+  (when millis
+    (time-delta-desc (- (now) millis))))
+
+(defn timebefore [millis]
+  (when millis
+    (time-delta-desc (- millis (now)))))
+
+
+
 
 (defn exact-timeago [millis]
   (when millis
