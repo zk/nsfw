@@ -162,9 +162,6 @@
   (when millis
     (time-delta-desc (- millis (now)))))
 
-
-
-
 (defn exact-timeago [millis]
   (when millis
     (let [ms (- (now) millis)

@@ -34,7 +34,8 @@
                  [clj-jwt "0.1.1"]
                  [clj-mailgun "0.2.0"]
                  [clj-aws-s3 "0.3.10"]
-                 [com.rpl/specter "0.9.1"]]
+                 [com.rpl/specter "0.9.1"]
+                 [cljsjs/fastclick "1.0.6-0"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj"]
