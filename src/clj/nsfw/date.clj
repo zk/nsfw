@@ -5,7 +5,9 @@
             DateTime
             DateTimeZone
             DateMidnight
-            ReadableDateTime]
+            ReadableDateTime
+            Interval
+            Days]
            [org.joda.time.format
             DateTimeFormatter
             ISODateTimeFormat
@@ -83,6 +85,36 @@
     (DateTimeFormat/forPattern pattern)
     (let [res (from date)]
       res)))
+
+(defn in-day? [ts delta & [tz-id]]
+  (let [date (if tz-id
+               (org.joda.time.DateTime.
+                 (DateTime/now)
+                 (org.joda.time.DateTimeZone/forID
+                   tz-id))
+               (org.joda.time.DateTime. ts))
+
+        date (.plusDays date (int delta))
+
+        target (if tz-id
+              (org.joda.time.DateTime.
+                ts
+                (org.joda.time.DateTimeZone/forID
+                  tz-id))
+              (org.joda.time.DateTime. ts))
+
+        interval (Interval.
+                   (.withTimeAtStartOfDay date)
+                   Days/ONE)]
+    (.contains
+      interval
+      target)))
+
+(defn today? [ts & [tz-id]]
+  (in-day? ts 0 tz-id))
+
+(defn yesterday? [ts & [tz-id]]
+  (in-day? ts -1 tz-id))
 
 (defn buckets
   "Generates a vector of date-tuples."
