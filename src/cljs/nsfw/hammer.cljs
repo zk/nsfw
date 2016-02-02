@@ -32,14 +32,13 @@
   (with-meta
     (fn [events component]
       component)
-    (when (page/is-touch-device?)
-      {:component-did-mount (fn [this]
-                              (let [events (-> this
-                                               rea/argv
-                                               second)
-                                    el (rea/dom-node this)
-                                    stop-events-fn (on-touch-events el events)]
-                                (rea/set-state this {:stop-events-fn stop-events-fn})))
-       :component-will-unmount (fn [this]
-                                 (when-let [f (:stop-events-fn (rea/state this))]
-                                   (f)))})))
+    {:component-did-mount (fn [this]
+                            (let [events (-> this
+                                             rea/argv
+                                             second)
+                                  el (rea/dom-node this)
+                                  stop-events-fn (on-touch-events el events)]
+                              (rea/set-state this {:stop-events-fn stop-events-fn})))
+     :component-will-unmount (fn [this]
+                               (when-let [f (:stop-events-fn (rea/state this))]
+                                 (f)))}))

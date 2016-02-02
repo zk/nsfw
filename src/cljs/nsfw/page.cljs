@@ -248,6 +248,3 @@
 (defn attach-fastclick [& [$el]]
   (let [$el (or $el (aget js/document "body"))]
     (.attach js/FastClick $el)))
-
-(defn is-touch-device? []
-  (aget (aget js/document "documentElement") "ontouchstart"))
