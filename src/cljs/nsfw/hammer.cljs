@@ -1,7 +1,8 @@
 (ns nsfw.hammer
   (:require [clojure.string :as str]
             [reagent.core :as rea]
-            [com.hammerjs]))
+            [com.hammerjs]
+            [nsfw.page :as page]))
 
 (defn bind-touch-event [el evt handler]
   (let [ht (js/Hammer. el #js {})]
@@ -30,17 +31,15 @@
 (def with-touch
   (with-meta
     (fn [events component]
-      [:div
-       component])
-    {:component-did-mount (fn [this]
-                            (let [events (-> this
-                                             rea/argv
-                                             second)
-                                  el (rea/dom-node this)
-                                  stop-events-fn (on-touch-events el events)]
-                              (rea/set-state this {:stop-events-fn stop-events-fn})))
-     :component-will-unmount (fn [this]
-                               (when-let [f (:stop-events-fn (rea/state this))]
-                                 (f)))}))
-
-#_[events component]
+      component)
+    (when (page/is-touch-device?)
+      {:component-did-mount (fn [this]
+                              (let [events (-> this
+                                               rea/argv
+                                               second)
+                                    el (rea/dom-node this)
+                                    stop-events-fn (on-touch-events el events)]
+                                (rea/set-state this {:stop-events-fn stop-events-fn})))
+       :component-will-unmount (fn [this]
+                                 (when-let [f (:stop-events-fn (rea/state this))]
+                                   (f)))})))
