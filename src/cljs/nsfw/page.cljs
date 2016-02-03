@@ -220,20 +220,36 @@
             (apply f args))
           delay)))))
 
-(defn scroll-source [bus {throttle-ms :throttle
-                          debounce-ms :debounce
-                          op-key :op-key}]
-  (let [f (fn [e]
-            (ops/send bus (or op-key ::scroll)
-              #_(.. e -target -pageYOffset)
-              (.. js/window -scrollY)))
-        f (if throttle-ms
+(defn throttle-debounce [f {throttle-ms :throttle
+                            debounce-ms :debounce}]
+  (let [f (if throttle-ms
             (throttle f throttle-ms)
             f)
         f (if debounce-ms
             (debounce f debounce-ms)
             f)]
-    (on-scroll f)))
+    f))
+
+(defn scroll-source [bus {:keys [op-key] :as opts}]
+  (let [f (throttle-debounce
+            (fn [e]
+              (ops/send bus (or op-key ::scroll)
+                (.. js/window -scrollY)))
+            opts)]
+    (dommy/listen! js/window :scroll f)
+    (fn []
+      (dommy/unlisten! js/window :scroll f))))
+
+(defn resize-source [bus & [{:keys [op-key] :as opts}]]
+  (let [f (throttle-debounce
+            (fn [e]
+              (ops/send bus (or op-key ::resize)
+                {:width (aget js/window "innerWidth")
+                 :height (aget js/window "innerHeight")}))
+            opts)]
+    (dommy/listen! js/window :resize f)
+    (fn []
+      (dommy/unlisten! js/window :resize f))))
 
 (defn high-density-screen? []
   (and (.-matchMedia js/window)
