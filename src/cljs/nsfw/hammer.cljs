@@ -4,6 +4,7 @@
             [com.hammerjs]
             [nsfw.page :as page]))
 
+
 (defn bind-touch-event [el evt handler]
   (let [ht (js/Hammer. el #js {})]
     (.set (.get ht "pan") #js {:direction js/Hammer.DIRECTION_HORIZONTAL})
