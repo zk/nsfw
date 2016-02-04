@@ -6,8 +6,8 @@
 
 (defn bind-touch-event [el evt handler]
   (let [ht (js/Hammer. el #js {})]
-    (.set (.get ht "pan") #js {:direction js/Hammer.DIRECTION_ALL})
-    (.set (.get ht "swipe") #js {:direction js/Hammer.DIRECTION_ALL})
+    (.set (.get ht "pan") #js {:direction js/Hammer.DIRECTION_HORIZONTAL})
+    (.set (.get ht "swipe") #js {:direction js/Hammer.DIRECTION_HORIZONTAL})
     (.on ht evt handler)
     (fn []
       (.off ht evt handler)
