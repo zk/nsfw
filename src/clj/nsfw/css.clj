@@ -96,7 +96,9 @@ linear-gradient(45deg, "
       ["> div"
        {:width (str size "px")
         :height (str size "px")
-        :margin (str (max (/ size 5) 1) "px")
+        :margin-left (str (max (/ size 5) 1) "px")
+        :margin-right (str (max (/ size 5) 1) "px")
+        :margin-bottom 0
         :background-color color
 
         :border-radius "100%"

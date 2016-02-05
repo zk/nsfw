@@ -16,7 +16,7 @@
   (set-debug! [this id f])
   (clear-debug! [this id]))
 
-(defn bus [context handlers]
+(defn bus [context handlers & [{:keys [debug?]}]]
   (let [!handlers (atom handlers)
         !ctx (atom context)
         !debug-fns (atom {})
@@ -27,6 +27,8 @@
               (send [this op data]
                 (when-let [msg {::op op ::data data}]
                   (let [op (or (::op msg) (:op msg))]
+                    (when debug?
+                      (println "[nsfw.ops] Dispatching " op))
                     (if-let [f (get @!handlers op)]
                       (do
                         (f
@@ -80,51 +82,44 @@
                             [ch])]))))))
 
 
-(defn apply-state [!state state params post]
+(defn apply-state [!state state params]
   (let [state' (cond
                  (fn? state) (state @!state)
                  :else state)]
-    (post (reset! !state state') params)))
+    (reset! !state state')))
 
 
-(defn kit [!state ctx handlers & [side-effect-fns]]
-  (let [run-ses (fn [state params]
-                  (doseq [f side-effect-fns]
-                    (f state params))
-                  state)]
-    (bus
-      (assoc ctx :!state !state)
-      (->> handlers
-           (map (fn [[k v]]
-                  [k (fn [{:keys [!state] :as ctx} params]
-                       (let [res (v @!state params ctx)]
-                         (cond
-                           (map? res) (apply-state
-                                        !state
-                                        res
-                                        params
-                                        run-ses)
-                           (vector? res) (let [[state ch] res]
-                                           (go-loop [ch ch]
-                                             (when ch
-                                               (let [[state ch] (<! ch)]
-                                                 (when state
-                                                   (apply-state
-                                                     !state
-                                                     state
-                                                     params
-                                                     run-ses))
-                                                 (when ch
-                                                   (recur ch)))))
-                                           (when state
-                                             (apply-state
-                                               !state
-                                               state
-                                               params
-                                               run-ses)))
-                           (fn? res) (apply-state
-                                       !state
-                                       res
-                                       params
-                                       run-ses))))]))
-           (into {})))))
+(defn kit [!state ctx handlers & [opts]]
+  (bus
+    (assoc ctx :!state !state)
+    (->> handlers
+         (map (fn [[k v]]
+                [k (fn [{:keys [!state] :as ctx} params]
+                     (let [res (v @!state params ctx)]
+                       (cond
+                         (map? res) (apply-state
+                                      !state
+                                      res
+                                      params)
+                         (vector? res) (let [[state ch] res]
+                                         (go-loop [ch ch]
+                                           (when ch
+                                             (let [[state ch] (<! ch)]
+                                               (when state
+                                                 (apply-state
+                                                   !state
+                                                   state
+                                                   params))
+                                               (when ch
+                                                 (recur ch)))))
+                                         (when state
+                                           (apply-state
+                                             !state
+                                             state
+                                             params)))
+                         (fn? res) (apply-state
+                                     !state
+                                     res
+                                     params))))]))
+         (into {}))
+    opts))

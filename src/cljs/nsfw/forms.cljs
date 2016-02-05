@@ -14,13 +14,18 @@
     [:textarea
      (merge
        {:on-change (fn [e]
-                     (when !cursor
-                       (swap! !cursor assoc-in path (.. e -target -value)))
-                     (when on-change
-                       (on-change e))
-                     nil)
+                     (let [v (.. e -target -value)]
+                       (when !cursor
+                         (if path
+                           (swap! !cursor assoc-in path v)
+                           (reset! !cursor v)))
+                       (when on-change
+                         (on-change e))
+                       nil))
         :value (when !cursor
-                 (get-in @!cursor path))
+                 (if path
+                   (get-in @!cursor path)
+                   @!cursor))
         :class "form-control"}
        html-opts)]))
 
