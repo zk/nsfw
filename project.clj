@@ -1,4 +1,4 @@
-(defproject nsfw "0.11.25"
+(defproject nsfw "0.11.26"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.122"]
@@ -35,7 +35,8 @@
                  [clj-mailgun "0.2.0"]
                  [clj-aws-s3 "0.3.10"]
                  [com.rpl/specter "0.9.1"]
-                 [cljsjs/fastclick "1.0.6-0"]]
+                 [cljsjs/fastclick "1.0.6-0"]
+                 [cljsjs/hammer "2.0.4-5"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj"]
