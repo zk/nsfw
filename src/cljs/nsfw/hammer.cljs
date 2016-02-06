@@ -1,7 +1,6 @@
 (ns nsfw.hammer
   (:require [clojure.string :as str]
             [reagent.core :as rea]
-            [com.hammerjs]
             [nsfw.page :as page]))
 
 
