@@ -52,7 +52,7 @@
                                                   :new-specs
                                                   :results))
                                               ress)]
-            (report spec ress)
+            (report spec ress (:context state))
             (recur
               (concat (rest specs) new-specs)
               (concat out results))))))))
@@ -103,7 +103,7 @@
                           (apply str))
                      "\n")))
 
-(defn stdout-reporter [input output]
+(defn stdout-reporter [input output ctx]
   (safe-println ">" (:url input))
   (safe-println)
   (when (:error input)
