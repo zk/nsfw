@@ -36,6 +36,12 @@
     (when-not (= new-path cur-path)
       (.pushState js/window.history nil nil new-path))))
 
+(defn navigate-to [& parts]
+  (aset (aget js/window "location") "href" (apply str parts)))
+
+(defn reload []
+  (.reload (aget js/window "location")))
+
 (defn pathname []
   (.. js/window -location -pathname))
 
