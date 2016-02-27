@@ -221,3 +221,11 @@
 
 (defn abs [n]
   (.abs js/Math n))
+
+(defn spy [o]
+  (pp o)
+  o)
+
+(defn round [n]
+  (when n
+    (.round js/Math n)))
