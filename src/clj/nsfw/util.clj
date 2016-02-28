@@ -161,12 +161,13 @@
     (json/parse-stream (io/reader o) true)))
 
 (defn from-transit [s]
-  (transit/read
-    (transit/reader
-      (if (string? s)
-        (java.io.ByteArrayInputStream. (.getBytes s "UTF-8"))
-        s)
-      :json)))
+  (when s
+    (transit/read
+      (transit/reader
+        (if (string? s)
+          (java.io.ByteArrayInputStream. (.getBytes s "UTF-8"))
+          s)
+        :json))))
 
 (defn to-transit [o]
   (let [bs (java.io.ByteArrayOutputStream.)]
