@@ -28,21 +28,41 @@
       (get context (keyword name))
       sym)))
 
+#_(defn populate-query [query context]
+    (let [m (->> query
+                 (partition 2)
+                 (map vec)
+                 (into {}))
+          where (:where m)
+          where' (->> where
+                      (map (fn [[k v]]
+                             (if (symbol? v)
+                               [k (replace-with-value v context)]
+                               [k v])))
+                      (into {}))]
+      (->> (assoc m :where where')
+           (mapcat identity)
+           vec)))
+
+;; FIX: This assumes a [:where {...}] right now, handle var
+;; replacement for all data types
 (defn populate-query [query context]
-  (let [m (->> query
-               (partition 2)
-               (map vec)
-               (into {}))
-        where (:where m)
-        where' (->> where
-                    (map (fn [[k v]]
-                           (if (symbol? v)
-                             [k (replace-with-value v context)]
-                             [k v])))
-                    (into {}))]
-    (->> (assoc m :where where')
-         (mapcat identity)
-         vec)))
+  (if (sequential? query)
+    (let [m (->> query
+                 (partition 2)
+                 (map vec)
+                 (into {}))
+          where (:where m)
+          where' (->> where
+                      (map (fn [[k v]]
+                             (if (symbol? v)
+                               [k (replace-with-value v context)]
+                               [k v])))
+                      (into {}))]
+      (->> (assoc m :where where')
+           (mapcat identity)
+           vec))
+    query))
 
 (declare do-query)
 
@@ -71,7 +91,6 @@
   (let [handler (resolve-handler spec type result)
         query (populate-query query context)
         query-result (handler query auth)
-
 
         query-result (apply-subs spec subs auth query-result)]
     (if handler

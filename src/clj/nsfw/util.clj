@@ -362,3 +362,7 @@
 
 (defn hex-str->byte-array [s]
   (.toByteArray (BigInteger. s 16)))
+
+(defn spy [o]
+  (pp o)
+  o)
