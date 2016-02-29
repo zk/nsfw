@@ -2,18 +2,15 @@
   (:require [aws.sdk.s3 :as s3]))
 
 (defn put-global-readable [creds
-                           {:keys [file bucket path content-type]}]
+                           {:keys [file bucket path content-type content-length]}]
   (s3/put-object creds bucket path file
-    {:content-type content-type})
-  (s3/update-object-acl
-    creds
-    bucket
-    path
+    {:content-type content-type
+     :content-length content-length}
     (s3/grant :all-users :read)))
 
 #_(put-global-readble
-    {:access-key "AKIAI2STHNMJGS4HQPHQ"
-     :secret-key "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"}
+    {:access-key "AK"
+     :secret-key "SK"}
     {:file (java.io.File. "/Users/zk/Dropbox/zk-avatar.png")
      :path "avatars/zk-avatar.png"
      :bucket "letterlovely-dev"})
