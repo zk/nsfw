@@ -88,13 +88,12 @@
     :else query-result))
 
 (defn do-query [spec {:keys [type result query subs]} auth context]
-  (let [handler (resolve-handler spec type result)
-        query (populate-query query context)
-        query-result (handler query auth)
-
-        query-result (apply-subs spec subs auth query-result)]
+  (let [handler (resolve-handler spec type result)]
     (if handler
-      {:success? true :result query-result}
+      (let [query (populate-query query context)
+            query-result (handler query auth)
+            query-result (apply-subs spec subs auth query-result)]
+        {:success? true :result query-result})
       {:success? false :error (str "No handler for type " type ", " result)})))
 
 ;; :query ->
