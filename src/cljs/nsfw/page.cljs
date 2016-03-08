@@ -139,9 +139,9 @@
                             (assoc-in [:view-key] view-key)
                             (assoc-in [:state] state))))))))}))
 
-(defn dispatch-route [routes on-path]
+(defn dispatch-route [routes on-path & [{:keys [path]}]]
   (let [{:keys [route-params handler] :as match}
-        (bidi/match-route routes (pathname))]
+        (bidi/match-route routes (or path (pathname)))]
     (when handler
       (on-path handler route-params))))
 
