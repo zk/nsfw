@@ -114,13 +114,15 @@
       (fn [c]
         (let [r (bit-or (mod (+ d (* (.random js/Math) 16)) 16) 0)
               d (.floor js/Math (/ d 16.0))]
-          (.toString
-            (if (= "x" c)
-              r
-              (bit-or
-                (bit-and 0x3 r)
-                0x8))
-            16))))))
+          (str/replace
+            (.toString
+              (if (= "x" c)
+                r
+                (bit-or
+                  (bit-and 0x3 r)
+                  0x8))
+              16)
+            "-" ""))))))
 
 (defn initials [s]
   (when s
