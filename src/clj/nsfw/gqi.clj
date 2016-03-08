@@ -20,7 +20,6 @@
       :count fcount
       nil)))
 
-
 (defn replace-with-value [sym context]
   (let [ns (.getNamespace sym)
         name (.getName sym)]
@@ -28,41 +27,34 @@
       (get context (keyword name))
       sym)))
 
-#_(defn populate-query [query context]
-    (let [m (->> query
-                 (partition 2)
-                 (map vec)
-                 (into {}))
-          where (:where m)
-          where' (->> where
-                      (map (fn [[k v]]
-                             (if (symbol? v)
-                               [k (replace-with-value v context)]
-                               [k v])))
-                      (into {}))]
-      (->> (assoc m :where where')
-           (mapcat identity)
-           vec)))
+(defn process-map [m context]
+  (->> m
+       (map (fn [[k v]]
+              (if (symbol? v)
+                [k (replace-with-value v context)]
+                [k v])))
+       (into {})))
 
 ;; FIX: This assumes a [:where {...}] right now, handle var
 ;; replacement for all data types
 (defn populate-query [query context]
-  (if (sequential? query)
+  (cond
+    (sequential? query)
     (let [m (->> query
                  (partition 2)
                  (map vec)
                  (into {}))
           where (:where m)
-          where' (->> where
-                      (map (fn [[k v]]
-                             (if (symbol? v)
-                               [k (replace-with-value v context)]
-                               [k v])))
-                      (into {}))]
+          where' (process-map where context)]
       (->> (assoc m :where where')
            (mapcat identity)
            vec))
-    query))
+
+    (map? query) (process-map query context)
+
+    :else
+    query)
+  )
 
 (declare do-query)
 
