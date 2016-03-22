@@ -88,38 +88,40 @@
                  :else state)]
     (reset! !state state')))
 
+(defn wrap-kit-handlers [handlers]
+  (->> handlers
+       (map (fn [[k v]]
+              [k (fn [{:keys [!state] :as ctx} params]
+                   (let [res (v @!state params ctx)]
+                     (cond
+                       (map? res) (apply-state
+                                    !state
+                                    res
+                                    params)
+                       (vector? res) (let [[state ch] res]
+                                       (go-loop [ch ch]
+                                         (when ch
+                                           (let [[state ch] (<! ch)]
+                                             (when state
+                                               (apply-state
+                                                 !state
+                                                 state
+                                                 params))
+                                             (when ch
+                                               (recur ch)))))
+                                       (when state
+                                         (apply-state
+                                           !state
+                                           state
+                                           params)))
+                       (fn? res) (apply-state
+                                   !state
+                                   res
+                                   params))))]))
+       (into {})))
 
 (defn kit [!state ctx handlers & [opts]]
   (bus
     (assoc ctx :!state !state)
-    (->> handlers
-         (map (fn [[k v]]
-                [k (fn [{:keys [!state] :as ctx} params]
-                     (let [res (v @!state params ctx)]
-                       (cond
-                         (map? res) (apply-state
-                                      !state
-                                      res
-                                      params)
-                         (vector? res) (let [[state ch] res]
-                                         (go-loop [ch ch]
-                                           (when ch
-                                             (let [[state ch] (<! ch)]
-                                               (when state
-                                                 (apply-state
-                                                   !state
-                                                   state
-                                                   params))
-                                               (when ch
-                                                 (recur ch)))))
-                                         (when state
-                                           (apply-state
-                                             !state
-                                             state
-                                             params)))
-                         (fn? res) (apply-state
-                                     !state
-                                     res
-                                     params))))]))
-         (into {}))
+    (wrap-kit-handlers handlers)
     opts))

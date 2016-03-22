@@ -208,7 +208,7 @@
                              (into {}))]))
            (into {}))])
 
-(defn apply-middleware [{:keys [handler middleware] :as route}]
+(defn apply-middleware-to-handler [{:keys [handler middleware] :as route}]
   (assoc route
     :handler
     (reduce
@@ -219,7 +219,7 @@
 
 (defn routes->handler [routes]
   (->> routes
-       (map apply-middleware)
+       (map apply-middleware-to-handler)
        routes->bidi
        bidi-ring/make-handler))
 
