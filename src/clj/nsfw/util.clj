@@ -366,3 +366,8 @@
 (defn spy [o]
   (pp o)
   o)
+
+(defn pluralize [n singular plural]
+  (if (= 1 n)
+    singular
+    plural))

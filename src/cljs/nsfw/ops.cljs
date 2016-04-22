@@ -5,7 +5,8 @@
   (:require [nsfw.util :as util]
             [cljs.core.async :as async
              :refer [<! >! chan close! sliding-buffer put! take!
-                     alts! timeout pipe mult tap]])
+                     alts! timeout pipe mult tap]]
+            [cljs.core.async.impl.protocols])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defprotocol Dispatcher
@@ -88,36 +89,80 @@
                  :else state)]
     (reset! !state state')))
 
+(defn chan? [c]
+  (satisfies?
+    cljs.core.async.impl.protocols/Channel
+    c))
+
+(defn handle-step [res params !state ctx]
+  (cond
+    (chan? res) (go-loop []
+                  (when-let [res (<! res)]
+                    (handle-step
+                      res
+                      params
+                      !state
+                      ctx)
+                    (recur)))
+    (vector? res) (let [[res ch] res]
+                    (go-loop [ch ch]
+                      (when ch
+                        (let [[res ch] (<! ch)]
+                          (when res
+                            (handle-step
+                              res
+                              params
+                              !state
+                              ctx))
+                          (when ch
+                            (recur ch)))))
+                    (handle-step
+                      res
+                      params
+                      !state
+                      ctx))
+    (fn? res) (recur
+                (res @!state params ctx)
+                params
+                !state
+                ctx)
+
+    :else (when res (reset! !state res))))
+
+(defn gen-lock-step [handler]
+  (fn [{:keys [!state] :as ctx} params]
+    (handle-step handler params !state ctx)))
+
+#_ (cond
+     (map? res) (apply-state
+                  !state
+                  res
+                  params)
+     (vector? res) (let [[state ch] res]
+                     (go-loop [ch ch]
+                       (when ch
+                         (let [[state ch] (<! ch)]
+                           (when state
+                             (apply-state
+                               !state
+                               state
+                               params))
+                           (when ch
+                             (recur ch)))))
+                     (when state
+                       (apply-state
+                         !state
+                         state
+                         params)))
+     (fn? res) (apply-state
+                 !state
+                 res
+                 params))
+
 (defn wrap-kit-handlers [handlers]
   (->> handlers
        (map (fn [[k v]]
-              [k (fn [{:keys [!state] :as ctx} params]
-                   (let [res (v @!state params ctx)]
-                     (cond
-                       (map? res) (apply-state
-                                    !state
-                                    res
-                                    params)
-                       (vector? res) (let [[state ch] res]
-                                       (go-loop [ch ch]
-                                         (when ch
-                                           (let [[state ch] (<! ch)]
-                                             (when state
-                                               (apply-state
-                                                 !state
-                                                 state
-                                                 params))
-                                             (when ch
-                                               (recur ch)))))
-                                       (when state
-                                         (apply-state
-                                           !state
-                                           state
-                                           params)))
-                       (fn? res) (apply-state
-                                   !state
-                                   res
-                                   params))))]))
+              [k (gen-lock-step v)]))
        (into {})))
 
 (defn kit [!state ctx handlers & [opts]]

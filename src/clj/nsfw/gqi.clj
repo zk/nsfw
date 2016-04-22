@@ -18,7 +18,7 @@
       :list flist
       :obj fobj
       :count fcount
-      nil)))
+      flist)))
 
 (defn replace-with-value [sym context]
   (let [ns (.getNamespace sym)
