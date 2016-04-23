@@ -57,8 +57,8 @@
    :-o-transition v})
 
 (defn checkerboard [{:keys [light-bg dark-bg]}]
-  (let [light-bg "#fafafa"
-        dark-bg "#f3f3f3"]
+  (let [light-bg (or light-bg "#fafafa")
+        dark-bg (or dark-bg "#f3f3f3")]
     {:background-color light-bg
      :background-image (str "linear-gradient(45deg, "
                             dark-bg

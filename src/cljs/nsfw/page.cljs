@@ -56,21 +56,25 @@
       (.-host loc)
       parts)))
 
-(defn views->routes [views]
+(defn views->routes [views & [{:keys [root]}]]
   ["" (->> views
-           (mapcat (fn [[k {:keys [route routes]}]]
+           (mapcat (fn [{:keys [view-key route routes]}]
                      (->> (concat [route] routes)
                           (remove nil?)
                           (map (fn [route]
-                                 {route k})))))
-           (#(do (prn %) %))
-           (reduce merge))])
+                                 [(str root route) view-key])))))
+           vec)])
 
 (defn views->handlers [views]
   (->> views
-       (map second)
-       (map :handlers)
-       (apply merge)))
+       (map (fn [{:keys [view-key handler]}]
+              [view-key handler]))
+       (into {})))
+
+(defn view-for [views k]
+  (->> views
+       (filter #(= k (:view-key %)))
+       first))
 
 (defn path-for [routes handler & [params]]
   (apply
@@ -78,6 +82,27 @@
     routes
     handler
     (mapcat identity params)))
+
+(defn handler-for [views k]
+  (:handler (view-for views k)))
+
+(defn render-for [views k]
+  (:$render (view-for views k)))
+
+(defn gen-nav-handler [views routes & [path-key]]
+  {::nav (fn [state {:keys [view-key params]}]
+           (push-path (path-for routes view-key params))
+           (let [state (-> state
+                           (assoc :view-key view-key))
+                 handler (handler-for views view-key)]
+             (if handler
+               (handler state)
+               (do
+                 (println "[nsfw.page] No handler for key " view-key)
+                 (assoc state :view-key view-key)))))})
+
+(defn nav-to [bus view-key params]
+  (ops/send bus ::nav {:view-key view-key :params params}))
 
 (defn push-route [routes handler & [params]]
   (push-path (path-for routes handler params)))
