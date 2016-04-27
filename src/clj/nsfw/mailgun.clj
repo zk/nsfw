@@ -1,6 +1,7 @@
 (ns nsfw.mailgun
   (:require [clj-mailgun.core :as mg]
-            [nsfw.util :as util]))
+            [nsfw.util :as util])
+  (:refer-clojure :exclude [send]))
 
 (defn send
   "creds: :api-key, :domain\n

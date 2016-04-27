@@ -141,6 +141,9 @@
 (defn scroll-top []
   (.-scrollY js/window))
 
+(defn set-scroll [n]
+  (.scrollTo js/window 0 n))
+
 (defn nav-handlers [{:keys [views routes]}]
   (let [routes (or routes
                    (views->routes views))]
