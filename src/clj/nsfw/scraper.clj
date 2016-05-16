@@ -52,7 +52,10 @@
                                                   :new-specs
                                                   :results))
                                               ress)]
-            (report spec ress (:context state))
+            (try
+              (report spec ress (:context state))
+              (catch Exception e
+                (.printStackTrace e)))
             (recur
               (concat (rest specs) new-specs)
               (concat out results))))))))
