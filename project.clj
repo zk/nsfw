@@ -1,4 +1,4 @@
-(defproject nsfw "0.11.41"
+(defproject nsfw "0.11.42"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.122"]
@@ -28,7 +28,7 @@
                  [org.clojure/java.classpath "0.2.2"]
                  [prismatic/schema "0.4.3" :exclusions [potemkin]]
                  [garden "1.2.5" :exclusions [org.clojure/clojure]]
-                 [reagent "0.6.0-alpha"]
+                 [reagent "0.6.0"]
                  [cljs-http "0.1.37"]
                  [camel-snake-kebab "0.3.2"]
                  [clj-jwt "0.1.1"]
