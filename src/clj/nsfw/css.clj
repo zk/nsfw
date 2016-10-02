@@ -2,7 +2,8 @@
   (:require [clojure.string :as str]
             [garden.def :refer [defkeyframes]]
             [garden.units :refer [px px-]]
-            [garden.stylesheet :refer [at-media]]))
+            [garden.stylesheet :refer [at-media]]
+            [garden.core :as garden]))
 
 (def display-flex
   {:display ^:prefix #{"flex" "-webkit-flex"
@@ -140,3 +141,16 @@ linear-gradient(45deg, "
       at-media
       (key->breakpoint breakpoint-key)
       rules)))
+
+(defn clj->str [css & [opts]]
+  (let [opts (or opts
+                 {:pretty-print? false
+                  :vendors ["webkit" "moz" "ms"]
+                  :auto-prefix #{:justify-content
+                                 :align-items
+                                 :flex-direction
+                                 :flex-wrap
+                                 :align-self
+                                 :transition
+                                 :transform}})]
+    (garden/css opts css)))

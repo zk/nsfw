@@ -56,7 +56,10 @@
 
 (defn format-date
   ([pattern date]
-     (.format (goog.i18n.DateTimeFormat. pattern) date)))
+   (let [date (if (number? date)
+                (.fromTimestamp gd/DateTime date)
+                date)]
+     (.format (goog.i18n.DateTimeFormat. pattern) date))))
 
 (defn navigate-to [& parts]
   (aset (aget js/window "location") "href" (apply str parts)))

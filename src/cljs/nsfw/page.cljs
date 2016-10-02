@@ -96,7 +96,7 @@
                            (assoc :view-key view-key))
                  handler (handler-for views view-key)]
              (if handler
-               (handler state)
+               (or (handler state) state)
                (do
                  (println "[nsfw.page] No handler for key " view-key)
                  (assoc state :view-key view-key)))))})

@@ -97,3 +97,10 @@
                    (.preventDefault e)
                    (on-change (.. e -target -value)))
       :placeholder "Search"}]]])
+
+(defn $loading-ellipsis [& [opts]]
+  [:div.ellipsis-spinner
+   opts
+   [:div.bounce1]
+   [:div.bounce2]
+   [:div.bounce3]])

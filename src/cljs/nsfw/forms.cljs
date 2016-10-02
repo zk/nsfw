@@ -98,7 +98,7 @@
                          (if checkbox?
                            (swap! !cursor
                              assoc-in path
-                             (.. e -target -checked))
+                             (parse-value (.. e -target -checked)))
                            (swap! !cursor
                              assoc-in path
                              (parse-value (.. e -target -value))))

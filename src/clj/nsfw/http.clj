@@ -183,19 +183,19 @@
       (h (update-in r [:body] util/from-json))
       (h r))))
 
-(defn wrap-transit-response [h]
+(defn wrap-transit-response [h & [handlers]]
   (fn [r]
     (let [res (h r)]
       (-> res
-          (update-in [:body] util/to-transit)
+          (update-in [:body] #(util/to-transit % handlers))
           (assoc-in [:headers "Content-Type"]
             "application/transit+json;charset=utf-8")))))
 
-(defn wrap-transit-request [h]
+(defn wrap-transit-request [h & [handlers]]
   (fn [r]
     (if (= "application/transit+json"
            (:media-type (content-type r)))
-      (h (update-in r [:body] util/from-transit))
+      (h (update-in r [:body] #(util/from-transit % handlers)))
       (h r))))
 
 (defn routes->bidi [routes]
@@ -270,7 +270,8 @@
     (h (assoc r k v))))
 
 (defn cljs-page-template [{:keys [js css env data
-                                  body-class head meta-named
+                                  body-class head
+                                  meta-named
                                   title]}]
   (html-resp
     [:html5
