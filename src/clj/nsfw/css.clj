@@ -154,3 +154,43 @@ linear-gradient(45deg, "
                                  :transition
                                  :transform}})]
     (garden/css opts css)))
+
+(def flex-defaults
+  [[:.flex-apart
+    (flex-box {:justify-content 'space-between
+               :align-items 'center})]
+
+   [:.flex-around
+    (flex-box {:justify-content 'space-around
+               :align-items 'center})]
+
+   [:.flex-apart-top
+    (flex-box {:justify-content 'space-between
+               :align-items 'top})]
+
+   [:.flex-center
+    (flex-box {:justify-content 'center
+               :align-items 'center})]
+
+   [:.flex-center-top
+    (flex-box {:justify-content 'center
+               :align-items 'top})]
+   [:.flex-right
+    (flex-box {:justify-content 'flex-end
+               :align-items 'center})]
+
+   [:.flex-left
+    (flex-box {:justify-content 'flex-start
+               :align-items 'center
+               :flex-wrap 'wrap})]
+
+   [:.flex-masonry
+    (flex-box {:flex-direction 'column
+               :flex-wrap 'wrap
+               :align-content 'stretch
+               :align-items 'stretch})]])
+
+(def ellipsis-text
+  {:white-space 'nowrap
+   :overflow 'hidden
+   :text-overflow 'ellipsis})

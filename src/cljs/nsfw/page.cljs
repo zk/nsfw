@@ -3,7 +3,7 @@
             [nsfw.ops :as ops]
             [reagent.core :as rea]
             [bidi.bidi :as bidi]
-            [dommy.core :as dommy]
+            [dommy.core :as dommy :refer-macros [sel]]
             [cljs.core.async :as async
              :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
@@ -301,3 +301,14 @@
 (defn attach-fastclick [& [$el]]
   (let [$el (or $el (aget js/document "body"))]
     (.attach js/FastClick $el)))
+
+(defn on-el [& pairs]
+  (->> (partition 2 pairs)
+       (mapcat (fn [[selector f]]
+                 (->> (sel selector)
+                      (map (fn [$el]
+                             [f $el])))))
+       (remove #(nil? (second %)))
+       (map (fn [[f $el]]
+              (f $el)))
+       doall))
