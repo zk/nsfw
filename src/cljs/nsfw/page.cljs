@@ -23,12 +23,15 @@
 (defn stop-app [app]
   (app))
 
-(defn reloader [gen-handlers]
-  (let [!app (atom (start-app (gen-handlers)))]
+(defn hook-reload-fn [f]
+  (let [!app (atom (f))]
     (fn []
       (when @!app
         (@!app))
-      (reset! !app (start-app (gen-handlers))))))
+      (reset! !app (f)))))
+
+(defn reloader [gen-handlers]
+  (hook-reload-fn (fn [] (start-app (gen-handlers)))))
 
 (defn push-path [& parts]
   (let [new-path (apply str parts)
@@ -259,10 +262,10 @@
 
 (defn throttle-debounce [f {throttle-ms :throttle
                             debounce-ms :debounce}]
-  (let [f (if throttle-ms
+  (let [f (if (and throttle-ms (> 0 throttle-ms))
             (throttle f throttle-ms)
             f)
-        f (if debounce-ms
+        f (if (and debounce-ms (> 0 debounce-ms))
             (debounce f debounce-ms)
             f)]
     f))

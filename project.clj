@@ -1,6 +1,6 @@
-(defproject nsfw "0.11.44"
+(defproject nsfw "0.11.45"
   :description "No Such Framework -- Experimental"
-  :dependencies [[org.clojure/clojure "1.7.0"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.7.122"]
                  [clj-stacktrace "0.2.8"]
                  [cheshire "5.5.0"]

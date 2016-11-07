@@ -1605,3 +1605,13 @@ do things.
 
 Need to allow single thing to come off the channel. Wait, I think I
 allow that already.
+
+* <2016-10-18 Tue 22:23>
+
+Ops bus --
+
+Props change?
+
+Don't pass ratoms?
+
+Local state from closed-over ratom?
