@@ -191,6 +191,18 @@
 (defn env-case [o]
   (csk/->SCREAMING_SNAKE_CASE o))
 
+(defn camel-case [o]
+  (csk/->camelCase o))
+
+(defn camel-map [m]
+  (->> m
+       (map (fn [[k v]]
+              [(camel-case k) v]))
+       (into {})))
+
+(defn snake-case [o]
+  (csk/->snake_case o))
+
 (defn page-data [key & [default]]
   (try
     (from-transit
