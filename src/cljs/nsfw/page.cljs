@@ -262,10 +262,10 @@
 
 (defn throttle-debounce [f {throttle-ms :throttle
                             debounce-ms :debounce}]
-  (let [f (if (and throttle-ms (> 0 throttle-ms))
+  (let [f (if (and throttle-ms (> throttle-ms 0))
             (throttle f throttle-ms)
             f)
-        f (if (and debounce-ms (> 0 debounce-ms))
+        f (if (and debounce-ms (> debounce-ms 0))
             (debounce f debounce-ms)
             f)]
     f))
