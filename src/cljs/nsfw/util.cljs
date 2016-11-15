@@ -185,8 +185,34 @@
         (< y 1) (str (int d) "d")
         :else (str (sformat "%.1f" y) "y")))))
 
+(defn transform-keys [o transform-fn]
+  (cond
+    (map? o)
+    (->> o
+         (map (fn [[k v]]
+                [(transform-fn k)
+                 (transform-keys v transform-fn)]))
+         (into {}))
+
+    (coll? o)
+    (->> o
+         (map #(transform-keys % transform-fn))
+         ((fn [out]
+            (if (vector? o)
+              (vec out)
+              out)))
+         doall)
+
+
+    :else o))
+
 (defn kebab-case [o]
   (csk/->kebab-case o))
+
+(defn kebab-coll [m]
+  (transform-keys
+    m
+    kebab-case))
 
 (defn env-case [o]
   (csk/->SCREAMING_SNAKE_CASE o))
@@ -194,11 +220,10 @@
 (defn camel-case [o]
   (csk/->camelCase o))
 
-(defn camel-map [m]
-  (->> m
-       (map (fn [[k v]]
-              [(camel-case k) v]))
-       (into {})))
+(defn camel-coll [o]
+  (transform-keys
+    o
+    camel-case))
 
 (defn snake-case [o]
   (csk/->snake_case o))
