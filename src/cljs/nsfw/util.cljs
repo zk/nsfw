@@ -185,6 +185,17 @@
         (< y 1) (str (int d) "d")
         :else (str (sformat "%.1f" y) "y")))))
 
+(defn time-delta-exact [millis]
+  (when millis
+    (let [ms millis
+          s (/ ms 1000)
+          m (/ s 60)
+          h (/ m 60)
+          d (/ h 24)
+          y (/ d 365.0)]
+      (str
+        (int h) "h"))))
+
 (defn transform-keys [o transform-fn]
   (cond
     (map? o)
@@ -202,8 +213,6 @@
               (vec out)
               out)))
          doall)
-
-
     :else o))
 
 (defn kebab-case [o]

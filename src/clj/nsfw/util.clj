@@ -14,7 +14,8 @@
   (:import [java.util Date]
            [java.text SimpleDateFormat]
            [java.net URLEncoder]
-           [org.pegdown PegDownProcessor Extensions]))
+           [org.pegdown PegDownProcessor Extensions]
+           [org.joda.time.format ISODateTimeFormat]))
 
 ;; Logging
 
@@ -43,6 +44,13 @@
    (= nil o) nil
    (= "" o) nil
    :else nil))
+
+(def iso-parser (ISODateTimeFormat/dateTimeParser))
+
+(defn parse-iso-8601 [o]
+  (cond
+    (string? o) (.getMillis (.parseDateTime iso-parser o))
+    :else o))
 
 (defn format-ms [ms format]
   (let [d (Date. ms)]
