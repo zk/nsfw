@@ -10,13 +10,17 @@
                :url url}
               url)]
     (or (get source-cache req)
-        (-> @(http/request
-               (merge
-                 {:headers {"User-Agent" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
-                  :connection-timeout 5000}
-                 req))
-            :body
-            bs/to-string))))
+        (let [resp @(http/request
+                      (merge
+                        {:headers {"User-Agent" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
+                         :connection-timeout 5000
+                         :ignore-ssl-certs? true
+                         :insecure? true}
+                        req))]
+          #_(prn resp)
+          (-> resp
+              :body
+              bs/to-string)))))
 
 (defn process [scrapers spec state]
   (let [{:keys [url scraper-key]
