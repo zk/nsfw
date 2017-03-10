@@ -208,12 +208,12 @@
   [key coll]
   (let [step (fn step [xs seen]
                (lazy-seq
-                ((fn [[f :as xs] seen]
-                   (when-let [s (seq xs)]
-                     (if (contains? seen (key f))
-                       (recur (rest s) seen)
-                       (cons f (step (rest s) (conj seen (key f)))))))
-                 xs seen)))]
+                 ((fn [[f :as xs] seen]
+                    (when-let [s (seq xs)]
+                      (if (contains? seen (key f))
+                        (recur (rest s) seen)
+                        (cons f (step (rest s) (conj seen (key f)))))))
+                  xs seen)))]
     (step coll #{})))
 
 (defn parse-int [s & [default]]
