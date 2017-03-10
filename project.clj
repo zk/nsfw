@@ -37,7 +37,19 @@
                  [com.rpl/specter "0.9.1"]
                  [cljsjs/fastclick "1.0.6-0"]
                  [cljsjs/hammer "2.0.4-5"]]
+  :plugins [[lein-cljsbuild "1.1.1"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs"]
   :test-paths ["test/clj"]
-  :jar-name "nsfw.jar")
+  :jar-name "nsfw.jar"
+  :cljsbuild
+  {:builds {:dev
+            {:source-paths ["src/cljs"]
+             :compiler {:output-to "target/cljs/nsfw.js"
+                        :output-dir "target/cljs"
+                        :optimizations :none
+                        :source-map true
+                        :main "rx.entry"
+                        :asset-path "/cljs"
+                        :recompile-dependents false
+                        }}}})
