@@ -2,8 +2,6 @@
   (:require [nsfw.util :as util]
             [somnium.congomongo :as mon]))
 
-(mon/mongo! :db "dailyink")
-
 (defn resolve-handler [specs type result-type]
   (let [spec (get specs type)
         spec (if (map? spec)
