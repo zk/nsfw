@@ -5,7 +5,7 @@
                  [clj-stacktrace "0.2.8"]
                  [cheshire "5.5.0"]
                  [hiccup "1.0.5"]
-                 [congomongo "0.4.8"]
+                 [congomongo "0.5.0"]
                  [ring "1.4.0"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]
                  [com.cognitect/transit-cljs "0.8.220"]
