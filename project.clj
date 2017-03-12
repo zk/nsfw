@@ -1,4 +1,4 @@
-(defproject nsfw "0.11.53"
+(defproject nsfw "0.11.54"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.7.122"]
@@ -34,7 +34,7 @@
                  [clj-jwt "0.1.1"]
                  [clj-mailgun "0.2.0"]
                  [clj-aws-s3 "0.3.10"]
-                 [com.rpl/specter "0.9.1"]
+                 [com.rpl/specter "0.13.2"]
                  [cljsjs/fastclick "1.0.6-0"]
                  [cljsjs/hammer "2.0.4-5"]]
   :plugins [[lein-cljsbuild "1.1.1"]]
