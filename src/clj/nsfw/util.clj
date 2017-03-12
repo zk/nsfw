@@ -380,3 +380,31 @@
   (if (= 1 n)
     singular
     plural))
+
+
+(defn transform-keys [o transform-fn]
+  (cond
+    (map? o)
+    (->> o
+         (map (fn [[k v]]
+                [(transform-fn k)
+                 (transform-keys v transform-fn)]))
+         (into {}))
+
+    (coll? o)
+    (->> o
+         (map #(transform-keys % transform-fn))
+         ((fn [out]
+            (if (vector? o)
+              (vec out)
+              out)))
+         doall)
+    :else o))
+
+(defn kebab-case [o]
+  (csk/->kebab-case o))
+
+(defn kebab-coll [m]
+  (transform-keys
+    m
+    kebab-case))

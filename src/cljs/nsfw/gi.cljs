@@ -130,32 +130,3 @@
         (select-keys-with-ns "tun" res)
         (select-keys-with-ns "gi" res)
         {:list (:result res)}))))
-
-(go
-  #_(prn (<! (tunnel
-               {:uri "http://localhost:5000/api/orders/gi"}
-               [[:gi/mutate {:order {:id :hello :foo :bar}
-                             :gi/id :foo}]
-                [:gi/mutate {:order {:id :world :foo :baz}
-                             :gi/id :bar}]
-                [:gi/query {:orders {:type :order
-                                     :result :list
-                                     :query {:foo "bar"}}
-                            :gi/id "foo"}]])))
-  #_(prn (<! (query
-               {:uri "http://localhost:5000/api/orders/gi"}
-               {:orders {:type :order
-                         :result :list
-                         :query {:foo "bar"}}})))
-
-  #_(prn (<! (query-obj
-               {:uri "http://localhost:5000/api/orders/gi"}
-               :order
-               {:foo "bar"})))
-
-  #_(prn (<! (mutate
-               {:uri "http://localhost:5000/api/orders/gi"}
-               {:order {:id "hi"}})))
-  #_(prn (<! (mutate-one
-               {:uri "http://localhost:5000/api/orders/gi"}
-               {:order {:id "hi"}}))))
