@@ -1,4 +1,4 @@
-(defproject nsfw "0.11.55"
+(defproject nsfw "0.11.56"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.7.122"]
@@ -26,7 +26,6 @@
                  [bidi "1.23.1" :exclusions [org.clojure/clojure]]
                  [hashobject/hashids "0.2.0"]
                  [org.clojure/java.classpath "0.2.2"]
-                 [prismatic/schema "0.4.3" :exclusions [potemkin]]
                  [garden "1.2.5" :exclusions [org.clojure/clojure]]
                  [reagent "0.6.0"]
                  [cljs-http "0.1.37"]
