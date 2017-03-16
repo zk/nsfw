@@ -235,7 +235,17 @@
     camel-case))
 
 (defn snake-case [o]
-  (csk/->snake_case o))
+  (if (keyword? o)
+    (keyword
+      (namespace o)
+      (csk/->snake_case
+        (name o)))
+    (csk/->snake_case o)))
+
+(defn snake-coll [o]
+  (transform-keys
+    o
+    snake-case))
 
 (defn page-data [key & [default]]
   (try

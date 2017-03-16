@@ -408,3 +408,28 @@
   (transform-keys
     m
     kebab-case))
+
+
+(defn env-case [o]
+  (csk/->SCREAMING_SNAKE_CASE o))
+
+(defn camel-case [o]
+  (csk/->camelCase o))
+
+(defn camel-coll [o]
+  (transform-keys
+    o
+    camel-case))
+
+(defn snake-case [o]
+  (if (keyword? o)
+    (keyword
+      (namespace o)
+      (csk/->snake_case
+        (name o)))
+    (csk/->snake_case o)))
+
+(defn snake-coll [o]
+  (transform-keys
+    o
+    snake-case))

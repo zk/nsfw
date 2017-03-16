@@ -105,28 +105,22 @@
         (select-keys-with-ns "tun" res)
         (select-keys-with-ns "gi" m)))))
 
-(defn <query-one [tun-opts type q & [auth]]
+(defn <query-obj [tun-opts type q & [auth]]
   (go
     (let [res (<! (<query
                     tun-opts
-                    {:result {:type type
-                              :result :obj
-                              :query q}}
+                    {:obj {:type type
+                           :result :obj
+                           :query q}}
                     auth))]
-      (merge
-        (select-keys-with-ns "tun" res)
-        (select-keys-with-ns "gi" res)
-        (:result res)))))
+      res)))
 
 (defn <query-list [tun-opts type q & [auth]]
   (go
     (let [res (<! (<query
                     tun-opts
-                    {:result {:type type
-                              :result :list
-                              :query q}}
+                    {:list {:type type
+                            :result :list
+                            :query q}}
                     auth))]
-      (merge
-        (select-keys-with-ns "tun" res)
-        (select-keys-with-ns "gi" res)
-        {:list (:result res)}))))
+      res)))
