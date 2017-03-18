@@ -8,7 +8,6 @@
                          mutate-interface
                          query-interface]
   (merge
-    {:gi/success? true}
     (cond
       (not command-key)
       {:gi/success? false
