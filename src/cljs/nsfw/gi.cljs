@@ -124,3 +124,13 @@
                             :query q}}
                     auth))]
       res)))
+
+(defn <query-count [tun-opts type q & [auth]]
+  (go
+    (let [res (<! (<query
+                    tun-opts
+                    {:count {:type type
+                             :result :count
+                             :query q}}
+                    auth))]
+      (:count res))))
