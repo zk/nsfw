@@ -84,9 +84,13 @@
         query (gqi/mk-query-engine (:query specs))]
     (-> (fn [{:keys [headers body :gi/auth] :as r}]
           (cond
-            (not (= "application/transit+json"
-                    (or (get headers "Content-Type")
-                        (get headers "content-type"))))
+            (not
+              (or (.contains
+                    (get headers "Content-Type")
+                    "application/transit+json")
+                  (.contains
+                    (get headers "content-type")
+                    "application/transit+json")))
             {:tun/error (str "Received content-type not application/transit+json: " (pr-str (or (get headers "Content-Type")
                                                                                                 (get headers "content-type"))))}
             :else (gi

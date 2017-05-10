@@ -58,12 +58,18 @@
                 (when include-response?
                   {:tun/response resp}))))))
 
+(defn keys-with-ns [ns m]
+  (->> m
+       keys
+       (filter #(= ns (namespace %)))))
+
 (defn select-keys-with-ns [ns m]
   (when-not (or (map? m) (nil? m))
     (throw (js/Error. (str "Second arg to select-keys-with-ns should be a map: " m))))
   (->> m
        (filter #(= ns (namespace (first %))))
        (into {})))
+
 
 (defn <mutate [tun-opts pl & [auth]]
   (go
@@ -87,6 +93,30 @@
         (get m type)
         (select-keys-with-ns "tun" m)
         (select-keys-with-ns "gi" m)))))
+
+(defn <vmutate-one [tun-opts type obj & [auth]]
+  (go
+    (let [m (<! (<mutate-one tun-opts type obj auth))
+          _ (prn "vmutone res" m)
+          success? (if (vector? m)
+                     (not (second m))
+                     (and (or (:gi/success? m)
+                              (:tun/success? m))
+                          (:success? m)))
+          _ (prn "success?" success?)]
+      (if (vector? m)
+        m
+        (let [res (apply
+                    dissoc
+                    m
+                    (concat
+                      (keys-with-ns "tun" m)
+                      (keys-with-ns "gi" m)))]
+          (if success?
+            [res nil]
+            [nil (merge
+                   (select-keys-with-ns "tun" m)
+                   (select-keys-with-ns "gi" m))]))))))
 
 (defn <query [tun-opts pl & [auth]]
   (when-not pl
