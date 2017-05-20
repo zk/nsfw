@@ -145,6 +145,31 @@
                     auth))]
       res)))
 
+(defn <vquery-obj [tun-opts type q & [auth]]
+  (go
+    (let [m (<! (<query-obj tun-opts type q auth))
+          _ (prn "vquery obj res" m)
+          success? (if (vector? m)
+                     (not (second m))
+                     (and (or (:gi/success? m)
+                              (:tun/success? m))
+                          #_(:success? m)))
+          _ (prn "success?" success?)]
+      (if (vector? m)
+        m
+        (let [m (:obj m)
+              res (apply
+                    dissoc
+                    m
+                    (concat
+                      (keys-with-ns "tun" m)
+                      (keys-with-ns "gi" m)))]
+          (if success?
+            [res nil]
+            [nil (merge
+                   (select-keys-with-ns "tun" m)
+                   (select-keys-with-ns "gi" m))]))))))
+
 (defn <query-list [tun-opts type q & [auth]]
   (go
     (let [res (<! (<query
@@ -154,6 +179,30 @@
                             :query q}}
                     auth))]
       res)))
+
+(defn <vquery-list [tun-opts type obj & [auth]]
+  (go
+    (let [m (<! (<query-list tun-opts type obj auth))
+          _ (prn "vquery res" m)
+          success? (if (vector? m)
+                     (not (second m))
+                     (and (or (:gi/success? m)
+                              (:tun/success? m))
+                          (:success? m)))
+          _ (prn "success?" success?)]
+      (if (vector? m)
+        m
+        (let [res (apply
+                    dissoc
+                    m
+                    (concat
+                      (keys-with-ns "tun" m)
+                      (keys-with-ns "gi" m)))]
+          (if success?
+            [res nil]
+            [nil (merge
+                   (select-keys-with-ns "tun" m)
+                   (select-keys-with-ns "gi" m))]))))))
 
 (defn <query-count [tun-opts type q & [auth]]
   (go
