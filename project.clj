@@ -13,7 +13,7 @@
                  [aleph "0.4.1-beta2"]
                  [byte-transforms "0.1.4"]
                  [slingshot "0.12.2"]
-                 [clj-http "1.1.2"]
+                 [clj-http "3.6.0"]
                  [prismatic/dommy "1.1.0"]
                  [joda-time/joda-time "2.8.1"]
                  [oauth-clj "0.1.13"]
