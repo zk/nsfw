@@ -1,8 +1,31 @@
 (ns nsfw.scraper
   (:require [nsfw.util :as util]
             [aleph.http :as http]
+            [clj-http.client :as hc]
+            [clj-http.cookies :as cookies]
             [byte-streams :as bs]
             [clojure.string :as str]))
+
+#_(defn fetch-source [url source-cache]
+    (let [req (if (string? url)
+                {:method :get
+                 :url url}
+                url)]
+      (or (get source-cache req)
+          (let [resp @(http/request
+                        (merge
+                          {:headers {"User-Agent" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
+                           :connection-timeout 5000
+                           :ignore-ssl-certs? true
+                           :follow-redirects? true
+                           :insecure? true}
+                          req))]
+            (prn resp)
+            (-> resp
+                :body
+                bs/to-string)))))
+
+(def cookie-store (cookies/cookie-store))
 
 (defn fetch-source [url source-cache]
   (let [req (if (string? url)
@@ -10,14 +33,15 @@
                :url url}
               url)]
     (or (get source-cache req)
-        (let [resp @(http/request
-                      (merge
-                        {:headers {"User-Agent" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
-                         :connection-timeout 5000
-                         :ignore-ssl-certs? true
-                         :insecure? true}
-                        req))]
-          #_(prn resp)
+        (let [resp (hc/request
+                     (merge
+                       {:headers {"User-Agent" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
+                        :connection-timeout 5000
+                        :ignore-ssl-certs? true
+                        :follow-redirects? true
+                        :insecure? true
+                        :cookie-store cookie-store}
+                       req))]
           (-> resp
               :body
               bs/to-string)))))
@@ -49,6 +73,7 @@
         (if (empty? specs)
           out
           (let [spec (first specs)
+                _ (prn "Running" spec)
                 ress (process scrapers spec state)
                 {:keys [new-specs results]} (group-by
                                               (fn [spec]

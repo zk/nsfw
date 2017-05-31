@@ -163,10 +163,11 @@
 (defn to-json [o]
   (json/generate-string o))
 
-(defn from-json [o]
-  (if (string? o)
-    (json/parse-string o true)
-    (json/parse-stream (io/reader o) true)))
+(defn from-json [o & [prevent-keywordize]]
+  (let [keywordize? (not prevent-keywordize)]
+    (if (string? o)
+      (json/parse-string o keywordize?)
+      (json/parse-stream (io/reader o) keywordize?))))
 
 (defn from-transit [s & [handlers]]
   (when s

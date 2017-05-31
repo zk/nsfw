@@ -148,7 +148,7 @@
 (defn <vquery-obj [tun-opts type q & [auth]]
   (go
     (let [m (<! (<query-obj tun-opts type q auth))
-          _ (prn "vquery obj res" m)
+          ;;_ (prn "vquery obj res" m)
           success? (if (vector? m)
                      (not (second m))
                      (and (or (:gi/success? m)
@@ -183,7 +183,7 @@
 (defn <vquery-list [tun-opts type obj & [auth]]
   (go
     (let [m (<! (<query-list tun-opts type obj auth))
-          _ (prn "vquery res" m)
+          ;;_ (prn "vquery res" m)
           success? (if (vector? m)
                      (not (second m))
                      (and (or (:gi/success? m)
