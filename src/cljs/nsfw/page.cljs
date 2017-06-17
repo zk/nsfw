@@ -315,3 +315,76 @@
        (map (fn [[f $el]]
               (f $el)))
        doall))
+
+(defn not-empty? [o]
+  (not (empty? o)))
+
+(defn hook-dispatch [{:keys [routes
+                             views
+                             on-view
+                             on-handler]}]
+  (when (and (not routes)
+             (not views))
+    (throw (js/Error "`views` and/or `routes` not defined")))
+  (when (and routes (not-empty? routes))
+    (dispatch-route routes
+      (fn [handler route-params]
+        (on-handler handler route-params))))
+  (when (and views (not-empty? views))
+    (dispatch-route views
+      (fn [handler route-params]
+        (on-view handler route-params))))
+  (let [unlisten (let [f (fn [e]
+                           (when (and routes (not-empty? routes))
+                             (dispatch-route routes
+                               (fn [handler route-params]
+                                 (on-handler handler route-params))))
+                           (when (and views (not-empty? views))
+                             (dispatch-route views
+                               (fn [handler route-params]
+                                 (on-view handler route-params)))))]
+                   (dommy/listen! js/window :popstate f)
+                   (fn []
+                     (dommy/unlisten! js/window :popstate f)))]
+    unlisten))
+
+(defn init [{:keys [init-state
+                    views
+                    routes
+                    handlers
+                    root-class
+                    !state]}]
+  (let [!state (or !state (rea/atom init-state))
+        !current-view (rea/atom nil)
+        bus (ops/kit
+              !state
+              {}
+              handlers)
+
+
+        views (when (and views (not-empty? views))
+                ["" views])
+        routes (when (and routes (not-empty? routes))
+                 ["" routes])]
+
+    (let [unload (hook-dispatch
+                   {:views views
+                    :routes routes
+
+                    :on-view (fn [f rp]
+                               (reset! !current-view f))
+
+                    :on-handler (fn [k rp]
+                                  (ops/send bus k rp))})]
+
+      (rea/render-component
+        [(or @!current-view
+             (fn []
+               [:div "no view"]))
+         !state bus]
+        (.getElementById js/document
+          (or root-class "page-container")))
+
+      (fn []
+        (prn "SHUTDOWN")
+        (unload)))))

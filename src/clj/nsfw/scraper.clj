@@ -4,7 +4,8 @@
             [clj-http.client :as hc]
             [clj-http.cookies :as cookies]
             [byte-streams :as bs]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [reaver :refer [parse extract-from text attr attrs]]))
 
 #_(defn fetch-source [url source-cache]
     (let [req (if (string? url)
@@ -190,3 +191,234 @@
      :props {:some "props"}}
     {:source-cache {}
      :context {:this "context"}}))
+
+(defn ensure-coll [o]
+  (if (coll? o)
+    o
+    [o]))
+
+(defn ensure-seq [o]
+  (if (or (list? o)
+          (vector? o)
+          (seq? o))
+    o
+    [o]))
+
+(defn extract [src main-sel sels]
+  (apply
+    extract-from
+    (parse src)
+    main-sel
+    (->> sels
+         keys
+         (sort-by #(name %))
+         vec)
+    (->> sels
+         (sort-by #(name (first %)))
+         (mapcat (fn [[k v]] v))
+         vec)))
+
+(defn extract-og-tags [src]
+  (->> (extract
+         src
+         "html"
+         {:tags ["meta" attrs]})
+       first
+       :tags
+       (map (fn [{:keys [property content]}]
+              [property content]))
+       (filter (fn [[property _]]
+                 property))
+       (filter (fn [[property _]]
+                 (re-find #"^og:" property)))
+       (map (fn [[p c]]
+              [(keyword p)
+               c]))
+       (into {})))
+
+(defn extract-link-tags [src]
+  (->> (extract
+         src
+         "html"
+         {:tags ["link" attrs]})
+       first
+       :tags
+       (map (fn [{:keys [rel href]}]
+              [rel href]))
+       (filter (fn [[rel _]]
+                 (and rel (not= "stylesheet" rel))))
+       #_(filter (fn [[property _]]
+                 (re-find #"^og:" property)))
+       (map (fn [[p c]]
+              [(keyword p)
+               c]))
+       (into {})))
+
+(defn extract-meta-tags [src]
+  (->> (extract
+         src
+         "html"
+         {:tags ["meta" attrs]})
+       first
+       :tags
+       (map (fn [{:keys [property content]}]
+              [property content]))
+       (filter (fn [[property _]]
+                 property))
+       (map (fn [[p c]]
+              [(keyword p)
+               c]))
+       (into {})))
+
+
+
+(defn script-contents [src]
+  (->> src
+       (re-seq #"<\s*script[^>]*>(.*)</\s*script\s*>")
+       (map second)))
+
+(defn verify-product [{:keys [id source-id origin-url name price images width height] :as product}]
+  (let [res (and (not (empty? origin-url))
+                 (not (empty? id))
+                 (not (empty? source-id))
+                 (not (empty? price))
+                 (not (empty? images))
+                 (->> images
+                      (map #(and
+                              (not (empty? (:url %)))
+                              (:width %)
+                              (:height %)))
+                      (reduce #(and %1 %2)))
+                 width
+                 height)]
+    (when-not res
+      (println "!! ERROR, product missing information:")
+      (prn (keys product))
+      (util/pp product))
+    res))
+
+(defn test-category [{:keys [urls scrapers]}]
+  (println "\n")
+  (println "--- Test Category ---")
+  (util/pp
+    ((:category scrapers)
+     (fetch-source
+       (:example-cat-url urls)
+       {})
+     {}
+     {}
+     ))
+  (println))
+
+(defn test-level [scraper-key target & [default-props]]
+  (println "\n")
+  (println "--- Test" scraper-key "---")
+  (let [url (or (-> target scraper-key :example-url)
+                (-> target scraper-key :example-spec :url))
+        props (or (-> target scraper-key :props)
+                  default-props)
+        ress ((-> target scraper-key :scraper)
+              (fetch-source
+                url
+                {})
+              props
+              {}
+              )]
+    (util/pp ress)
+    (println ">> COUNT:" (count ress)))
+  (println))
+
+(defn test-combo [target]
+  (let [cat (-> ((-> target :category-page :scraper)
+                 (fetch-source
+                   (-> target :category-page :example-url)
+                   {})
+                 {}
+                 {})
+                first
+                :props)
+        product (if (:product-page target)
+                  (-> ((-> target :product-page :scraper)
+                       (fetch-source
+                         (-> target :product-page :example-url)
+                         {})
+                       cat
+                       {})
+                      first
+                      :props)
+                  cat)]
+    (verify-product product)
+    (util/pp product)))
+
+(defn test-chain [target keys]
+  (let [product
+        (loop [keys keys
+               props {}]
+          (if (empty? keys)
+            props
+            (let [scraper-key (first keys)
+                  scraper-fn (-> target scraper-key :scraper)]
+              (recur
+                (rest keys)
+                (-> (scraper-fn
+                      (fetch-source
+                        (-> target scraper-key :example-url)
+                        {})
+                      props
+                      {})
+                    first
+                    :props)))))]
+    (verify-product product)
+    (util/pp product)))
+
+(defn spit-to-temp [src]
+  (spit "/tmp/out.html" src))
+
+(defn write-tmp-html [scraper-key target]
+  (spit-to-temp
+    (fetch-source
+      (-> target scraper-key :example-url)
+      {})))
+
+(defn target->scraper [{:keys [category-page
+                               product-page
+                               image-set-page
+                               whats-new-urls id
+                               specs]}]
+  {:id id
+   :scrapers (merge
+               (when category-page
+                 {:category-page (:scraper category-page)})
+               (when product-page
+                 {:product-page (:scraper product-page)})
+               (when image-set-page
+                 {:image-set-page (:scraper image-set-page)}))
+   :specs (or specs
+              (->> whats-new-urls
+                   (map (fn [url]
+                          {:url url
+                           :props {}
+                           :scraper-key :category-page}))))})
+
+(defn capitalize-name [s]
+  (when s
+    (->> (str/split s #"\b")
+         (map str/capitalize)
+         str/join
+         str/trim)))
+
+(defn cat-spec
+  [[url & categories]]
+  {:url url
+   :scraper-key :category-page
+   :props {:categories (map name categories)}})
+
+(defn price-str->num [price-str]
+  (when price-str
+    (let [price-num (-> price-str
+                        (str/replace #"[^0-9]*" "")
+                        (Integer/parseInt))
+          price-num (if (.contains price-str ".")
+                      price-num
+                      (* price-num 100))]
+      price-num)))
