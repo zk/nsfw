@@ -290,3 +290,12 @@
 (defn round [n]
   (when n
     (.round js/Math n)))
+
+(defn url-slug [s]
+  (when s
+    (-> s
+        str/trim
+        str/lower-case
+        (str/replace #"\s+" "-")
+        (str/replace #"[^a-zA-Z0-9_-]+" "-")
+        (str/replace #"-+" "-"))))
