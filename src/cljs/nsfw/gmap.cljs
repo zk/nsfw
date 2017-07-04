@@ -292,8 +292,12 @@
   (let [map-canvas (rea/dom-node this)
         args (rest (rea/argv this))
         {:keys [opts children]} (parse-args args)
+        map-type (:map-type opts)
+        opts (dissoc opts :map-type)
         initial (:initial opts)
         initial-bounds (-> opts :initial :bounds)
+
+
         gmap (js/google.maps.Map.
                map-canvas
                (-> (merge
@@ -305,6 +309,21 @@
                gmap
                {}
                children)]
+    #_(prn "maptype" (.-mapTypes gmap))
+    (when map-type
+      (let [mt-str (name map-type)
+            stamen? (re-find #"^stamen-" mt-str)]
+        (if stamen?
+          (let [stamen-type (str/replace mt-str #"^stamen-" "")]
+            (do
+              (.set
+                (.-mapTypes gmap)
+                stamen-type
+                (js/google.maps.StamenMapType. stamen-type))
+              (.setMapTypeId gmap stamen-type)))
+          (condp = map-type
+            ;; adtl map types here
+            nil))))
     (when initial-bounds
       (.fitBounds gmap (clj->js initial-bounds)))
     (attach-event-listeners gmap opts (map-event-transforms gmap))

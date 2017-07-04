@@ -1,4 +1,4 @@
-(defproject nsfw "0.11.71"
+(defproject nsfw "0.11.72"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.293"]
@@ -36,6 +36,7 @@
                  [com.rpl/specter "1.0.0"]
                  [cljsjs/fastclick "1.0.6-0"]
                  [cljsjs/hammer "2.0.4-5"]
+                 [cljsjs/google-maps "3.18-1"]
 
                  [reaver "0.1.2"]
                  [hickory "0.7.1"]]
