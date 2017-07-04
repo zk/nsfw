@@ -8,8 +8,6 @@
 
 (def !animations (atom {}))
 
-(defn spring [obj props])
-
 ;; https://github.com/chenglou/react-motion/blob/master/src/stepper.js
 
 (def error-margin 0.001)
@@ -35,9 +33,9 @@
 
 (defn raf [f] (.requestAnimationFrame js/window f))
 
-(defn -run [continue? from to callback]
-  (let [k 118
-        b 18]
+(defn -run [continue? from to callback & [spring-params]]
+  (let [k (or (:k spring-params) 118)
+        b (or (:b spring-params) 18)]
     (letfn [(do-frame [x v]
               (if (and (continue?) (not= x to))
                 (let [[next-x next-v] (step (/ ms-per-frame 1000) x v to k b)]
@@ -57,6 +55,21 @@
       from
       to
       callback)))
+
+(defn spring [!anims from to callback & [spring-params]]
+  (let [!run-anim? (atom true)
+        keep-running? (fn [] @!run-anim?)
+        stop-anim (fn []
+                    (reset! !run-anim? false))]
+    (swap! !anims assoc (gensym) stop-anim)
+    (-run
+      keep-running?
+      from
+      to
+      callback
+      spring-params)))
+
+
 
 (defn stop-all [!anims]
   (doseq [[k v] @!anims]
