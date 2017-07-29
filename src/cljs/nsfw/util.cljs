@@ -283,9 +283,10 @@
 (defn abs [n]
   (.abs js/Math n))
 
-(defn spy [o]
-  (pp o)
-  o)
+(defn spy [& os]
+  (prn (butlast os))
+  (pp (last os))
+  (last os))
 
 (defn round [n]
   (when n

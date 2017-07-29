@@ -361,8 +361,9 @@
                             kebob->camel
                             clj->js))
 
-    (when center #_(and center (sigdiff-latlng? center (center-from-map gmap)))
-          (.setCenter gmap (clj->js center)))
+    (when center
+      #_(and center (sigdiff-latlng? center (center-from-map gmap)))
+      (.panTo gmap (clj->js center)))
     (when (and bounds (sigdiff-bounds? bounds (bounds-from-map gmap)))
       (.fitBounds gmap (clj->js bounds)))
     (when zoom
