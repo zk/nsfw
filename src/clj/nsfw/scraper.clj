@@ -28,24 +28,40 @@
 
 (def cookie-store (cookies/cookie-store))
 
-(defn fetch-source [url source-cache]
+(defn fetch [url source-cache]
   (let [req (if (string? url)
               {:method :get
                :url url}
-              url)]
-    (or (get source-cache req)
-        (let [resp (hc/request
-                     (merge
-                       {:headers {"User-Agent" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
-                        :connection-timeout 5000
-                        :ignore-ssl-certs? true
-                        :follow-redirects? true
-                        :insecure? true
-                        :cookie-store cookie-store}
-                       req))]
-          (-> resp
-              :body
-              bs/to-string)))))
+              url)
+        resp (hc/request
+               (merge
+                 {:headers {"User-Agent" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"}
+                  :connection-timeout 5000
+                  :ignore-ssl-certs? true
+                  :follow-redirects false
+                  :insecure? true
+                  :cookie-store cookie-store}
+                 req))]
+    resp))
+
+(defn fetch-source [url source-cache]
+  (or (get source-cache url)
+      (-> (fetch url source-cache)
+          :body
+          bs/to-string)))
+
+(defn verify-fetch [url source-cache]
+  (println " * Response...")
+  (let [resp (fetch url source-cache)]
+    (util/pp (dissoc resp :body))
+    (println)
+    (println " * Body...")
+    (->> resp
+         :body
+         bs/to-string
+         (take 1200)
+         (apply str)
+         prn)))
 
 (defn process [scrapers spec state]
   (let [{:keys [url scraper-key]
