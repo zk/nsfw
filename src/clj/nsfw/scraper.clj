@@ -44,15 +44,15 @@
                  req))]
     resp))
 
-(defn fetch-source [url source-cache]
-  (or (get source-cache url)
-      (-> (fetch url source-cache)
+(defn fetch-source [url response-cache]
+  (or (get response-cache url)
+      (-> (fetch url response-cache)
           :body
           bs/to-string)))
 
-(defn verify-fetch [url source-cache]
+(defn verify-fetch [url response-cache]
   (println " * Response...")
-  (let [resp (fetch url source-cache)]
+  (let [resp (fetch url response-cache)]
     (util/pp (dissoc resp :body))
     (println)
     (println " * Body...")

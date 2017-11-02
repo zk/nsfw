@@ -17,6 +17,7 @@
         {:success? (= 200 (:status res))
          :result (util/from-json (:body res))}))
     (catch Exception e
-      {:success? false
+      {:exception e
+       :success? false
        :from (:from mail)
        :to (:to mail)})))

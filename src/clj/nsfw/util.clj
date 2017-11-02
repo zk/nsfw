@@ -373,9 +373,10 @@
 (defn hex-str->byte-array [s]
   (.toByteArray (BigInteger. s 16)))
 
-(defn spy [o]
-  (pp o)
-  o)
+(defn spy [& os]
+  (prn (apply str (butlast os)))
+  (pp (last os))
+  (last os))
 
 (defn pluralize [n singular plural]
   (if (= 1 n)

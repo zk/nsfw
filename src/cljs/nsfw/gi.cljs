@@ -8,7 +8,7 @@
 (defn tunnel [{:keys [uri
                       include-response?
                       timeout]
-               :or {timeout 5000}}
+               :or {timeout 30000}}
               payload]
   (when-not uri
     (throw (js/Error "tunnel: missing {:uri ...}")))
