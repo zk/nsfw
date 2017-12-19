@@ -1,4 +1,4 @@
-(defproject nsfw "0.11.76"
+(defproject nsfw "0.11.77"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.293"]
@@ -10,7 +10,8 @@
                  [org.clojure/core.async "0.3.443"]
                  [com.cognitect/transit-cljs "0.8.239"]
                  [com.cognitect/transit-clj "0.8.300"]
-                 [aleph "0.4.1-beta2"]
+                 [aleph "0.4.3"]
+
                  [byte-transforms "0.1.4"]
                  [slingshot "0.12.2"]
                  [clj-http "3.6.0"]
@@ -39,7 +40,8 @@
                  [cljsjs/google-maps "3.18-1"]
 
                  [reaver "0.1.2"]
-                 [hickory "0.7.1"]]
+                 [hickory "0.7.1"]
+                 [org.apache.commons/commons-compress "1.14"]]
   :plugins [[lein-cljsbuild "1.1.5"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs"]
