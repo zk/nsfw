@@ -345,9 +345,19 @@
   (when s
     (bs/to-string (bt/decode s :base64 o))))
 
+(defn sha256-bytes [data & [o]]
+  (when data
+    (bt/hash data :sha256 o)))
+
 (defn sha256 [s & [o]]
-  (when s
-    (bs/to-string (bt/hash s :sha256 o))))
+  (bs/to-string (sha256-bytes s o)))
+
+(defn sha512-bytes [data & [o]]
+  (when data
+    (bt/hash data :sha512 o)))
+
+(defn sha512 [s & [o]]
+  (bs/to-string (sha512-bytes s o)))
 
 (defn kebab-case [o]
   (csk/->kebab-case o))

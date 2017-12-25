@@ -1,8 +1,7 @@
 (ns nsfw.http
   "Request / response utilities"
-  (:use [plumbing.core])
-  (:require [plumbing.graph :as pg]
-            [clojure.edn :as edn]
+  ;;(:use [plumbing.core])
+  (:require [clojure.edn :as edn]
             [nsfw.util :as util]
             [hiccup.page]
             [hiccup.core]
@@ -22,17 +21,6 @@
             [ring.middleware.session.cookie :only (cookie-store)]
             [ring.util.response :only (response content-type)])
   (:import [com.fasterxml.jackson.core JsonParseException]))
-
-(defn -graph [gmap strategy]
-  (let [g (strategy gmap)]
-    (fn [r]
-      (:resp (g r)))))
-
-(defn graph [gmap]
-  (-graph gmap pg/lazy-compile))
-
-(defn graph-eager [gmap]
-  (-graph gmap pg/eager-compile))
 
 (defn html-resp [body]
   {:headers {"content-type" "text/html;charset=utf-8"}
@@ -320,7 +308,7 @@
     merge-with
     (fn [v1 v2]
       (if (and (map? v1) (map? v2))
-        (merge v1 v2)
+        (compile-spec v1 v2)
         (concat v1 v2)))
     specs))
 
@@ -344,24 +332,83 @@
                 (map? js) [:script js]
                 :else js)))))
 
+(defn csp-str->map [s]
+  (when s
+    (->> (str/split (str/trim s) #";")
+         (map (fn [csp-entry]
+                (let [parts (str/split (str/trim csp-entry) #"\s+")
+                      directive (first parts)
+                      args (rest parts)]
+                  [directive args])))
+         (into {}))))
+
+(defn csp-map->str [m]
+  (->> m
+       (map (fn [[k vs]]
+              (str
+                k
+                " "
+                (->> vs
+                     (interpose " ")
+                     (apply str)))))
+       (interpose "; ")
+       (apply str)))
+
+(defn add-to-content-security-policy [resp addition]
+  (let [csp-str (-> resp
+                    :headers
+                    (get "Content-Security-Policy"))
+        csp-map (csp-str->map csp-str)
+        new-csp-str (csp-map->str
+                      (reduce
+                        (fn [csp-map [directive to-add-args]]
+                          (update
+                            csp-map
+                            directive
+                            (fn [args]
+                              (distinct
+                                (concat
+                                  args
+                                  to-add-args)))))
+                        csp-map
+                        addition))]
+    (assoc-in
+      resp
+      [:headers "Content-Security-Policy"]
+      new-csp-str)))
+
 (defn render-spec [specs]
-  (let [{:keys [css js head body env body-attrs]} (compile-spec specs)]
-    (html-resp
-      [:html5
-       (vec
-         (concat
-           [:head]
-           (css-html css)
-           head))
-       (vec
-         (concat
-           [:body
-            body-attrs]
-           body
-           (when env
-             [[:script {:type "text/javascript"}
-               (util/write-page-data :env env)]])
-           (js-html js)))])))
+  (let [{:keys [css js head body env body-attrs
+                content-security-policy]}
+        (compile-spec specs)
+        env-src (when env
+                  (util/write-page-data :env env))
+        env-sha512 (when env
+                     (util/to-base64 (util/sha512-bytes env-src)))
+        resp (html-resp
+               [:html5
+                (vec
+                  (concat
+                    [:head]
+                    (css-html css)
+                    head))
+                (vec
+                  (concat
+                    [:body
+                     body-attrs]
+                    body
+                    (when env
+                      [[:script {:type "text/javascript"}
+                        (util/write-page-data :env env)]])
+                    (js-html js)))])
+        resp (add-to-content-security-policy
+               resp
+               content-security-policy)]
+    (if env
+      (add-to-content-security-policy
+        resp
+        {"script-src" [(str "'sha512-" env-sha512 "'")]})
+      resp)))
 
 (defn cljs-page-template
   [{:keys [js css env data

@@ -369,13 +369,11 @@
                     :on-handler (fn [route-key rp]
                                   (ops/send bus route-key rp))})]
 
-      (rea/render-component
-        [(or @!current-view
-             (fn []
-               [:div "no view"]))
-         !state bus]
-        (.getElementById js/document
-          (or root-class "page-container")))
+      (when @!current-view
+        (rea/render-component
+          [@!current-view !state bus]
+          (.getElementById js/document
+            (or root-class "page-container"))))
 
       (fn []
         (prn "Unloading")
