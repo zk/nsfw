@@ -308,7 +308,7 @@
     merge-with
     (fn [v1 v2]
       (if (and (map? v1) (map? v2))
-        (compile-spec v1 v2)
+        (compile-spec [v1 v2])
         (concat v1 v2)))
     specs))
 
@@ -379,32 +379,36 @@
 
 (defn render-spec [specs]
   (let [{:keys [css js head body env body-attrs
-                content-security-policy]}
-        (compile-spec specs)
-        env-src (when env
-                  (util/write-page-data :env env))
-        env-sha512 (when env
-                     (util/to-base64 (util/sha512-bytes env-src)))
-        resp (html-resp
-               [:html5
-                (vec
-                  (concat
-                    [:head]
-                    (css-html css)
-                    head))
-                (vec
-                  (concat
-                    [:body
-                     body-attrs]
-                    body
-                    (when env
-                      [[:script {:type "text/javascript"}
-                        (util/write-page-data :env env)]])
-                    (js-html js)))])
-        resp (add-to-content-security-policy
-               resp
-               content-security-policy)]
-    (if env
+                content-security-policy]
+         :as compiled-spec} (compile-spec specs)
+         env-src (when env
+                   (util/write-page-data :env env))
+         env-sha512 (when env
+                      (util/to-base64 (util/sha512-bytes env-src)))
+         resp (html-resp
+                [:html5
+                 (vec
+                   (concat
+                     [:head]
+                     (css-html css)
+                     head))
+                 (vec
+                   (concat
+                     [:body
+                      body-attrs]
+                     body
+                     (when env
+                       [[:script {:type "text/javascript"}
+                         (util/write-page-data :env env)]])
+                     (js-html js)))])
+         resp (add-to-content-security-policy
+                resp
+                content-security-policy)]
+    (if (and env (not (str/includes?
+                        (-> resp
+                            :headers
+                            (get "Content-Security-Policy"))
+                        "unsafe-inline")))
       (add-to-content-security-policy
         resp
         {"script-src" [(str "'sha512-" env-sha512 "'")]})
