@@ -196,6 +196,20 @@
       (str
         (int h) "h"))))
 
+(defn time-delta-parts [delta]
+  (when delta
+    (let [ms delta
+          s (/ ms 1000)
+          m (/ (int s) 60)
+          h (/ (int m) 60)
+          d (/ (int h) 24)
+          y (/ (int d) 365.0)]
+      {:ms (int (mod ms 1000))
+       :d (int (mod d 365))
+       :h (int (mod h 24))
+       :m (int (mod m 60))
+       :s (int (mod s 60))})))
+
 (defn transform-keys [o transform-fn]
   (cond
     (map? o)
