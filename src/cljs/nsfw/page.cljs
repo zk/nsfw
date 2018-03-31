@@ -8,6 +8,9 @@
              :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
+(defn stop-app [app]
+  (app))
+
 (defn start-app [handlers]
   (let [entry-key (try
                     (:js-entry (util/page-data :env))
@@ -20,9 +23,6 @@
         (println "Couldn't find handler for js-entry" entry-key)
         (fn [])))))
 
-(defn stop-app [app]
-  (app))
-
 (defn hook-reload-fn [f]
   (let [!app (atom (f))]
     (fn []
@@ -34,7 +34,7 @@
   (hook-reload-fn (fn [] (start-app (gen-handlers)))))
 
 (defn push-path [& parts]
-  (let [new-path (apply str parts)
+  (let [new-path (apply str (remove nil? parts))
         cur-path (.-pathname js/window.location)]
     (when-not (= new-path cur-path)
       (.pushState js/window.history nil nil new-path))))
