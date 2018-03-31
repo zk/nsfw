@@ -342,11 +342,63 @@
                   [directive args])))
          (into {}))))
 
+(defn script-block->csp-frag [[_ & args]]
+  (let [srcs (if (map? (first args))
+               (rest args)
+               args)
+        src (apply str srcs)
+        base64-sha512 (util/to-base64 (util/sha512-bytes src))
+        source (str "'sha512-" base64-sha512 "'")]
+    {:script-src [source]}))
+
+(defn remove-path [url]
+  (when url
+    (re-find #"https?://[^/]*" url)))
+
+(defn script-source->csp-frag [s]
+  (when (str/starts-with? s "http")
+    {:script-src [(remove-path s)]}))
+
+(defn js-entry->csp-frag [o]
+  (cond
+    (vector? o) (script-block->csp-frag o)
+    (string? o) (script-source->csp-frag o)))
+
+(defn merge-csp [base frag]
+  (->> frag
+       (reduce (fn [base [k v]]
+                 (update
+                   base
+                   (keyword k)
+                   (fn [xs]
+                     (vec (concat xs v)))))
+         base)))
+
+(defn js-entries->csp-frag [os]
+  (->> os
+       (map js-entry->csp-frag)
+       (reduce merge-csp)))
+
+#_(add-to-content-security-policy
+    {}
+    (js-entries->csp-frag
+      [[:script {:type "text/javascript"} "foo" "bar" "baz"]
+       "https://google-analytics.com/foo/bar"]))
+
+
+#_(add-to-content-security-policy
+    {}
+    (script-block->csp-frag
+      [:script {:type "text/javascript"} "foo" "bar" "baz"]))
+
+#_(script-block->csp-frag
+    [:script "foo" "bar" "baz"])
+
 (defn csp-map->str [m]
   (->> m
        (map (fn [[k vs]]
               (str
-                k
+                (name k)
                 " "
                 (->> vs
                      (interpose " ")
@@ -381,10 +433,7 @@
   (let [{:keys [css js head body env body-attrs
                 content-security-policy]
          :as compiled-spec} (compile-spec specs)
-         env-src (when env
-                   (util/write-page-data :env env))
-         env-sha512 (when env
-                      (util/to-base64 (util/sha512-bytes env-src)))
+
          resp (html-resp
                 [:html5
                  (vec
@@ -401,18 +450,63 @@
                        [[:script {:type "text/javascript"}
                          (util/write-page-data :env env)]])
                      (js-html js)))])
+
+
+         js (concat
+              js
+              (when env
+                [[:script {:type "text/javascript"}
+                  (util/write-page-data :env env)]]))
+
+         default-csp {:script-src ["'self'"]}
+
+         csp (merge-csp
+               default-csp
+               content-security-policy)
+
+         csp (merge-csp
+               csp
+               (js-entries->csp-frag js))
+
          resp (add-to-content-security-policy
                 resp
-                content-security-policy)]
-    (if (and env (not (str/includes?
-                        (-> resp
-                            :headers
-                            (get "Content-Security-Policy"))
-                        "unsafe-inline")))
-      (add-to-content-security-policy
-        resp
-        {"script-src" [(str "'sha512-" env-sha512 "'")]})
-      resp)))
+                csp)]
+    resp))
+
+#_(util/pp
+    (:headers
+     (render-spec
+       [{:css
+         [{:href
+           "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css",
+           :integrity
+           "sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7",
+           :crossorigin "anonymous"}]}
+        {:js ["/cljs/app.js?216b1c458bc2642f0f681937b8623c21"],
+         :css
+         ["https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700|Roboto:100,400,500,700|Open+Sans:400,600,700|Lato:400,700"
+          "https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
+          "/css/app.css?fc04a10234567baa9f2ee47c840f0c14"],
+         :head
+         [[:meta
+           {:name "viewport",
+            :content
+            "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"}]]}
+        {:js
+         [[:script
+           {:type "text/javascript"}
+           "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n  })(window,document,'script','https://www.goo
+gle-analytics.com/analytics.js','ga');\n\n  ga('create', 'UA-115383190-1', 'auto');\n  ga('send', 'pageview');"]]}
+        {:env
+         {:js-entry :emporium,
+          :config
+          {:horizon-base-url "https://horizon-testnet.stellar.org",
+           :put-mailing-list-creds
+           {:access-key "AKIAJSCTYU2UTSQHJEHQ",
+            :secret-key "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"}}}}
+        {:body
+         [[:div#cljs-emporium {:style {:width "100%", :height "100%"}}]],
+         :body-attrs {:id "emporium-body"}}])))
 
 (defn cljs-page-template
   [{:keys [js css env data
