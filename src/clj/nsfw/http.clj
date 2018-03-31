@@ -500,10 +500,7 @@ gle-analytics.com/analytics.js','ga');\n\n  ga('create', 'UA-115383190-1', 'auto
         {:env
          {:js-entry :emporium,
           :config
-          {:horizon-base-url "https://horizon-testnet.stellar.org",
-           :put-mailing-list-creds
-           {:access-key "AKIAJSCTYU2UTSQHJEHQ",
-            :secret-key "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"}}}}
+          {:horizon-base-url "https://horizon-testnet.stellar.org",}}}
         {:body
          [[:div#cljs-emporium {:style {:width "100%", :height "100%"}}]],
          :body-attrs {:id "emporium-body"}}])))
