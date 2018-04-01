@@ -142,7 +142,19 @@
   (if-not (vector? body)
     body
     (if (= :html5 (first body))
-      (hiccup.page/html5 (rest body))
+      (let [[tag & children] body
+            opts (if (map? (first children))
+                   (first children)
+                   {})
+            children (if (map? (first children))
+                       (rest children)
+                       children)]
+        (hiccup.core/html {:mode :html}
+          (hiccup.page/doctype :html5)
+          (vec
+            (concat
+              [:html opts]
+              children))))
       (hiccup.core/html body))))
 
 (defn wrap-html-response
@@ -353,7 +365,7 @@
 
 (defn remove-path [url]
   (when url
-    (re-find #"https?://[^/]*" url)))
+    (re-find #"(https?|ws)://[^/]*" url)))
 
 (defn script-source->csp-frag [s]
   (when (str/starts-with? s "http")
@@ -430,12 +442,15 @@
       new-csp-str)))
 
 (defn render-spec [specs]
-  (let [{:keys [css js head body env body-attrs
+  (let [{:keys [css js head body env
+                body-attrs
+                html-attrs
                 content-security-policy]
          :as compiled-spec} (compile-spec specs)
 
          resp (html-resp
                 [:html5
+                 html-attrs
                  (vec
                    (concat
                      [:head]
@@ -500,7 +515,7 @@ gle-analytics.com/analytics.js','ga');\n\n  ga('create', 'UA-115383190-1', 'auto
         {:env
          {:js-entry :emporium,
           :config
-          {:horizon-base-url "https://horizon-testnet.stellar.org",}}}
+          {:horizon-base-url "https://horizon-testnet.stellar.org"}}}
         {:body
          [[:div#cljs-emporium {:style {:width "100%", :height "100%"}}]],
          :body-attrs {:id "emporium-body"}}])))

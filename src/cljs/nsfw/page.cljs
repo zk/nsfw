@@ -348,6 +348,7 @@
                     routes
                     handlers
                     root-class
+                    root-id
                     !state]}]
   (let [!state (or !state (rea/atom init-state))
         !current-view (rea/atom nil)
@@ -373,7 +374,7 @@
         (rea/render-component
           [@!current-view !state bus]
           (.getElementById js/document
-            (or root-class "page-container"))))
+            (or root-id root-class "page-container"))))
 
       (fn []
         (prn "Unloading")
