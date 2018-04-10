@@ -1,2 +1,0 @@
-web: lein repl :headless
-cljs: lein figwheel dev
