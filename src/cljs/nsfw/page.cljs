@@ -4,6 +4,7 @@
             [reagent.core :as rea]
             [bidi.bidi :as bidi]
             [dommy.core :as dommy :refer-macros [sel]]
+            [cljs.tools.reader.edn :as edn]
             [cljs.core.async :as async
              :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
@@ -12,15 +13,18 @@
   (app))
 
 (defn start-app [handlers]
-  (let [entry-key (try
-                    (:js-entry (util/page-data :env))
-                    (catch js/Error e
-                      nil))]
-    (if-let [handler (get handlers entry-key)]
+  (let [handler-key (try
+                      (:handler (util/page-data :env))
+                      (catch js/Error e
+                        nil))]
+    (if-let [handler (get handlers handler-key)]
       (handler
         (util/page-data :env))
       (do
-        (println "Couldn't find handler for js-entry" entry-key)
+        (throw (js/Error. (str "Couldn't find :handler in :env for `"
+                               (pr-str handler-key)
+                               "`, options: "
+                               (keys handlers))))
         (fn [])))))
 
 (defn hook-reload-fn [f]
@@ -379,3 +383,11 @@
       (fn []
         (prn "Unloading")
         (unload)))))
+
+
+(defn attach-components [ctx components]
+  (doseq [[k v] components]
+    (doseq [$el (dommy/sel k)]
+      (let [opts (edn/read-string
+                   (.getAttribute $el "data-opts"))]
+        (rea/render [v opts ctx] $el)))))
