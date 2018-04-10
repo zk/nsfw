@@ -488,38 +488,6 @@
                 csp)]
     resp))
 
-#_(util/pp
-    (:headers
-     (render-spec
-       [{:css
-         [{:href
-           "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css",
-           :integrity
-           "sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7",
-           :crossorigin "anonymous"}]}
-        {:js ["/cljs/app.js?216b1c458bc2642f0f681937b8623c21"],
-         :css
-         ["https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700|Roboto:100,400,500,700|Open+Sans:400,600,700|Lato:400,700"
-          "https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
-          "/css/app.css?fc04a10234567baa9f2ee47c840f0c14"],
-         :head
-         [[:meta
-           {:name "viewport",
-            :content
-            "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"}]]}
-        {:js
-         [[:script
-           {:type "text/javascript"}
-           "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n  })(window,document,'script','https://www.goo
-gle-analytics.com/analytics.js','ga');\n\n  ga('create', 'UA-115383190-1', 'auto');\n  ga('send', 'pageview');"]]}
-        {:env
-         {:js-entry :emporium,
-          :config
-          {:horizon-base-url "https://horizon-testnet.stellar.org"}}}
-        {:body
-         [[:div#cljs-emporium {:style {:width "100%", :height "100%"}}]],
-         :body-attrs {:id "emporium-body"}}])))
-
 (defn cljs-page-template
   [{:keys [js css env data
            body-class head meta-named
