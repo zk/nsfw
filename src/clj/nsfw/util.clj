@@ -152,6 +152,7 @@
   (let [pgp (PegDownProcessor. Extensions/ALL)]
     (when s
       (.markdownToHtml pgp (str/replace s #"!\[\]" "![ ]")))))
+;;
 
 (defn pp [& args]
   (apply pprint args))

@@ -269,6 +269,15 @@
   (fn [r]
     (h (assoc r k v))))
 
+(defn write-page-data [key payload]
+  (str "var "
+       (util/env-case (name key))
+       "="
+       (-> payload
+           util/to-transit
+           util/to-json)
+       ";"))
+
 (defn cljs-page-template [{:keys [js css env data
                                   body-class head
                                   meta-named
@@ -294,7 +303,7 @@
                {:class body-class}]
               (when env
                 [[:script {:type "text/javascript"}
-                  (util/write-page-data :env env)]])
+                  (write-page-data :env env)]])
               (for [js js]
                 (cond
                   (string? js) [:script {:type "text/javascript" :src js}]
@@ -463,7 +472,7 @@
                      body
                      (when env
                        [[:script {:type "text/javascript"}
-                         (util/write-page-data :env env)]])
+                         (write-page-data :env env)]])
                      (js-html js)))])
 
 
@@ -471,7 +480,7 @@
               js
               (when env
                 [[:script {:type "text/javascript"}
-                  (util/write-page-data :env env)]]))
+                  (write-page-data :env env)]]))
 
          default-csp {:script-src ["'self'"]}
 
@@ -513,7 +522,7 @@
                {:class body-class}]
               (when env
                 [[:script {:type "text/javascript"}
-                  (util/write-page-data :env env)]])
+                  (write-page-data :env env)]])
               (for [js js]
                 (if (string? js)
                   [:script {:type "text/javascript" :src js}]))))]))]))

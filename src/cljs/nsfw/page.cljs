@@ -1,5 +1,5 @@
 (ns nsfw.page
-  (:require [nsfw.util :as util]
+  (:require [nsfw.util :as nu]
             [nsfw.ops :as ops]
             [reagent.core :as rea]
             [bidi.bidi :as bidi]
@@ -9,17 +9,26 @@
              :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
+(defn page-data [key & [default]]
+  (try
+    (nu/from-transit
+      (aget js/window (nu/env-case (name key))))
+    (catch js/Error e
+      (if default
+        default
+        (throw (js/Error. (str "Couldn't find page data " key)))))))
+
 (defn stop-app [app]
   (app))
 
 (defn start-app [handlers]
   (let [handler-key (try
-                      (:handler (util/page-data :env))
+                      (:handler (page-data :env))
                       (catch js/Error e
                         nil))]
     (if-let [handler (get handlers handler-key)]
       (handler
-        (util/page-data :env))
+        (page-data :env))
       (do
         (throw (js/Error. (str "Couldn't find :handler in :env for `"
                                (pr-str handler-key)
@@ -234,10 +243,10 @@
     (fn [& args]
       (cond
         (not @last) (do
-                      (reset! last (util/now))
+                      (reset! last (nu/now))
                       (reset! to nil)
                       (apply f args))
-        (> @last 0) (let [now (util/now)]
+        (> @last 0) (let [now (nu/now)]
                       (if (> (- now @last) delta)
                         (do
                           (reset! last now)
