@@ -1,4 +1,4 @@
-(ns nsfw.util2
+(ns nsfw.util
   #? (:clj
       (:require [clojure.string :as str]
                 [cheshire.custom :as json]
