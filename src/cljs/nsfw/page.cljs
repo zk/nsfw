@@ -391,3 +391,32 @@
       (let [opts (edn/read-string
                    (.getAttribute $el "data-opts"))]
         (rea/render [v opts ctx] $el)))))
+
+(defn ensure-opts [[opts & body :as args]]
+  (let [body (if (map? opts)
+               body
+               (concat [opts] body))
+        opts (if (map? opts)
+               opts
+               nil)]
+    (vec
+      (concat
+        [opts]
+        body))))
+
+
+(defn elvc [comp children]
+  (vec
+    (concat
+      comp
+      children)))
+
+
+(defn $interpose-children [{:keys [separator] :as opts} children]
+  (vec
+    (concat
+      [:div
+       (dissoc opts :separator)]
+      (->> children
+           (remove nil?)
+           (interpose separator)))))

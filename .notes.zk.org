@@ -1615,3 +1615,13 @@ Props change?
 Don't pass ratoms?
 
 Local state from closed-over ratom?
+
+
+* <2018-04-10 Tue 13:08>
+
+
+Styleguide inspo:
+
++ https://dribbble.com/shots/2341689-UI-Styleguide
++ https://dribbble.com/shots/2379228-Brand-Web-Refresh
++ https://dribbble.com/shots/3843565-Styleguide-2-Symbols-Styleguides-Freebie
