@@ -52,7 +52,7 @@
 (defn to-iso-8601 [unix-time]
   (.toUTCIsoString (doto (gd/DateTime.)
                      (.setTime unix-time))
-                   false true))
+    false true))
 
 (defn format-date
   ([pattern date]
@@ -89,8 +89,6 @@
              "...")
         s))))
 
-
-
 (defn format-phone [phone]
   (when phone
     (let [phone (str/replace phone #"[^\d]" "")
@@ -107,7 +105,6 @@
           (str
             "-"
             (->> phone (drop 6) (apply str))))))))
-
 
 (defn uuid []
   (let [d (now)

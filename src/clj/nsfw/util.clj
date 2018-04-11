@@ -5,7 +5,6 @@
             [cheshire.custom :as json]
             [cognitect.transit :as transit]
             [clojure.pprint :refer [pprint]]
-            [hiccup.core :refer [html]]
             [clojure.java.io :as io]
             [hashids.core :as hashids]
             [byte-transforms :as bt]
@@ -17,96 +16,13 @@
            [org.pegdown PegDownProcessor Extensions]
            [org.joda.time.format ISODateTimeFormat]))
 
-;; Logging
-
-(defn clean-val [val]
-  (cond
-   (string? val) (str "\"" (str/replace val #"\"" "\\\\\"") "\"")
-   :else val))
-
-(defn format-log-entry [key-vals]
-  (->> (partition 2 key-vals)
-       (map #(str (name (first %)) "=" (clean-val (second %))))
-       (interpose " ")
-       (reduce str)
-       (str (System/currentTimeMillis) " ")))
-
-(defn make-logger [app-id ns]
-  (fn [& key-vals]
-    (println (format-log-entry (concat [:app-id app-id :ns ns] key-vals)))))
-
-(def iso-formatter (SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSSZ"))
-
-(defn iso-8601 [o]
-  (cond
-   (= Date (class o)) (.format iso-formatter o)
-   (= java.lang.Long (class o)) (.format iso-formatter (Date. o))
-   (= nil o) nil
-   (= "" o) nil
-   :else nil))
-
-(def iso-parser (ISODateTimeFormat/dateTimeParser))
-
-(defn parse-iso-8601 [o]
-  (cond
-    (string? o) (.getMillis (.parseDateTime iso-parser o))
-    :else o))
-
 (defn format-ms [ms format]
   (let [d (Date. ms)]
     (.format (SimpleDateFormat. format) d)))
 
-(defn web-stacktrace [e req]
-  (str "<html><body>"
-       "<h1>500 - " (.getMessage e) "</h1>"
+(defn web-stacktrace [e req])
 
-       "<pre>" (stacktrace/pst-str e) "</pre>"
-
-       "<pre>" (str/replace (str req) #", " "\n") "</pre>"
-       "</html></body>"))
-
-(defn include-css
-  ([n]
-     (when n
-       (if (= :all n)
-         (->> (file-seq (java.io.File. "./public/css/"))
-              (filter #(.endsWith (.getName %) ".css"))
-              (filter #(.isFile %))
-              (map #(.getName %))
-              (map include-css))
-         (let [filename (if (keyword? n)
-                          (str (name n) ".css")
-                          n)]
-           (html [:link {:rel "stylesheet" :href (str "/css/" filename) :type "text/css"}])))))
-  ([n & more]
-     (cons (include-css n) (map include-css more))))
-
-(defn include-js
-  ([] nil)
-  ([n]
-     (when n
-       (if (= :all n)
-         (->> (file-seq (java.io.File. "./public/js/"))
-              (filter #(.endsWith (.getName %) ".js"))
-              (filter #(.isFile %))
-              (map #(.getName %))
-              (map include-css))
-         (let [filename (if (keyword? n)
-                          (str (name n) ".js")
-                          n)]
-           (html [:script {:type "text/javascript" :src (str "/js/" filename)}])))))
-  ([n & more]
-     (cons (include-js n) (map include-js more))))
-
-(defn container [width & body]
-  (apply vector (concat [:div {:class (str "container_" width)}] body)))
-
-(def container-16 (partial container 16))
-
-(defn grid [width & body]
-  (apply vector (concat [:div {:class (str "grid_" width)}] body)))
-
-(def grid-16 (partial grid 16))
+(defn now [] 1)
 
 (defn throw-str [& args]
   (throw (Exception. (apply str args))))
@@ -121,6 +37,8 @@
   (-> (java.util.UUID/randomUUID)
       (str)
       (str/replace #"-" "")))
+
+;;
 
 (def secure-random-obj (java.security.SecureRandom.))
 
@@ -153,10 +71,7 @@
       (str url "&s=" size)
       url)))
 
-(defn html-response [& body]
-  (-> (html body)
-      (resp/response)
-      (resp/header "Content-Type" "text/html;charset=utf-8")))
+;;
 
 (json/add-encoder org.bson.types.ObjectId json/encode-str)
 
@@ -168,6 +83,8 @@
     (if (string? o)
       (json/parse-string o keywordize?)
       (json/parse-stream (io/reader o) keywordize?))))
+
+;;
 
 (defn from-transit [s & [handlers]]
   (when s
@@ -190,6 +107,8 @@
   (when s
     (java.net.URLEncoder/encode s)))
 
+;;
+
 (defn decode-body [content-length body]
   (when (and content-length
              (> content-length 0))
@@ -204,6 +123,8 @@
   (if (string? body)
     body
     (decode-body content-length body)))
+
+;;
 
 (defn distinct-by
   [key coll]
@@ -245,8 +166,6 @@
         pw (java.io.PrintWriter. sw)]
     (.printStackTrace exc pw)
     (.toString sw)))
-
-(defn now [] (System/currentTimeMillis))
 
 (defn ms [date]
   (cond

@@ -543,3 +543,16 @@
             (-> req
                 (update-in [:params] merge route-params)
                 (update-in [:route-params] merge route-params))))))))
+
+(defn wrap-log-request [handler]
+  (fn [r]
+    (when (not= "/favicon.ico" (:uri r))
+      (let [start (System/nanoTime)
+            res (handler r)
+            diff (/ (- (System/nanoTime) start) 1000000.0)]
+        (println "[" (:uri r) "] - " (java.util.Date.))
+        #_(println (let [writer (java.io.StringWriter. )]
+                     (pprint r writer)
+                     (str writer)))
+        (println "^^^ took" diff "ms")
+        res))))

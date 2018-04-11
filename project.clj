@@ -44,12 +44,12 @@
                  [org.apache.commons/commons-compress "1.14"]]
   :plugins [[lein-cljsbuild "1.1.5"]]
   :repl-options {:init (load-file "reup.clj")}
-  :source-paths ["src/clj" "src/cljs"]
+  :source-paths ["src/clj" "src/cljs" "src/cljc"]
   :test-paths ["test/clj"]
   :jar-name "nsfw.jar"
   :cljsbuild
   {:builds {:dev
-            {:source-paths ["src/cljs"]
+            {:source-paths ["src/cljs" "src/cljc"]
              :compiler {:output-to "target/cljs/nsfw.js"
                         :output-dir "target/cljs"
                         :optimizations :none
