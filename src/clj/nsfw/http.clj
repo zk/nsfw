@@ -126,7 +126,7 @@
   (fn [r]
     (if (json-content? r)
       (try
-        (let [json-body (-> r util/response-body util/from-json)]
+        (let [json-body (-> r response-body util/from-json)]
           (h (assoc r :json-body json-body)))
         (catch JsonParseException e
           (render-json
@@ -368,7 +368,7 @@
                (rest args)
                args)
         src (apply str srcs)
-        base64-sha512 (util/to-base64 (util/sha512-bytes src))
+        base64-sha512 (util/to-base64-str (util/sha512-bytes src))
         source (str "'sha512-" base64-sha512 "'")]
     {:script-src [source]}))
 

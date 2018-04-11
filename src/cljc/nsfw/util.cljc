@@ -513,7 +513,10 @@
           (bt/hash data :sha512 o)))
 
       (defn sha512 [s & [o]]
-        (bs/to-string (sha512-bytes s o)))))
+        (bs/to-string (sha512-bytes s o)))
+
+      (defn hex-str->byte-array [s]
+        (.toByteArray (BigInteger. s 16)))))
 
 
 (defn pluralize [n singular plural]
