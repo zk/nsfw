@@ -41,7 +41,9 @@
 
                  [reaver "0.1.2"]
                  [hickory "0.7.1"]
-                 [org.apache.commons/commons-compress "1.14"]]
+                 [org.apache.commons/commons-compress "1.14"]
+
+                 [cljsjs/showdown "1.4.2-0"]]
   :plugins [[lein-cljsbuild "1.1.5"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
