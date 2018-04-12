@@ -1,7 +1,7 @@
 (ns nsfw.page
   (:require [nsfw.util :as nu]
             [nsfw.ops :as ops]
-            [reagent.core :as rea]
+            [reagent.core :as r]
             [bidi.bidi :as bidi]
             [dommy.core :as dommy :refer-macros [sel]]
             [cljs.tools.reader.edn :as edn]
@@ -197,7 +197,7 @@
 (defn render-view [views !app bus]
   (let [render (:render (get views (:view-key @!app)))]
     (when render
-      [render (rea/cursor !app [:state]) bus])))
+      [render (r/cursor !app [:state]) bus])))
 
 (defn start-popstate-handler [on-pop]
   (aset js/window "onpopstate" on-pop)
@@ -363,8 +363,8 @@
                     root-class
                     root-id
                     !state]}]
-  (let [!state (or !state (rea/atom init-state))
-        !current-view (rea/atom nil)
+  (let [!state (or !state (r/atom init-state))
+        !current-view (r/atom nil)
         bus (ops/kit
               !state
               context
@@ -384,7 +384,7 @@
                                   (ops/send bus route-key rp))})]
 
       (when @!current-view
-        (rea/render-component
+        (r/render-component
           [@!current-view !state bus]
           (.getElementById js/document
             (or root-id root-class "page-container"))))
@@ -399,7 +399,7 @@
     (doseq [$el (dommy/sel k)]
       (let [opts (edn/read-string
                    (.getAttribute $el "data-opts"))]
-        (rea/render [v opts ctx] $el)))))
+        (r/render [v opts ctx] $el)))))
 
 (defn ensure-opts [[opts & body :as args]]
   (let [body (if (map? opts)
@@ -413,13 +413,11 @@
         [opts]
         body))))
 
-
 (defn elvc [comp children]
   (vec
     (concat
       comp
       children)))
-
 
 (defn $interpose-children [{:keys [separator] :as opts} children]
   (vec
@@ -429,3 +427,52 @@
       (->> children
            (remove nil?)
            (interpose separator)))))
+
+(defn async-class [init-args
+                   {ext-cdm :component-did-mount
+                    ext-cdu :component-did-update
+                    ext-cwu :component-will-unmount
+                    ext-rr :reagent-render
+                    :keys [on-state-update
+                           delay-fn
+                           async-did-update]}]
+  (when ext-cdu
+    (throw (js/Error. "component-did-update is not supported with async-class")))
+  (let [!state (r/atom (vec init-args))
+        ch (chan 10)]
+    (r/create-class
+      (merge
+        {:component-did-mount
+         (fn [this]
+           (go-loop []
+             (when-let [[this & _ :as new-cdu-args] (<! ch)]
+               (let [new-args (vec (ensure-opts
+                                     (rest (r/argv this))))
+                     old-args @!state]
+                 (when (not= old-args new-args)
+                   (if-let [updates (delay-fn old-args new-args)]
+                     (loop [rem-updates updates]
+                       (when-not (empty? rem-updates)
+                         (let [[pre-delay new-args post-delay]
+                               (first rem-updates)]
+                           (when pre-delay
+                             (<! (timeout pre-delay)))
+                           (reset! !state new-args)
+                           (when post-delay
+                             (<! (timeout post-delay)))
+                           (recur (rest rem-updates)))))
+                     (reset! !state new-args)))
+                 (recur)))))
+
+         :component-did-update
+         (fn [& args]
+           (put! ch args))
+
+         :component-will-unmount
+         (fn [& args]
+           (close! ch)
+           (when ext-cwu
+             (apply ext-cwu args)))
+         :reagent-render
+         (fn [& _]
+           (apply ext-rr @!state))}))))

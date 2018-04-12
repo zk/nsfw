@@ -31,10 +31,21 @@
 
                    [{nv :visible?
                      nc :content
+                     nmo? :enable-mouse-over?
                      animate-content-transition?
                      :animate-content-transition?
 
-                     :as no}] next-state]
+                     :as no}]
+                   next-state
+
+                   ;; When vis controlled by mouse / touch, ignore
+                   ;; :visible? from args change
+                   nv (if nmo?
+                        ov
+                        nv)
+
+                   next-state (assoc-in next-state [0 :visible?] nv)]
+
                (cond
                  (and (not= ov nv)
                       (not nv))
@@ -75,7 +86,6 @@
                        width
                        border-color
                        pop-style
-                       color
                        enable-mouse-over?
                        offset
                        visible?
@@ -192,7 +202,8 @@
                    nil)
                  :on-touch-end
                  (fn [e]
-                   (swap! !state update-in [0 :visible?] not))}))
+                   (swap! !state update-in [0 :visible?] not)
+                   nil)}))
             (page/elvc
               [:div.popover-body]
               body)
@@ -287,7 +298,9 @@
                            :overflow 'hidden
                            :background-color 'black
                            :color 'white
-                           :padding "5px 10px"
+                           :padding "7px 10px"
+                           :font-size 14
+                           :line-height "130%"
                            :text-align 'center
                            :box-shadow "0 4px 8px 0 rgba(0,0,0,0.12), 0 2px 4px 0 rgba(0,0,0,0.08)"}
 
