@@ -69,18 +69,7 @@
       callback
       spring-params)))
 
-
-
 (defn stop-all [!anims]
   (doseq [[k v] @!anims]
     (v))
   (reset! !anims {}))
-
-#_(enable-console-print!)
-
-#_(prn
-    (run
-      0
-      100
-      (fn [& args]
-        (prn args))))
