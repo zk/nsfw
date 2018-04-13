@@ -476,3 +476,8 @@
          :reagent-render
          (fn [& _]
            (apply ext-rr @!state))}))))
+
+(defn cdu-diff [f]
+  (fn [this [_ & old-args]]
+    (let [new-args (rest (r/argv this))]
+      (f old-args new-args))))

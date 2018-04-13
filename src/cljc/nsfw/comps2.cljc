@@ -8,17 +8,14 @@
                 [garden.stylesheet :as gs])
       :cljs
       (:require [clojure.string :as str]
-                [nsfw.util :as util]
+                [nsfw.util :as nu]
                 [nsfw.page :as page]
                 [garden.units :as u]
                 [garden.color :as co]
                 [garden.core :as garden]
                 [garden.stylesheet :as gs]
                 [reagent.core :as r]
-                [dommy.core
-                 :refer [listen! unlisten!
-                         add-class! remove-class!]
-                 :refer-macros [sel1]]
+                [dommy.core :as dommy]
                 [cljs.reader :as reader]
                 [cljs.core.async :as async
                  :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]]))
@@ -162,7 +159,7 @@
                                line-cap
                                style
                                size]
-                        :or {line-width 8
+                        :or {line-width 9
                              line-cap :square
                              color 'black
                              size 25}}]
@@ -183,8 +180,8 @@
             :viewBox "0 0 100 100"
             :style {:display 'block}}
       [:line.line.top-line
-       {:x1 10 :y1 25
-        :x2 90 :y2 25
+       {:x1 10 :y1 24
+        :x2 90 :y2 24
         :style (merge
                  (transition "transform 0.2s ease")
                  {:stroke-width stroke-width
@@ -202,7 +199,7 @@
         :x2 90 :y2 50
         :style (merge
                  (transition "opacity 0.2s ease")
-                 {:stroke-width stroke-width
+                 {:stroke-width (+ stroke-width 0.5)
                   :stroke-linecap stroke-linecap}
                  (when color
                    {:stroke color})
@@ -221,3 +218,129 @@
                  (when open?
                    {:transform "rotate(-45deg) translateY(-25%)"
                     :transform-origin "center"}))}]]]))
+
+
+(defn copy-button-css
+  [& [{:keys [rest-bg
+              rest-fg
+
+              active-bg
+              active-fg
+
+              hover-bg
+              hover-fg]
+       :or {rest-bg 'white
+            rest-fg 'black
+
+            hover-bg "#eee"
+            hover-fg "#777"
+
+            active-bg 'black
+            active-fg 'white}}]]
+  [:.copy-button
+   (transition "background-color 1s ease")
+   [:a
+    {:padding "6px"}
+    [:i
+     (transition "color 0.1s ease")
+     {:color rest-fg}]]
+   [:&:hover [:i
+              (transition "color 0.5s ease")
+              {:color hover-fg}]]
+   [:&.highlighted
+    (transition "none")
+    {:background-color active-bg}
+    [:a [:i
+         {:color active-fg}
+         (transition "none")]]]])
+
+#?
+(:cljs
+ (defn $copy-button [_]
+   (let [!copied? (r/atom false)
+         !hover? (r/atom nil)
+         !ct (atom 0)]
+     (r/create-class
+       {:component-did-update
+        (page/cdu-diff
+          (fn [[{ot :text}] [{nt :text}]]
+            (when (not= ot nt)
+              (reset! !copied? false))))
+        :reagent-render
+        (fn [{:keys [text
+                     style
+
+                     rest-bg
+                     rest-fg
+
+                     active-bg
+                     active-fg
+
+                     hover-bg
+                     hover-fg]}]
+          [:div.copy-button.text-center
+           {:class (when @!copied?
+                     "highlighted")
+            :style (merge
+                     (transition "background-color 1s ease")
+                     (if @!copied?
+                       (merge
+                         {:background-color active-bg}
+                         (transition "none"))
+                       {:background-color rest-bg})
+                     style)
+            :on-mouse-over
+            (fn [])}
+           [:a {:style {:display 'block
+                        :padding "0 6px"}
+                :href "#"
+                :on-mouse-over
+                (fn [e]
+                  (.preventDefault e)
+                  (reset! !copied? false)
+                  #_(reset! !hover? true)
+                  nil)
+                :on-mouse-out
+                (fn [e]
+                  (.preventDefault e)
+                  #_(reset! !hover? false)
+                  nil)
+                :on-click
+                (fn [e]
+                  (.preventDefault e)
+                  (.stopPropagation e)
+                  (let [ta (.createElement js/document "textarea")
+                        x (.-scrollX js/window)
+                        y (.-scrollY js/window)]
+                    (dommy/set-style! ta :position "absolute")
+                    (dommy/set-style! ta :bottom 0)
+                    (dommy/set-style! ta :opacity 0)
+                    (set! (.-value ta) text)
+                    (.appendChild
+                      (.-body js/document)
+                      ta)
+                    (.focus ta)
+                    (.scrollTo js/window x y)
+                    (.select ta)
+                    (.execCommand js/document "copy")
+                    (.removeChild
+                      (.-body js/document)
+                      ta)
+                    (reset! !copied? true)
+                    (go
+                      (let [ct-val (nu/now)]
+                        (reset! !ct ct-val)
+                        (<! (timeout 16))
+                        (when (= @!ct ct-val)
+                          (reset! !copied? false)))))
+                  nil)}
+            [:i.ion-ios-copy
+             {:style (merge
+                       (transition "color 0.5s ease")
+                       (if @!copied?
+                         (merge
+                           {:color active-fg}
+                           (transition "none"))
+                         {:color rest-fg})
+                       {:font-size 22
+                        :margin 5})}]]])}))))
