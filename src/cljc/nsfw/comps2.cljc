@@ -153,3 +153,71 @@
                                 {:transform "translateY(-100%)"}
                                 (transition 'none))))}]
                  children))])))})))
+
+
+(defn $hamburger-menu [{:keys [open?
+                               color
+                               on-toggle
+                               line-width
+                               line-cap
+                               style
+                               size]
+                        :or {line-width 8
+                             line-cap :square
+                             color 'black
+                             size 25}}]
+  (let [stroke-width line-width
+        stroke-linecap (name line-cap)]
+    [:div.hamburger.visible-xs
+     {:class (when open? "open")
+      :style (merge
+               {:width size
+                :height size}
+               style)
+      :on-click (fn [e]
+                  (.preventDefault e)
+                  (on-toggle)
+                  nil)}
+     [:svg {:width "100%"
+            :height "100%"
+            :viewBox "0 0 100 100"
+            :style {:display 'block}}
+      [:line.line.top-line
+       {:x1 10 :y1 25
+        :x2 90 :y2 25
+        :style (merge
+                 (transition "transform 0.2s ease")
+                 {:stroke-width stroke-width
+                  :stroke-linecap stroke-linecap}
+                 (when color
+                   {:stroke color})
+                 (when open?
+                   {:transform ""})
+                 (when open?
+                   {:transform "rotate(45deg) translateY(25%)"
+                    :transform-origin "center"}))}]
+
+      [:line.line.mid-line
+       {:x1 10 :y1 50
+        :x2 90 :y2 50
+        :style (merge
+                 (transition "opacity 0.2s ease")
+                 {:stroke-width stroke-width
+                  :stroke-linecap stroke-linecap}
+                 (when color
+                   {:stroke color})
+                 (when open?
+                   {:opacity 0}))}]
+
+      [:line.line.bot-line
+       {:x1 10 :y1 75
+        :x2 90 :y2 75
+        :style (merge
+                 (transition "transform 0.2s ease")
+                 {:stroke-width stroke-width
+                  :stroke-linecap stroke-linecap}
+                 (when color
+                   {:stroke color})
+                 (when open?
+                   {:transform "rotate(-45deg) translateY(-25%)"
+                    :transform-origin "center"}))}]]]))
