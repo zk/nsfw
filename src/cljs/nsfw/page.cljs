@@ -481,3 +481,21 @@
   (fn [this [_ & old-args]]
     (let [new-args (rest (r/argv this))]
       (f old-args new-args))))
+
+(defn ls-set [k obj]
+  (when (and k (.-localStorage js/window))
+    (.setItem (.-localStorage js/window)
+      (name k)
+      (nu/to-transit obj))))
+
+(defn ls-get [k]
+  (when (and k (.-localStorage js/window))
+    (let [item (.getItem (.-localStorage js/window)
+                 (name k))]
+      (when (and item (string? item))
+        (nu/from-transit item)))))
+
+(defn ls-rem [k]
+  (when (and k (.-localStorage js/window))
+    (.removeItem (.-localStorage js/window)
+      (name k))))

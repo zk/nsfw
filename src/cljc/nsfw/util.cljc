@@ -564,7 +564,7 @@
           (when (> (count ps) 1)
             (first (last ps))))))))
 
-(defn make-lookup-map [coll key]
+(defn lookup-map [key coll]
   (->> coll
        (map (fn [o]
               [(get o key)
@@ -579,3 +579,6 @@
         (str/replace #"\s+" "-")
         (str/replace #"[^a-zA-Z0-9_-]+" "-")
         (str/replace #"-+" "-"))))
+
+(defn pad [s n]
+  (sformat (str "%0" n "d") s))

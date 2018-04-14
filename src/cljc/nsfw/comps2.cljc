@@ -35,17 +35,17 @@
 (def css
   [(gs/at-keyframes
      :indprogress
-     ["0%" {:transform "scaleX(0)"}]
-     ["30%" {:transform "scaleX(0.6)"}]
-     ["55%" {:transform "scaleX(0.75)"}]
-     ["100%" {:transform "scaleX(1)"}])
+     ["0%" {:transform "scaleX(0) translate3d(0,0,0)"}]
+     ["30%" {:transform "scaleX(0.6) translate3d(0,0,0)"}]
+     ["55%" {:transform "scaleX(0.75) translate3d(0,0,0)"}]
+     ["100%" {:transform "scaleX(1) translate3d(0,0,0)"}])
 
    [:.prog-bar-mock
     {:transform-origin "left center"}]
 
    [:.prog-bar-mock-bar
     {:transform-origin "left center"
-     :transform "scaleX(0)"}
+     :transform "scaleX(0) translate3d(0,0,0)"}
     {:animation "indprogress 20s ease infinite"}]
    [:.prog-bar-mock-done-bar
     {:transform "scaleX(0)"
@@ -62,12 +62,13 @@
          !run (atom true)]
      (r/create-class
        {:reagent-render
-        (fn [{:keys [loading? done? style stick-to]}]
+        (fn [{:keys [loading? done? style stick-to height]
+              :or {height 5}}]
           [:div.prog-bar-mock
            {:class (when done? "done")
             :style (merge
                      {:overflow 'hidden
-                      :height 5}
+                      :height height}
                      (cond
                        (not stick-to)
                        {:width "100%"}
@@ -89,7 +90,7 @@
                             :width "100%"
                             :height "100%"}}
               [:div.prog-bar-mock-bar
-               {:style {:height 5
+               {:style {:height height
                         :width "100%"
                         :background-color 'green}}]
               [:div.prog-bar-mock-done-bar
@@ -130,24 +131,26 @@
             200]]))
       :reagent-render
       (fn [& args]
-        (let [[{:keys [stage disabled?]} & children] (page/ensure-opts args)]
+        (let [[{:keys [stage disabled? style]} & children] (page/ensure-opts args)]
           (let [stage (if disabled?
                         nil
                         stage)]
             [:div.flipper-viewbox
              {:class (when stage "updating")
-              :style {:overflow 'hidden}}
+              :style (merge
+                       {:overflow 'hidden}
+                       style)}
              (vec
                (concat
                  [:div
                   {:style (merge
-                            {:transform "translateY(0)"}
+                            {:transform "translate3d(0,0,0)"}
                             (transition "transform 0.2s ease")
                             (when (= :post stage)
-                              {:transform "translateY(100%)"})
+                              {:transform "translate3d(0,100%,0)"})
                             (when (= :pre stage)
                               (merge
-                                {:transform "translateY(-100%)"}
+                                {:transform "translate3d(0,-100%,0)"}
                                 (transition 'none))))}]
                  children))])))})))
 
@@ -191,7 +194,7 @@
                  (when open?
                    {:transform ""})
                  (when open?
-                   {:transform "rotate(45deg) translateY(25%)"
+                   {:transform "rotate(45deg) translate3d(0,25%,0)"
                     :transform-origin "center"}))}]
 
       [:line.line.mid-line
@@ -216,7 +219,7 @@
                  (when color
                    {:stroke color})
                  (when open?
-                   {:transform "rotate(-45deg) translateY(-25%)"
+                   {:transform "rotate(-45deg) translate3d(0,-25%,0)"
                     :transform-origin "center"}))}]]]))
 
 
@@ -344,3 +347,453 @@
                          {:color rest-fg})
                        {:font-size 22
                         :margin 5})}]]])}))))
+
+
+#?
+(:cljs
+ (defn $countdown [{:keys [end-ts]}]
+   (let [!remaining (r/atom (- end-ts (nu/now)))
+         !run? (atom true)]
+     (r/create-class
+       {:component-did-mount
+        (fn []
+          (go-loop []
+            (reset! !remaining (- end-ts (nu/now)))
+            (<! (timeout (if (and (< @!remaining (* 1000 60))
+                                  (>= @!remaining 0))
+                           16
+                           250)))
+            (when @!run?
+              (recur))))
+        :component-will-unmount
+        (fn []
+          (reset! !run? false))
+        :reagent-render
+        (fn [{:keys [size title gutter-size]
+              :or {size :md
+                   gutter-size 20}}]
+          (let [font-size (condp = size
+                            :sm 30
+                            :md 50)]
+            [:div
+             {:style {:color 'black
+                      :font-size font-size
+                      :letter-spacing 1
+                      :padding 10
+                      :text-align 'center
+                      :margin-left 'auto
+                      :margin-right 'auto}}
+
+             (when title
+               [:h4 {:style {:font-weight '700
+                             :text-transform 'upppercase
+                             :font-size 12
+                             :margin-bottom 10
+                             :letter-spacing 1}}
+                title])
+             (let [{:keys [d h m s ms]}
+                   (if (> @!remaining 0)
+                     (nu/time-delta-parts @!remaining)
+                     {:d 0 :h 0 :m 0 :s 0})]
+               [page/$interpose-children
+                {:separator [:div {:style {:width gutter-size}}]
+                 :class "flex-center"}
+                (->> [d "days"
+                      h "hours"
+                      m "minutes"
+                      s "seconds"]
+                     (partition-all 2)
+                     (map-indexed
+                       (fn [i [n units]]
+                         (let [value (nu/pad n 2)]
+                           [:div {:key i
+                                  :style {:width "25%"
+                                          :text-align 'center}}
+                            [:div
+                             {:style {:font-size font-size
+                                      :line-height "100%"}}
+
+                             value]
+                            [:div
+                             {:style {:font-size (if (= :sm size)
+                                                   10
+                                                   14)
+                                      :color "rgba(0,0,0,0.6)"}}
+                             units]]))))])]))}))))
+
+
+#?
+(:cljs
+ (do
+   (defn $abl [& args]
+     (let [[opts & children] (page/ensure-opts args)]
+       (page/elvc
+         [:a (merge
+               {:target "_blank"
+                :rel "noopener"}
+               opts)]
+         children)))
+
+   (defn $a [& args]
+     (let [[{:keys [on-click] :as opts}
+            & children]
+           (page/ensure-opts args)]
+       (page/elvc
+         [:a (merge
+               {:href "#"}
+               opts
+               {:on-click (fn [e]
+                            (.preventDefault e)
+                            (when on-click
+                              (on-click))
+                            nil)})]
+         children)))))
+
+
+#?
+(:cljs
+ (defn $popover [& args]
+   (let [!ui (r/atom nil)
+         !state (r/atom (assoc-in
+                          (page/ensure-opts args)
+                          [0 :visible?]
+                          false))
+         ch (chan 10)]
+     (r/create-class
+       {:component-did-mount
+        (fn [_]
+          (go-loop []
+            (when-let [next-state (<! ch)]
+              (let [[{ov :visible?
+                      oc :content
+                      :as oo}]
+                    @!state
+
+                    [{nv :visible?
+                      nc :content
+                      nmo? :enable-mouse-over?
+                      animate-content-transition?
+                      :animate-content-transition?
+
+                      :as no}]
+                    next-state
+
+                    ;; When vis controlled by mouse / touch, ignore
+                    ;; :visible? from args change
+                    nv (if nmo?
+                         ov
+                         nv)
+
+                    next-state (assoc-in next-state [0 :visible?] nv)]
+
+                (cond
+                  (and (not= ov nv)
+                       (not nv))
+                  (do
+                    (swap! !state assoc-in [0 :visible?] nv)
+                    (<! (timeout 100))
+                    (reset! !state next-state))
+
+                  (and (not= oc nc)
+                       ov
+                       nv
+                       animate-content-transition?)
+                  (do
+                    (swap! !state assoc-in [0 :visible?] false)
+                    (<! (timeout 300))
+                    (swap! !state
+                      (fn [state]
+                        (-> state
+                            (assoc-in [0 :content] nc)
+                            (assoc-in [0 :visible?] true)))))
+
+                  :else (reset! !state next-state))
+                (recur))))
+          (put! ch (page/ensure-opts args)))
+        :component-will-unmount
+        (fn [_]
+          (close! ch))
+        :component-did-update
+        (page/cdu-diff
+          (fn [[{ov :visible? :as oo} :as old] [{nv :visible? :as no} :as new]]
+            (when (not= old new)
+              (put! ch (page/ensure-opts new)))))
+        :reagent-render
+        (fn [_ & _]
+          (let [[opts & body] @!state
+                {:keys [position
+                        style
+                        width
+                        border-color
+                        pop-style
+                        enable-mouse-over?
+                        offset
+                        visible?
+                        border-color]
+                 po-content :content
+                 :or {position :bot-center
+                      color 'white
+                      width "100%"
+                      offset 0}}
+                opts
+
+                {:keys [slide-axis
+                        slide-dist
+                        top
+                        bottom
+                        left
+                        right
+                        tx
+                        ty
+                        h-align
+                        v-align
+                        carat-side]}
+
+                (condp = position
+                  :top-left {:slide-axis "translateY"
+                             :slide-dist 5
+                             :top (+ -3 offset)
+                             :left 0
+                             :tx "0"
+                             :ty "-100%"
+                             :h-align 'left
+                             :carat-side :bot}
+
+                  :top-center {:slide-axis "translateY"
+                               :slide-dist 5
+                               :top (+ -3 offset)
+                               :left "50%"
+                               :tx "-50%"
+                               :ty "-100%"
+                               :h-align 'center
+                               :carat-side :bot}
+
+                  :top-right {:slide-axis "translateY"
+                              :slide-dist 5
+                              :top (+ -3 offset)
+                              :right 0
+                              :tx "0"
+                              :ty "-100%"
+                              :h-align 'right
+                              :carat-side :bot}
+
+                  :bot-left {:slide-axis "translateY"
+                             :slide-dist 5
+                             :bottom (+ -3 offset)
+                             :left 0
+                             :tx "0"
+                             :ty "100%"
+                             :h-align 'left
+                             :carat-side :top}
+
+                  :bot-center {:slide-axis "translateY"
+                               :slide-dist 5
+                               :bottom (+ -3 offset)
+                               :left "50%"
+                               :tx "-50%"
+                               :ty "100%"
+                               :h-align 'center
+                               :carat-side :top}
+                  :bot-right {:slide-axis "translateY"
+                              :slide-dist 5
+                              :bottom (+ -3 offset)
+                              :right 0
+                              :tx "0"
+                              :ty "100%"
+                              :h-align 'right
+                              :carat-side :top}
+
+                  :left-center {:slide-axis "translateX"
+                                :slide-dist 5
+                                :left (+ -3 offset)
+                                :top "50%"
+                                :tx "-100%"
+                                :ty "-50%"
+                                :carat-side :right
+                                :v-align 'center}
+
+                  :right-center {:slide-axis "translateX"
+                                 :slide-dist 5
+                                 :right (+ -3 offset)
+                                 :top "50%"
+                                 :tx "100%"
+                                 :ty "-50%"
+                                 :carat-side :left
+                                 :v-align 'center})
+
+                h-align-margin (merge (when (= h-align 'left)
+                                        {:margin-left 0})
+                                      (when (= h-align 'right)
+                                        {:margin-right 0}))
+                v-align-margin {}]
+            [:div.popover-wrapper
+             (merge
+               {:style (merge
+                         {:position 'relative}
+                         style)}
+               (when enable-mouse-over?
+                 {:on-mouse-over
+                  (fn [e]
+                    (swap! !state assoc-in [0 :visible?] true)
+                    nil)
+                  :on-mouse-out
+                  (fn [e]
+                    (swap! !state assoc-in [0 :visible?] false)
+                    nil)
+                  :on-touch-end
+                  (fn [e]
+                    (swap! !state update-in [0 :visible?] not)
+                    nil)}))
+             (page/elvc
+               [:div.popover-body]
+               body)
+             [:div
+              {:style (merge
+                        {:position 'absolute
+                         :width width
+                         :opacity (if visible?
+                                    1
+                                    0)
+                         :z-index 1000
+                         :pointer-events (if visible?
+                                           'inherit
+                                           'none)}
+                        {:transform (str "translate("
+                                         tx
+                                         ","
+                                         ty
+                                         ")")}
+                        (when top
+                          {:top top})
+                        (when bottom
+                          {:bottom bottom})
+                        (when left
+                          {:left left})
+                        (when right
+                          {:right right})
+                        (when h-align
+                          {:text-align h-align})
+                        (transition "opacity 0.1s ease"))}
+              [:div
+               {:style (merge
+                         {:transform (if visible?
+                                       "translateY(0)"
+                                       "translateY(5px)")}
+                         (transition "opacity 0.1s ease, transform 0.1s ease"))}
+               (when (= :top carat-side)
+                 [:svg {:width "45px"
+                        :height "12px"
+                        :viewBox "0 0 100 100"
+                        :preserveAspectRatio "none"
+                        :style (merge
+                                 {:shape-rendering "geometricPrecision"
+                                  :display 'block
+                                  :margin-left 'auto
+                                  :margin-right 'auto
+                                  :padding 0}
+                                 h-align-margin)}
+                  [:polygon
+                   {:points "0,100 50,0 100,100"
+                    :style {:fill 'black}}]
+                  (when border-color
+                    [:polyline
+                     {:fill 'none
+                      :stroke border-color
+                      :stroke-width 6
+
+                      :points "0,100 50,8 100,100"}])])
+               [:div
+                {:style {:display "flex"
+                         :justify-content 'center
+                         :align-items 'center}}
+                (when (= :left carat-side)
+                  [:svg {:width "6px"
+                         :height "16px"
+                         :viewBox "0 0 100 100"
+                         :preserveAspectRatio "none"
+                         :style (merge
+                                  {:shape-rendering "geometricPrecision"
+                                   :display 'block
+                                   :margin-left 'auto
+                                   :margin-right 'auto
+                                   :padding 0}
+                                  v-align-margin)}
+                   [:polygon
+                    {:points "0,50 100,100 100,0"
+                     :style {:fill 'black}}
+                    (when border-color
+                      [:polyline
+                       {:fill 'none
+                        :stroke border-color
+                        :stroke-width 6
+
+                        :points "0,100 50,8 100,100"}])]])
+                [:div
+                 {:on-touch-end (fn [e]
+                                  (.stopPropagation e)
+                                  nil)
+                  :style (merge
+                           {:flex 1
+                            :border-radius 5
+                            :overflow 'hidden
+                            :background-color 'black
+                            :color 'white
+                            :padding "7px 10px"
+                            :font-size 14
+                            :line-height "130%"
+                            :text-align 'center
+                            :box-shadow "0 4px 8px 0 rgba(0,0,0,0.12), 0 2px 4px 0 rgba(0,0,0,0.08)"}
+
+                           (when border-color
+                             {:border (str "solid " border-color " 1px")}
+                             )
+                           (when (= :top carat-side)
+                             {:margin-top -5})
+                           (when (= :bot carat-side)
+                             {:margin-bottom -5})
+                           pop-style)}
+                 po-content]
+                (when (= :right carat-side)
+                  [:svg {:width "6px"
+                         :height "16px"
+                         :viewBox "0 0 100 100"
+                         :preserveAspectRatio "none"
+                         :style (merge
+                                  {:shape-rendering "geometricPrecision"
+                                   :display 'block
+                                   :margin-left 'auto
+                                   :margin-right 'auto
+                                   :padding 0}
+                                  v-align-margin)}
+                   [:polygon
+                    {:points "0,0 0,100 100,50"
+                     :style {:fill 'black}}
+                    (when border-color
+                      [:polyline
+                       {:fill 'none
+                        :stroke border-color
+                        :stroke-width 6
+
+                        :points "0,100 50,8 100,100"}])]])]
+               (when (= :bot carat-side)
+                 [:svg {:width "45px"
+                        :height "12px"
+                        :viewBox "0 0 100 100"
+                        :preserveAspectRatio "none"
+                        :style (merge
+                                 {:shape-rendering "geometricPrecision"
+                                  :display 'block
+                                  :margin-left 'auto
+                                  :margin-right 'auto
+                                  :padding 0}
+                                 h-align-margin)}
+                  [:polygon
+                   {:points "0,0 50,100 100,0"
+                    :style {:fill 'black}}
+                   (when border-color
+                     [:polyline
+                      {:fill 'none
+                       :stroke border-color
+                       :stroke-width 6
+
+                       :points "0,100 50,8 100,100"}])]])]]]))}))))
