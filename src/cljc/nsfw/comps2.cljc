@@ -797,3 +797,94 @@
                        :stroke-width 6
 
                        :points "0,100 50,8 100,100"}])]])]]]))}))))
+
+
+
+
+(defn $video [{:keys [webm mp4 ogg
+                      autoplay? loop? controls?
+                      muted? playinline?
+                      style]
+               :as opts}]
+  (prn opts)
+  (let [props (dissoc opts
+                :webm :mp4 :ogg
+                :autoplay? :loop? :controls?
+                :muted? :playinline?)]
+    [:video
+     (merge
+       props
+       (when autoplay?
+         {:autoPlay "autoPlay"})
+       (when loop?
+         {:loop "loop"})
+       (when controls?
+         {:controls "controls"})
+       (when muted?
+         {:muted "muted"})
+       (when playinline?
+         {:playinline? playinline?}))
+     "Your browser does not support HTML5 video. You should "
+     [:a {:href "https://whatbrowser.org"} "consider updating"]
+     "."
+     (when webm
+       [:source {:src webm :type "video/webm"}])
+     (when ogg
+       [:source {:src ogg :type "video/ogg"}])
+     (when mp4
+       [:source {:src mp4 :type "video/mp4"}])]))
+
+
+#?
+(:cljs
+ (defn $vidbg [& args]
+   (let [[{:keys []
+           :as opts}
+          & children] (page/ensure-opts args)]
+     (let [props (dissoc opts
+                   :webm :mp4 :ogg
+                   :autoplay? :loop? :controls?
+                   :muted? :playinline?
+                   :buffered :crossorigin :height :width
+                   :played :preload :poster
+                   :src)]
+       [:div (merge
+               props
+               {:style
+                (merge
+                  {:position 'relative}
+                  (:style props))})
+        [:div
+         {:style {:position 'absolute
+                  :width "100%"
+                  :height "100%"
+                  :overflow 'hidden}}
+         [:div
+          {:style {:position 'relative
+                   :width "100%"
+                   :height "100%"}}
+          [$video
+           (merge
+             (select-keys opts
+               [:webm :mp4 :ogg
+                :autoplay? :loop? :controls?
+                :muted? :playinline?
+                :buffered :crossorigin :height :width
+                :played :preload :poster
+                :src])
+             {:style {:display 'block
+                      :min-width "100%"
+                      :min-height "100%"
+                      :position 'absolute
+                      :left "50%"
+                      :top "50%"
+                      :transform "translate3d(-50%,-50%,0)"}})]]]
+        (page/elvc
+          [:div
+           {:style {:z-index 100
+                    :position 'absolute
+                    :top 0
+                    :left 0
+                    :width "100%"
+                    :height "100%"}}]
+          children)]))))

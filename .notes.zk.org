@@ -1625,3 +1625,26 @@ Styleguide inspo:
 + https://dribbble.com/shots/2341689-UI-Styleguide
 + https://dribbble.com/shots/2379228-Brand-Web-Refresh
 + https://dribbble.com/shots/3843565-Styleguide-2-Symbols-Styleguides-Freebie
+
+
+* <2018-04-13 Fri 21:13>
+
+Looking into the px vs rem thing, according to this bootstrap 4
+discussion the main benefit is that rems causes the font size to scale
+based on the user's default text size.
+
+https://github.com/twbs/bootstrap/issues/19943
+
+
+* <2018-04-14 Sat 11:18>
+
+Ok, got this css thing split out pretty well, let's take it for a
+spin.
+
+The goal here is procedural design, in that a small set of input
+parameters can produce a diverse set of asthetically pleasing designs
+in a predictable and repeatable way.
+
++ Starting point:
+  https://cl.ly/2l3c0e0O0i1j/Image%202018-04-14%20at%2011.24.06%20AM.png
++
