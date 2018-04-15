@@ -10,6 +10,7 @@
       (:require [clojure.string :as str]
                 [nsfw.util :as nu]
                 [nsfw.page :as page]
+                [nsfw.css :as css]
                 [garden.units :as u]
                 [garden.color :as co]
                 [garden.core :as garden]
@@ -806,7 +807,6 @@
                       muted? playinline?
                       style]
                :as opts}]
-  (prn opts)
   (let [props (dissoc opts
                 :webm :mp4 :ogg
                 :autoplay? :loop? :controls?
@@ -888,3 +888,72 @@
                     :width "100%"
                     :height "100%"}}]
           children)]))))
+
+
+#?
+(:cljs
+ (defn $cstack [{:keys [on-nav
+                        view
+                        initial-view
+                        transition]
+                 :as opts}
+                views]
+   (let [!ui (r/atom {:view-key (or initial-view
+                                    view
+                                    (-> views
+                                        first
+                                        :key))
+                      :visible? true})
+         change-view (fn [k]
+                       (when on-nav
+                         (on-nav k))
+                       (if (or (= :fade transition)
+                               (= :quickfade transition))
+                         (go
+                           (swap! !ui assoc :visible? false)
+                           (<! (timeout (if (= :quickfade transition)
+                                          100
+                                          200)))
+                           (swap! !ui assoc
+                             :view-key k
+                             :visible? true))
+                         (swap! !ui assoc
+                           :view-key k
+                           :visible? true)))]
+     (r/create-class
+       {:component-did-update
+        (page/cdu-diff
+          (fn [[{ov :view}] [{nv :view}]]
+            (when (not= ov nv)
+              (change-view nv))))
+        :reagent-render
+        (fn [{:keys [transition]} views]
+          (let [views-lookup (->> views
+                                  (map (fn [o]
+                                         [(:key o) o]))
+                                  (into {}))
+                {:keys [view-key
+                        visible?]}
+                @!ui
+
+                slide (get views-lookup view-key)
+
+                comp-or-fn (when slide
+                             (:comp slide))
+                comp (when slide
+                       (if (vector? comp-or-fn)
+                         comp-or-fn
+                         (comp-or-fn
+                           (fn [key]
+                             (change-view key)))))]
+            [:div
+             {:style (merge
+                       {:width "100%"
+                        :height "100%"
+                        :opacity (if visible? 1 0)}
+                       (css/transition (str "opacity "
+                                            (if (= :quickfade transition)
+                                              "0.1s"
+                                              "0.2s")
+                                            " ease")))}
+             comp]))}))))

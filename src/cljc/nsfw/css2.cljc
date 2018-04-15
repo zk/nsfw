@@ -425,6 +425,11 @@ linear-gradient(45deg, "
                 :align-items 'center
                 :flex-wrap 'wrap})
 
+(def flex-right {:display 'flex
+                :justify-content 'flex-end
+                :align-items 'center
+                :flex-wrap 'wrap})
+
 (def flexbox
   [[:.flex-apart flex-apart]
 
@@ -448,9 +453,7 @@ linear-gradient(45deg, "
    [:.flex-center-top {:display 'flex
                        :justify-content 'center
                        :align-items 'flex-start}]
-   [:.flex-right {:flex 1
-                  :justify-content 'flex-end
-                  :align-items 'center}]
+   [:.flex-right flex-right]
 
    [:.flex-right-stretch {:display 'flex
                           :align-itmes 'stretch
