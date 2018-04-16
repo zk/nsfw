@@ -802,38 +802,70 @@
 
 
 
-(defn $video [{:keys [webm mp4 ogg
-                      autoplay? loop? controls?
-                      muted? playinline?
-                      style]
-               :as opts}]
-  (let [props (dissoc opts
-                :webm :mp4 :ogg
-                :autoplay? :loop? :controls?
-                :muted? :playinline?)]
-    [:video
-     (merge
-       props
-       (when autoplay?
-         {:autoPlay "autoPlay"})
-       (when loop?
-         {:loop "loop"})
-       (when controls?
-         {:controls "controls"})
-       (when muted?
-         {:muted "muted"})
-       (when playinline?
-         {:playinline? playinline?}))
-     "Your browser does not support HTML5 video. You should "
-     [:a {:href "https://whatbrowser.org"} "consider updating"]
-     "."
-     (when webm
-       [:source {:src webm :type "video/webm"}])
-     (when ogg
-       [:source {:src ogg :type "video/ogg"}])
-     (when mp4
-       [:source {:src mp4 :type "video/mp4"}])]))
+#?
+(:cljs
+ (defn $video [{:keys [muted?]}]
+   (let [!node (atom nil)
+         set-muted (fn [muted?]
+                     (when @!node
+                       (.setAttribute @!node
+                         "muted"
+                         (if muted?
+                           "muted"
+                           nil))))]
+     (r/create-class
+       {:component-did-mount
+        (fn [this]
+          (set-muted muted?))
+        :component-did-update
+        (page/cdu-diff
+          (fn [[{op :playing?
+                 om :muted?}]
+               [{np :playing?
+                 nm :muted?}]]
 
+            (when (not= op np)
+              (if np
+                (.play @!node)
+                (.pause @!node)))
+
+            (when (not= om nm)
+              (set-muted nm))))
+
+        :reagent-render
+        (fn [{:keys [webm mp4 ogg
+                     autoplay? loop? controls?
+                     muted? playinline?
+                     style]
+              :as opts}]
+          (let [props (dissoc opts
+                        :webm :mp4 :ogg
+                        :autoplay? :loop? :controls?
+                        :muted? :playinline?
+                        :playing?)]
+            [:video
+             (merge
+               {:ref #(when % (reset! !node %))}
+               props
+               (when autoplay?
+                 {:autoPlay "autoPlay"})
+               (when loop?
+                 {:loop "loop"})
+               (when controls?
+                 {:controls "controls"})
+               (when muted?
+                 {:muted "muted"})
+               (when playinline?
+                 {:playinline? playinline?}))
+             "Your browser does not support HTML5 video. You should "
+             [:a {:href "https://whatbrowser.org"} "consider updating"]
+             "."
+             (when webm
+               [:source {:src webm :type "video/webm"}])
+             (when ogg
+               [:source {:src ogg :type "video/ogg"}])
+             (when mp4
+               [:source {:src mp4 :type "video/mp4"}])]))}))))
 
 #?
 (:cljs
@@ -845,15 +877,16 @@
                    :webm :mp4 :ogg
                    :autoplay? :loop? :controls?
                    :muted? :playinline?
+                   :playing?
                    :buffered :crossorigin :height :width
                    :played :preload :poster
                    :src)]
-       [:div (merge
-               props
-               {:style
-                (merge
-                  {:position 'relative}
-                  (:style props))})
+       [:div.vidbg
+        (merge
+          props
+          {:style {:position 'relative
+                   :width "100%"
+                   :height "100%"}})
         [:div
          {:style {:position 'absolute
                   :width "100%"
@@ -869,6 +902,7 @@
                [:webm :mp4 :ogg
                 :autoplay? :loop? :controls?
                 :muted? :playinline?
+                :playing?
                 :buffered :crossorigin :height :width
                 :played :preload :poster
                 :src])
@@ -881,12 +915,14 @@
                       :transform "translate3d(-50%,-50%,0)"}})]]]
         (page/elvc
           [:div
-           {:style {:z-index 100
-                    :position 'absolute
-                    :top 0
-                    :left 0
-                    :width "100%"
-                    :height "100%"}}]
+           {:style (merge
+                     {:z-index 100
+                      :position 'absolute
+                      :top 0
+                      :left 0
+                      :width "100%"
+                      :height "100%"}
+                     (:style props))}]
           children)]))))
 
 

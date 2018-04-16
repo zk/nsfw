@@ -39,7 +39,7 @@
 (defn hook-reload-fn [f]
   (let [!app (atom (f))]
     (fn []
-      (when @!app
+      (when (and @!app (fn? @!app))
         (@!app))
       (reset! !app (f)))))
 
@@ -184,10 +184,11 @@
                             (assoc-in [:state] state))))))))}))
 
 (defn dispatch-route [routes on-path & [{:keys [path]}]]
-  (let [{:keys [route-params handler] :as match}
-        (bidi/match-route routes (or path (pathname)))]
+  (let [path (or path (pathname))
+        {:keys [route-params handler] :as match}
+        (bidi/match-route routes path)]
     (when handler
-      (on-path handler route-params))))
+      (on-path handler route-params path))))
 
 (defn dispatch-view [views routes !app bus]
   (dispatch-route routes
@@ -352,8 +353,31 @@
                                  (on-view route-key route-params)))))]
                    (dommy/listen! js/window :popstate f)
                    (fn []
-                     (dommy/unlisten! js/window :popstate f)))]
-    unlisten))
+                     (dommy/unlisten! js/window :popstate f)))]))
+
+
+(defn dispatch-current-path [{:keys [routes actions context]}]
+  (let [actions-lookup (nu/lookup-map
+                         :key
+                         actions)]
+    (dispatch-route
+      routes
+      (fn [route-key route-params path]
+        (if (not route-key)
+          (nu/throw-str "No matching route for " path)
+          (if-let [{:keys [view handler attach-to]}
+                   (get actions-lookup route-key)]
+            (do
+              (when handler
+                (handler route-params context))
+              (when view
+                (r/render-component
+                  [view route-params context]
+                  (if (or (string? attach-to)
+                          (keyword? attach-to))
+                    (dommy/sel1 attach-to)
+                    attach-to))))
+            (nu/throw-str "No action for " route-key)))))))
 
 (defn init [{:keys [init-state
                     context

@@ -266,6 +266,15 @@
         :cljs
         (js/encodeURIComponent s))))
 
+(defn url-decode [s & [{:keys [encoding]}]]
+  (when s
+    #? (:clj
+        (java.net.URLDecoder/decode s
+          (or encoding
+              "UTF-8"))
+        :cljs
+        (js/decodeURI s))))
+
 (defn distinct-by
   [key coll]
   (let [step (fn step [xs seen]
@@ -495,7 +504,12 @@
     (do
       (defn to-base64-str [s & [o]]
         (when s
-          (bs/to-string (bt/encode s :base64 o))))
+          (bs/to-string
+            (bt/encode
+              s
+              :base64
+              (or o
+                  {:url-safe? false})))))
 
       (defn from-base64-str [s & [o]]
         (when s

@@ -1648,3 +1648,83 @@ in a predictable and repeatable way.
 + Starting point:
   https://cl.ly/2l3c0e0O0i1j/Image%202018-04-14%20at%2011.24.06%20AM.png
 +
+
+
+* <2018-04-15 Sun 11:19>
+
+Thinking about how to structure page dispatch. In some cases I want to
+handle routing completely on the client.
+
+The question I'm struggling with is whether or not to group everything
+under 'views' (maybe wrong term), or split out into map entries.
+
+Pros on views: all props localized, cons: views is wrong name.
+
+Is there the case where you want the route to fire but no view render?
+Put differently, should multiple routes go to same view? Yes,
+differing logic should be handled in the handler. Multiple urls point
+at same thing and logic is in the view and the handler.
+
+Remove conditional from the handling flow, one less place to look for
+bugs.
+
+Why split views / handlers? Sometimes you want view no handler,
+sometimes you want handler no view.
+
+
+* <2018-04-16 Mon 10:11>
+
+Modern page loading needs to be quick and SEO-aware. Splitting content
+into above- and below-fold sections is the way to go. Better if you
+can get the above-fold rendered statically.
+
+Loading above-fold has it's own considerations
+
+Form follows function, start simple -> complext
+
+Keep them lightweight, otherwise you'll need loaders for your loaders.
+
+Super low overhead, don't want to add too much unecessary wait
+time. However, there's a floor here too. If your loading happens to
+quickly or with too many elements it can't be followed by the user and
+will be confusing or distasteful.
+
+
+Most basic is fade-in:
+
+
+Complex and content-specific https://dribbble.com/shots/4176034-Gali
+
+
+Next: fade-in w/ element pop in
+ https://dribbble.com/shots/4036134-The-Environmental-Law-Firm
+
+
++ Seeing the loading animation is super annoying, you want to see it
+  once (or infrequently), to cache resources, esp on image / video
+  heavy sites.
+
+
+
+
+Inspiration:
+
++ https://dribbble.com/shots/3901081-Loader-animation
++ More subtle:
+  https://dribbble.com/shots/3230547-Logo-Plot-Load-Animation
++ https://dribbble.com/shots/4176034-Gali
++ https://dribbble.com/shots/3901081-Loader-animation
+
+
+
+
+
+So I need to solve two problems right now, vidbg not working in safari
+(and firefox I'm assuming)
+
+
+Man I gotta remember to put all this stuff in the styleguide
+
++
+  https://rigor.com/blog/2016/01/optimizing-mp4-video-for-fast-streaming
++ Check resource loading errors in browsers.
