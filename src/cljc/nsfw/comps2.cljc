@@ -36,10 +36,18 @@
 (def css
   [(gs/at-keyframes
      :indprogress
-     ["0%" {:transform "scaleX(0) translate3d(0,0,0)"}]
-     ["30%" {:transform "scaleX(0.6) translate3d(0,0,0)"}]
-     ["55%" {:transform "scaleX(0.75) translate3d(0,0,0)"}]
-     ["100%" {:transform "scaleX(1) translate3d(0,0,0)"}])
+     ["0%" {:transform "scaleX(0) translate3d(0,0,0)"
+            :-webkit-backface-visibility "hidden"
+            :-webkit-perspective "1000"}]
+     ["30%" {:transform "scaleX(0.6) translate3d(0,0,0)"
+             :-webkit-backface-visibility "hidden"
+             :-webkit-perspective "1000"}]
+     ["55%" {:transform "scaleX(0.75) translate3d(0,0,0)"
+             :-webkit-backface-visibility "hidden"
+             :-webkit-perspective "1000"}]
+     ["100%" {:transform "scaleX(1) translate3d(0,0,0)"
+              :-webkit-backface-visibility "hidden"
+              :-webkit-perspective "1000"}])
 
    [:.prog-bar-mock
     {:transform-origin "left center"}]
@@ -47,8 +55,11 @@
    [:.prog-bar-mock-bar
     {:background-color 'green
      :transform-origin "left center"
-     :transform "scaleX(0) translate3d(0,0,0)"}
+     :transform "scaleX(0) translate3d(0,0,0)"
+     :-webkit-backface-visibility "hidden"
+     :-webkit-perspective "1000"}
     {:animation "indprogress 20s ease infinite"}]
+
    [:.prog-bar-mock-done-bar
     {:transform "scaleX(0)"
      :transform-origin "left center"
@@ -153,7 +164,9 @@
                (concat
                  [:div
                   {:style (merge
-                            {:transform "translate3d(0,0,0)"}
+                            {:transform "translate3d(0,0,0)"
+                             :-webkit-backface-visibility "hidden"
+                             :-webkit-perspective "1000"}
                             (transition "transform 0.2s ease")
                             (when (= :post stage)
                               {:transform "translate3d(0,100%,0)"})
@@ -204,7 +217,9 @@
                    {:transform ""})
                  (when open?
                    {:transform "rotate(45deg) translate3d(0,25%,0)"
-                    :transform-origin "center"}))}]
+                    :transform-origin "center"
+                    :-webkit-backface-visibility "hidden"
+                    :-webkit-perspective "1000"}))}]
 
       [:line.line.mid-line
        {:x1 10 :y1 50
@@ -229,7 +244,9 @@
                    {:stroke color})
                  (when open?
                    {:transform "rotate(-45deg) translate3d(0,-25%,0)"
-                    :transform-origin "center"}))}]]]))
+                    :transform-origin "center"
+                    :-webkit-backface-visibility "hidden"
+                    :-webkit-perspective "1000"}))}]]]))
 
 
 (defn copy-button-css
@@ -834,7 +851,6 @@
                  nm :muted?}]]
 
             (when (not= op np)
-              (prn "SETTING PLAY")
               (if np
                 (.play @!node)
                 (.pause @!node)))
@@ -897,18 +913,24 @@
           {:style {:position 'relative
                    :width "100%"
                    :height "100%"
-                   :transform "translate3d(0,0,0)"}})
+                   :transform "translate3d(0,0,0)"
+                   :-webkit-backface-visibility "hidden"
+                   :-webkit-perspective "1000"}})
         [:div
          {:style {:position 'absolute
                   :width "100%"
                   :height "100%"
                   :overflow 'hidden
-                  :transform "translate3d(0,0,0)"}}
+                  :transform "translate3d(0,0,0)"
+                  :-webkit-backface-visibility "hidden"
+                  :-webkit-perspective "1000"}}
          [:div
           {:style {:position 'relative
                    :width "100%"
                    :height "100%"
-                   :transform "translate3d(0,0,0)"}}
+                   :transform "translate3d(0,0,0)"
+                   :-webkit-backface-visibility "hidden"
+                   :-webkit-perspective "1000"}}
 
           [$video
            (merge
@@ -925,6 +947,8 @@
                       :top "50%"
                       :left "50%"
                       :transform "translate3d(-50%,-50%,0)"
+                      :-webkit-backface-visibility "hidden"
+                      :-webkit-perspective "1000"
                       :min-width "100%"
                       :min-height "100%"}})]]]
         (page/elvc
@@ -934,7 +958,9 @@
                       :position 'relative
                       :width "100%"
                       :height "100%"
-                      :transform "translate3d(0,0,0)"}
+                      :transform "translate3d(0,0,0)"
+                      :-webkit-backface-visibility "hidden"
+                      :-webkit-perspective "1000"}
                      (:style props))}]
           children)]))))
 
@@ -1006,3 +1032,23 @@
                                               "0.2s")
                                             " ease")))}
              comp]))}))))
+
+
+#?
+(:cljs
+ (defn $image [{:keys [src style] :as props}]
+   (let [!node (atom nil)
+         !ui (r/atom nil)]
+     (r/create-class
+       {:reagent-render
+        (fn [{:keys [src style]}]
+          (let [{:keys [loaded?]} @!ui]
+            [:img (merge
+                    {:ref #(reset! !node %)
+                     :on-load (fn []
+                                (swap! !ui assoc :loaded? true))}
+                    props
+                    {:style (merge
+                              {:opacity (if loaded? 1 0)}
+                              (transition "opacity 0.2s ease")
+                              style)})]))}))))

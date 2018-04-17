@@ -1713,7 +1713,7 @@ Inspiration:
 + More subtle:
   https://dribbble.com/shots/3230547-Logo-Plot-Load-Animation
 + https://dribbble.com/shots/4176034-Gali
-+ https://dribbble.com/shots/3901081-Loader-animation
++
 
 
 

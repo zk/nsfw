@@ -313,7 +313,6 @@ linear-gradient(45deg, "
        [:.box
         {:animation "sk-rotatePlane 2.4s infinite ease-in-out"}]]]
 
-
      [:.prog-rot-sm
       [:.box
        {:width (px sm)
