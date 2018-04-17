@@ -45,7 +45,8 @@
     {:transform-origin "left center"}]
 
    [:.prog-bar-mock-bar
-    {:transform-origin "left center"
+    {:background-color 'green
+     :transform-origin "left center"
      :transform "scaleX(0) translate3d(0,0,0)"}
     {:animation "indprogress 20s ease infinite"}]
    [:.prog-bar-mock-done-bar
@@ -63,13 +64,15 @@
          !run (atom true)]
      (r/create-class
        {:reagent-render
-        (fn [{:keys [loading? done? style stick-to height]
-              :or {height 5}}]
+        (fn [{:keys [loading? done? style stick-to
+                     bar-color
+                     bar-height]
+              :or {bar-height 5}}]
           [:div.prog-bar-mock
            {:class (when done? "done")
             :style (merge
                      {:overflow 'hidden
-                      :height height}
+                      :height bar-height}
                      (cond
                        (not stick-to)
                        {:width "100%"}
@@ -91,16 +94,21 @@
                             :width "100%"
                             :height "100%"}}
               [:div.prog-bar-mock-bar
-               {:style {:height height
-                        :width "100%"
-                        :background-color 'green}}]
+               {:style (merge
+                         {:height (or bar-height 5)
+                          :width "100%"}
+                         (when bar-color
+                           {:background-color bar-color}))}]
               [:div.prog-bar-mock-done-bar
                {:class (when done? "done")
-                :style {:position 'absolute
-                        :top 0
-                        :left 0
-                        :right 0
-                        :bottom 0}}]])])}))))
+                :style (merge
+                         (when bar-color
+                           {:background-color bar-color})
+                         {:position 'absolute
+                          :top 0
+                          :left 0
+                          :right 0
+                          :bottom 0})}]])])}))))
 
 
 #?
@@ -808,11 +816,12 @@
    (let [!node (atom nil)
          set-muted (fn [muted?]
                      (when @!node
-                       (.setAttribute @!node
-                         "muted"
-                         (if muted?
+                       (if muted?
+                         (.setAttribute @!node
                            "muted"
-                           nil))))]
+                           "muted")
+                         (.removeAttribute @!node "muted"))
+                       ))]
      (r/create-class
        {:component-did-mount
         (fn [this]
@@ -825,6 +834,7 @@
                  nm :muted?}]]
 
             (when (not= op np)
+              (prn "SETTING PLAY")
               (if np
                 (.play @!node)
                 (.pause @!node)))
@@ -886,16 +896,20 @@
           props
           {:style {:position 'relative
                    :width "100%"
-                   :height "100%"}})
+                   :height "100%"
+                   :transform "translate3d(0,0,0)"}})
         [:div
          {:style {:position 'absolute
                   :width "100%"
                   :height "100%"
-                  :overflow 'hidden}}
+                  :overflow 'hidden
+                  :transform "translate3d(0,0,0)"}}
          [:div
           {:style {:position 'relative
                    :width "100%"
-                   :height "100%"}}
+                   :height "100%"
+                   :transform "translate3d(0,0,0)"}}
+
           [$video
            (merge
              (select-keys opts
@@ -907,21 +921,20 @@
                 :played :preload :poster
                 :src])
              {:style {:display 'block
-                      :min-width "100%"
-                      :min-height "100%"
                       :position 'absolute
-                      :left "50%"
                       :top "50%"
-                      :transform "translate3d(-50%,-50%,0)"}})]]]
+                      :left "50%"
+                      :transform "translate3d(-50%,-50%,0)"
+                      :min-width "100%"
+                      :min-height "100%"}})]]]
         (page/elvc
           [:div
            {:style (merge
                      {:z-index 100
-                      :position 'absolute
-                      :top 0
-                      :left 0
+                      :position 'relative
                       :width "100%"
-                      :height "100%"}
+                      :height "100%"
+                      :transform "translate3d(0,0,0)"}
                      (:style props))}]
           children)]))))
 
