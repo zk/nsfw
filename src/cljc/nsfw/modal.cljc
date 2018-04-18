@@ -141,7 +141,7 @@
                             :right 0
                             :bottom 0
                             :-webkit-backface-visibility "hidden"
-                            :-webkit-perspective "1000"
+                            :-webkit-perspective "1000px"
                             :background-color
                             (if (= :post-in anim-state)
                               "rgba(255,255,255,0.95)"
@@ -185,7 +185,7 @@
                                 :box-shadow "0 0 4px 0 rgba(168,167,164,0.4)"
                                 :margin 20
                                 :-webkit-backface-visibility "hidden"
-                                :-webkit-perspective "1000"}
+                                :-webkit-perspective "1000px"}
 
                                (if (= :post-in anim-state)
                                  (merge

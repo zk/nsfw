@@ -38,16 +38,16 @@
      :indprogress
      ["0%" {:transform "scaleX(0) translate3d(0,0,0)"
             :-webkit-backface-visibility "hidden"
-            :-webkit-perspective "1000"}]
+            :-webkit-perspective "1000px"}]
      ["30%" {:transform "scaleX(0.6) translate3d(0,0,0)"
              :-webkit-backface-visibility "hidden"
-             :-webkit-perspective "1000"}]
+             :-webkit-perspective "1000px"}]
      ["55%" {:transform "scaleX(0.75) translate3d(0,0,0)"
              :-webkit-backface-visibility "hidden"
-             :-webkit-perspective "1000"}]
+             :-webkit-perspective "1000px"}]
      ["100%" {:transform "scaleX(1) translate3d(0,0,0)"
               :-webkit-backface-visibility "hidden"
-              :-webkit-perspective "1000"}])
+              :-webkit-perspective "1000px"}])
 
    [:.prog-bar-mock
     {:transform-origin "left center"}]
@@ -57,7 +57,7 @@
      :transform-origin "left center"
      :transform "scaleX(0) translate3d(0,0,0)"
      :-webkit-backface-visibility "hidden"
-     :-webkit-perspective "1000"}
+     :-webkit-perspective "1000px"}
     {:animation "indprogress 20s ease infinite"}]
 
    [:.prog-bar-mock-done-bar
@@ -166,7 +166,7 @@
                   {:style (merge
                             {:transform "translate3d(0,0,0)"
                              :-webkit-backface-visibility "hidden"
-                             :-webkit-perspective "1000"}
+                             :-webkit-perspective "1000px"}
                             (transition "transform 0.2s ease")
                             (when (= :post stage)
                               {:transform "translate3d(0,100%,0)"})
@@ -194,7 +194,8 @@
      {:class (when open? "open")
       :style (merge
                {:width size
-                :height size}
+                :height size
+                :cursor 'pointer}
                style)
       :on-click (fn [e]
                   (.preventDefault e)
@@ -219,7 +220,7 @@
                    {:transform "rotate(45deg) translate3d(0,25%,0)"
                     :transform-origin "center"
                     :-webkit-backface-visibility "hidden"
-                    :-webkit-perspective "1000"}))}]
+                    :-webkit-perspective "1000px"}))}]
 
       [:line.line.mid-line
        {:x1 10 :y1 50
@@ -246,7 +247,7 @@
                    {:transform "rotate(-45deg) translate3d(0,-25%,0)"
                     :transform-origin "center"
                     :-webkit-backface-visibility "hidden"
-                    :-webkit-perspective "1000"}))}]]]))
+                    :-webkit-perspective "1000px"}))}]]]))
 
 
 (defn copy-button-css
@@ -915,7 +916,7 @@
                    :height "100%"
                    :transform "translate3d(0,0,0)"
                    :-webkit-backface-visibility "hidden"
-                   :-webkit-perspective "1000"}})
+                   :-webkit-perspective "1000px"}})
         [:div
          {:style {:position 'absolute
                   :width "100%"
@@ -923,14 +924,14 @@
                   :overflow 'hidden
                   :transform "translate3d(0,0,0)"
                   :-webkit-backface-visibility "hidden"
-                  :-webkit-perspective "1000"}}
+                  :-webkit-perspective "1000px"}}
          [:div
           {:style {:position 'relative
                    :width "100%"
                    :height "100%"
                    :transform "translate3d(0,0,0)"
                    :-webkit-backface-visibility "hidden"
-                   :-webkit-perspective "1000"}}
+                   :-webkit-perspective "1000px"}}
 
           [$video
            (merge
@@ -948,7 +949,7 @@
                       :left "50%"
                       :transform "translate3d(-50%,-50%,0)"
                       :-webkit-backface-visibility "hidden"
-                      :-webkit-perspective "1000"
+                      :-webkit-perspective "1000px"
                       :min-width "100%"
                       :min-height "100%"}})]]]
         (page/elvc
@@ -960,7 +961,7 @@
                       :height "100%"
                       :transform "translate3d(0,0,0)"
                       :-webkit-backface-visibility "hidden"
-                      :-webkit-perspective "1000"}
+                      :-webkit-perspective "1000px"}
                      (:style props))}]
           children)]))))
 
@@ -1040,15 +1041,15 @@
    (let [!node (atom nil)
          !ui (r/atom nil)]
      (r/create-class
-       {:reagent-render
-        (fn [{:keys [src style]}]
-          (let [{:keys [loaded?]} @!ui]
-            [:img (merge
-                    {:ref #(reset! !node %)
-                     :on-load (fn []
-                                (swap! !ui assoc :loaded? true))}
-                    props
-                    {:style (merge
-                              {:opacity (if loaded? 1 0)}
-                              (transition "opacity 0.2s ease")
-                              style)})]))}))))
+      {:reagent-render
+       (fn [{:keys [src style]}]
+         (let [{:keys [loaded?]} @!ui]
+           [:img (merge
+                   {:ref #(reset! !node %)
+                    :on-load (fn []
+                               (swap! !ui assoc :loaded? true))}
+                   props
+                   {:style (merge
+                             {:opacity (if loaded? 1 0)}
+                             (transition "opacity 0.2s ease")
+                             style)})]))}))))

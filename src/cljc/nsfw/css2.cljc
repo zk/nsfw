@@ -262,7 +262,21 @@ linear-gradient(45deg, "
      [:.header-font {:font-family header}]
      [:.copy-font {:font-family copy}]
      [:.impact-font {:font-family impact}]
-     [:.monospace-font {:font-family monospace}]]))
+     [:.monospace-font {:font-family monospace}]
+
+
+     [:.full-size {:width "100%"
+                   :height "100%"}]
+     [:.abs-full-size {:position 'absolute
+                       :width "100%"
+                       :height "100%"
+                       :top 0
+                       :left 0}]
+
+
+     [:.scroll-y
+      {:overflow-y 'scroll
+       :-webkit-overflow-scrolling 'touch}]]))
 
 (defn defaults [css-spec]
   (let [{:keys [sm md]} (:sizes css-spec)
@@ -277,6 +291,7 @@ linear-gradient(45deg, "
        (margin-bot sm)]]
 
      [:ul :ol
+      {:padding 0}
       [:&.bare
        [:li {:list-style-type 'none
              :padding 0

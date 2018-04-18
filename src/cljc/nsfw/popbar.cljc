@@ -50,6 +50,12 @@
    (defn current-view-key []
      (gen-current-view-key !popbar))
 
+   (defn gen-visible? [!state]
+     (fn []
+       (:visible? @!state)))
+
+   (def visible? (gen-visible? !popbar))
+
    (defn cdu-diff [f]
      (fn [this [_ & old-args]]
        (let [new-args (rest (r/argv this))]
@@ -76,8 +82,9 @@
                     !state]}]
            (page/ensure-opts args)
 
-           !popbar (or !state !popbar)]
-       (swap! !popbar assoc
+           !state (or !state !popbar)]
+
+       (swap! !state assoc
          :visible? visible?
          :current-view-key initial-view
          :current-args initial-args)
@@ -86,7 +93,7 @@
                                         :post-out)})
              on-keydown (fn [e]
                           (when (= 27 (.. e -keyCode))
-                            (swap! !popbar assoc :visible? false)))]
+                            (swap! !state assoc :visible? false)))]
          (r/create-class
            {:component-did-mount
             (fn [_]
@@ -94,7 +101,7 @@
                 js/window
                 :keydown
                 on-keydown)
-              (add-watch !popbar :anims
+              (add-watch !state :anims
                 (fn [_ _ {ov? :visible?} {nv? :visible?}]
                   (when (not= ov? nv?)
                     (when on-visible-change
@@ -114,7 +121,7 @@
                 js/window
                 :keydown
                 on-keydown)
-              (remove-watch !popbar :anims))
+              (remove-watch !state :anims))
             :reagent-render
             (fn [& args]
               (let [[{:keys [style
@@ -123,14 +130,11 @@
                      views]
                     (page/ensure-opts args)
 
-
-
-
                     {:keys [anim-state]} @!ui
                     view-lookup (nu/lookup-map
                                   :key
                                   views)
-                    current-view-key (or (:current-view-key @!popbar)
+                    current-view-key (or (:current-view-key @!state)
                                          initial-view)
 
                     current-view (if (keyword? current-view-key)
@@ -140,10 +144,10 @@
                     comp (:comp current-view)
 
                     comp (if (fn? comp)
-                           (apply comp (:current-args @!popbar))
+                           (apply comp (:current-args @!state))
                            comp)
 
-                    visible? (get @!popbar :visible?)
+                    visible? (get @!state :visible?)
 
                     stick-to (or
                                (:stick-to current-view)
@@ -183,7 +187,7 @@
                 (when (and visible?
                            (not comp))
                   (throw (js/Error.
-                           (str "No bb view for key: "
+                           (str "No view for key: "
                                 (pr-str current-view)))))
 
                 [:div.bottombar-wrapper
@@ -192,8 +196,10 @@
                             :opacity (if visible? 1 0)
                             :pointer-events (if visible? "auto" "none")}
                            wrap-style
-                           (nc/transition "opacity 0.1s ease, transform 0.1s ease")
-                           style)}
+                           (nc/transition "opacity 0.15s ease, transform 0.15s ease")
+                           style)
+                  :on-scroll (fn [e]
+                               (.stopPropagation e))}
                  comp]))}))))
 
    (defn $standalone [!state & args]
