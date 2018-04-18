@@ -23,25 +23,20 @@
 
    (defn $container [& args]
      (let [[opts & children] (page/ensure-opts args)]
-       [:div {:style {:width "100%"
-                      :height "100%"}
-              :on-click (fn [e]
-                          (.preventDefault e)
-                          (hide)
-                          nil)}
-        [pb/$standalone
-         !mobile-nav
-         {:style {:height "100%"}
-          :initial-view :content}
-         [{:key :content
-           :stick-to :top
-           :comp (page/elvc
-                  [:div
-                   (merge
-                     opts
-                     {:style (merge
-                               (:style opts))})]
-                  children)}]]]))
+       [pb/$standalone
+        !mobile-nav
+        {:style {:height "100%"}
+         :class "mobile-nav-container"
+         :initial-view :content}
+        [{:key :content
+          :stick-to :top
+          :comp (page/elvc
+                 [:div
+                  (merge
+                    opts
+                    {:style (merge
+                              (:style opts))})]
+                 children)}]]))
 
    (defn $hamburger-menu [opts]
      [nc/$hamburger-menu

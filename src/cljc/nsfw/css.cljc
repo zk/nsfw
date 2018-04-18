@@ -1,11 +1,11 @@
-(ns nsfw.css2
+(ns nsfw.css
   (:require [clojure.string :as str]
             [garden.units :as u]
             [garden.color :as co]
             [garden.stylesheet :refer [at-media]]
             [garden.core :as garden]
             [garden.stylesheet :as gs])
-  #? (:cljs (:require-macros [nsfw.css2 :refer [inject-css-defs]])))
+  #? (:cljs (:require-macros [nsfw.css :refer [inject-css-defs]])))
 
 (defn prefix [[k v]]
   (->> ["-webkit-"
@@ -33,6 +33,9 @@
    :-moz-transition v
    :-ms-transition v
    :-o-transition v})
+
+(defn transform [s]
+  {:transform s})
 
 (def screen-lg-min (u/px 1200))
 
@@ -167,6 +170,11 @@ linear-gradient(45deg, "
                            :justify-content "center"
                            :align-items "center"})
 
+       (def ~'flex-vcenter {:display "flex"
+                            :flex-direction "column"
+                            :justify-content "center"
+                            :align-items "center"})
+
        (def ~'flex-apart {:display "flex"
                           :flex-direction "row"
                           :justify-content "space-between"
@@ -276,7 +284,12 @@ linear-gradient(45deg, "
 
      [:.scroll-y
       {:overflow-y 'scroll
-       :-webkit-overflow-scrolling 'touch}]]))
+       :-webkit-overflow-scrolling 'touch}]
+
+     [:.visible-xs
+      {:display 'none}
+      (at-bp :xs
+             {:display 'block})]]))
 
 (defn defaults [css-spec]
   (let [{:keys [sm md]} (:sizes css-spec)

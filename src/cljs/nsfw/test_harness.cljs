@@ -2,7 +2,7 @@
   (:require [dommy.core :as dommy]
             [reagent.core :as r]
             [nsfw.util :as nu]
-            [nsfw.css2 :as nc]
+            [nsfw.css :as nc]
             [nsfw.comps2 :as comps]
             [cljs.core.async :as async
              :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]])
