@@ -190,7 +190,7 @@
                              size 25}}]
   (let [stroke-width line-width
         stroke-linecap (name line-cap)]
-    [:div.hamburger.visible-xs
+    [:div.hamburger
      {:class (when open? "open")
       :style (merge
                {:width size
@@ -1053,3 +1053,265 @@
                              {:opacity (if loaded? 1 0)}
                              (transition "opacity 0.2s ease")
                              style)})]))}))))
+
+
+
+#?
+(:cljs
+ (do
+   (def tiv-prop-keys [:ancestor
+                       :direction
+                       :offsets
+                       :fire-on-rapid-scroll?
+                       :throttle
+                       :on-enter
+                       :on-exit])
+
+   (defn scroll-node? [node direction]
+     (when node
+       (let [direction (or direction :vertical)
+             style (.getComputedStyle js/window node)
+             overflow-direc (if (= :vertical)
+                              (.getPropertyValue style "overflow-y")
+                              (.getPropertyValue style "overflow-x"))
+             overflow (or overflow-direc
+                          (.getPropertyValue style "overflow"))]
+         (or (= "auto" overflow) (= "scroll" overflow)))))
+
+   (defn find-scrollable-ancestor [node direction]
+     (loop [current-node node]
+       (cond
+         (= current-node (.-body js/document))
+         js/window
+
+         (scroll-node? current-node direction)
+         current-node
+
+         (.-parentNode current-node)
+         (recur (.-parentNode current-node))
+
+         :else current-node)))
+
+   (defn parse-offset-as-pixels [offset]
+     (when offset
+       (or (nu/parse-double offset)
+           (nu/parse-double
+            (subs
+             offset
+             0
+             (- (count offset) 2))))))
+
+   (defn parse-offset-as-percent [offset]
+     (when offset
+       (when (str/includes? offset "%")
+         (nu/parse-double (apply str (butlast offset))))))
+
+   (defn compute-offset-pixels [offset height]
+     (or (parse-offset-as-pixels offset)
+         (when-let [pct-offset (parse-offset-as-percent offset)]
+           (* pct-offset height))))
+
+   (defn get-bounds [node ancestor direction offsets]
+     (when (and node ancestor)
+       (let [horizontal? (= :horizontal direction)
+             {:keys [left top right bottom]} (dommy/bounding-client-rect node)
+
+             wp-top (if horizontal? left top)
+             wp-bot (if horizontal? right bottom)
+             [context-height
+              context-scroll-top]
+             (if (= js/window ancestor)
+               [(if horizontal?
+                  (.-innerWidth js/window)
+                  (.-innerHeight js/window))
+                0]
+               [(if horizontal?
+                  (.-offsetWidth ancestor)
+                  (.-offsetHeight ancestor))
+                (if horizontal?
+                  (:left (dommy/bounding-client-rect ancestor))
+                  (:top (dommy/bounding-client-rect ancestor)))])
+
+             {bot-offset :bot
+              top-offset :top}
+             offsets
+
+             top-offset-px (compute-offset-pixels top-offset context-height)
+             bot-offset-px (compute-offset-pixels bot-offset context-height)
+
+             context-bot (+ context-scroll-top context-height)]
+
+         {:wp-top wp-top
+          :wp-bot wp-bot
+          :viewport-top (+ context-scroll-top top-offset)
+          :viewport-bot (- context-bot bot-offset-px)})))
+
+   (defn get-current-position [{:keys [wp-top wp-bot
+                                       viewport-top viewport-bot]
+                                :as bounds}]
+
+     (cond
+       (= 0 (- viewport-bot viewport-top)) ::invisible
+
+       (or (<= viewport-top wp-top viewport-bot)
+           (<= viewport-top wp-bot viewport-bot)) ::inside
+
+       (< viewport-bot wp-top) ::below
+       (< wp-top viewport-top) ::above
+
+       :else ::invisible))
+
+   (defn handle-scroll [node
+                        ancestor
+                        direction
+                        fire-on-rapid-scroll?
+                        offsets
+                        !prev-position
+                        on-position-change
+                        on-enter
+                        on-exit]
+     (when node
+       (let [bounds (get-bounds node ancestor direction offsets)
+             current-position (get-current-position bounds)
+             prev-position @!prev-position
+
+             on-position-change (or on-position-change
+                                    (fn []))
+
+             on-enter (or on-enter
+                          (fn []))
+
+             on-exit (or on-exit
+                         (fn []))]
+         (when (not= prev-position current-position)
+           (reset! !prev-position current-position)
+           (let [cb-arg (merge
+                          {:current-position current-position
+                           :previous-position prev-position}
+                          bounds)]
+             (when on-position-change
+               (on-position-change cb-arg))
+
+             (cond
+               (= current-position ::inside)
+               (on-enter cb-arg)
+
+               (= prev-position ::inside)
+               (on-exit cb-arg))
+
+             (when (and fire-on-rapid-scroll?
+                        (or (and (= prev-position ::below)
+                                 (= current-position ::above))
+                            (and (= prev-position ::above)
+                                 (= current-position ::below))))
+               (on-enter cb-arg)
+               (on-exit cb-arg)))))))
+
+   ;; Inspired by https://github.com/brigade/react-waypoint
+
+   (defn $track-in-view [& args]
+     (let [prop-keys tiv-prop-keys
+           [initial-opts & _] (page/ensure-opts args)
+           {:keys [ancestor
+                   direction
+                   offsets
+                   fire-on-rapid-scroll?
+                   on-position-change
+                   on-enter
+                   on-exit
+                   throttle]
+            :or {throttle 200}} initial-opts
+
+           throttle-ms throttle
+
+           !node (atom nil)
+           !ancestor (atom nil)
+           !prev-position (atom nil)
+           !on-position-change (atom on-position-change)
+           !on-enter (atom on-enter)
+           !on-exit (atom on-exit)
+
+           on-scroll (page/throttle
+                      (fn []
+                        (handle-scroll
+                         @!node
+                         @!ancestor
+                         direction
+                         fire-on-rapid-scroll?
+                         offsets
+                         !prev-position
+                         @!on-position-change
+                         @!on-enter
+                         @!on-exit))
+                      throttle-ms)]
+       (r/create-class
+        {:component-did-mount
+         (fn [_]
+           (when-not @!node
+             (nu/throw-str "Node not available at mount: " @!node))
+           (reset! !ancestor
+                   (or
+                     ancestor
+                     (find-scrollable-ancestor
+                      @!node
+                      direction)))
+
+           (dommy/listen! @!ancestor :scroll on-scroll))
+
+         :component-did-update
+         (page/cdu-diff
+          (fn [[{opc :on-position-change
+                 oen :on-enter
+                 oex :on-exit}]
+               [{npc :on-position-change
+                 nen :on-enter
+                 nex :on-exit}]]
+            (when (not (= opc npc))
+              (reset! !on-position-change npc))
+            (when (not (= oen nen))
+              (reset! !on-enter nen))
+            (when (not (= oex nex))
+              (reset! !on-exit nex))))
+
+         :component-will-unmount
+         (fn [_]
+           (dommy/unlisten! @!ancestor :scroll on-scroll))
+
+         :reagent-render
+         (fn [& args]
+           (let [[opts & children] (page/ensure-opts args)
+                 props (apply dissoc opts prop-keys)]
+             (page/elvc
+              [:div
+               (merge
+                 {:ref #(reset! !node %)}
+                 props)]
+              children)))})))
+
+   #_(defn $in-view [route-params !state]
+       [:div
+        {:style {:height 200}}
+
+
+        (->> (range 5)
+             (map (fn [i]
+                    [:div.pad-xl
+                     {:key i}
+                     "pad " i])))
+
+        [$waypoint
+         {:fire-on-rapid-scroll? true
+          :throttle 16
+          :on-enter
+          (fn []
+            (prn "enter"))
+          :on-exit
+          (fn []
+            (prn "exit"))}
+         "Scroll"]
+
+        (->> (range 5)
+             (map (fn [i]
+                    [:div.pad-xl
+                     {:key i}
+                     "pad " i])))])))
