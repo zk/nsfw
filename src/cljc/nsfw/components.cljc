@@ -1,4 +1,4 @@
-(ns nsfw.comps2
+(ns nsfw.components
   #? (:clj
       (:require [clojure.string :as str]
                 [nsfw.util :as nu]
@@ -822,10 +822,7 @@
                       {:fill 'none
                        :stroke border-color
                        :stroke-width 6
-
                        :points "0,100 50,8 100,100"}])]])]]]))}))))
-
-
 
 
 #?
@@ -1256,7 +1253,10 @@
                       @!node
                       direction)))
 
-           (dommy/listen! @!ancestor :scroll on-scroll))
+           (dommy/listen! @!ancestor :scroll on-scroll)
+
+
+           (on-scroll))
 
          :component-did-update
          (page/cdu-diff
@@ -1286,32 +1286,4 @@
                (merge
                  {:ref #(reset! !node %)}
                  props)]
-              children)))})))
-
-   #_(defn $in-view [route-params !state]
-       [:div
-        {:style {:height 200}}
-
-
-        (->> (range 5)
-             (map (fn [i]
-                    [:div.pad-xl
-                     {:key i}
-                     "pad " i])))
-
-        [$waypoint
-         {:fire-on-rapid-scroll? true
-          :throttle 16
-          :on-enter
-          (fn []
-            (prn "enter"))
-          :on-exit
-          (fn []
-            (prn "exit"))}
-         "Scroll"]
-
-        (->> (range 5)
-             (map (fn [i]
-                    [:div.pad-xl
-                     {:key i}
-                     "pad " i])))])))
+              children)))})))))

@@ -1728,3 +1728,22 @@ Man I gotta remember to put all this stuff in the styleguide
 +
   https://rigor.com/blog/2016/01/optimizing-mp4-video-for-fast-streaming
 + Check resource loading errors in browsers.
+
+
+* <2018-04-18 Wed 18:52>
+
+Been thinking about further loader work. Couple of things:
+
++ Loader has to be initiated from the static page render. Otherwise
+  slow app.js (which is probably the biggest asset anyway) will
+  present a blank page only.
++ Initialization of js doesn't necessarily complete the loading
+  lifecycle. JS may want to pull additional assets or perform
+  long-running calculations.
++ Additionally, subsequent page loads where assets are cached
+  shouldn't show the loading indicator. It's annoying to see it every
+  time anyway. Can't think of any examples where
+
+
+1. Loader rendered on backend. CSS animated.
+2. JS attaches to
