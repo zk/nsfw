@@ -113,7 +113,7 @@
               (remove-watch !modal :anims))
             :reagent-render
             (fn [& args]
-              (let [[{:keys [style]} views] (page/ensure-opts args)
+              (let [[{:keys [style container-style bare?]} views] (page/ensure-opts args)
                     {:keys [anim-state]} @!ui
                     view-lookup (nu/lookup-map
                                   :key
@@ -125,7 +125,7 @@
                                    current-view-key)
 
                     current-view (if (fn? current-view)
-                                   (current-view (:current-args @!modal))
+                                   (apply current-view (:current-args @!modal))
                                    current-view)
                     visible? (get @!modal :visible?)]
                 (when (and visible?
@@ -156,56 +156,68 @@
                               (hide)
                               nil)}
 
-                 [:div.container
-                  {:style {:height "100%"
-                           :width "100%"}}
-                  [:div
-                   {:style {:width "100%"
-                            :height "100%"
-                            :position 'relative}}
-                   [:div.flex-vcenter
+                 (if bare?
+                   [:div
                     {:style (merge
-                              {:position 'absolute
-                               :top 10
-                               :left 10
-                               :right 10
-                               :bottom 10}
-                              (if (= :post-in anim-state)
-                                (merge
-                                  {:opacity 1})
-                                (merge
-                                  {:opacity 0}))
-                              (nc/transition "opacity 0.2s ease"))}
+                              {:width "100%"
+                               :height "100%"}
+                              container-style)
+                     :on-click
+                     (fn [e]
+                       (.stopPropagation e)
+                       (.preventDefault e)
+                       nil)}
+                    current-view]
+                   [:div
+                    {:style {:height "100%"
+                             :width "100%"}}
                     [:div
-                     {:style (merge
-                               {:max-width "100%"
-                                :max-height "100%"
-                                :background-color 'white
-                                :overflow-y 'scroll
-                                :box-shadow "0 0 4px 0 rgba(168,167,164,0.4)"
-                                :margin 20
-                                :-webkit-backface-visibility "hidden"
-                                :-webkit-perspective "1000px"}
+                     {:style {:width "100%"
+                              :height "100%"
+                              :position 'relative}}
+                     [:div.flex-vcenter
+                      {:style (merge
+                                {:position 'absolute
+                                 :top 10
+                                 :left 10
+                                 :right 10
+                                 :bottom 10}
+                                (if (= :post-in anim-state)
+                                  (merge
+                                    {:opacity 1})
+                                  (merge
+                                    {:opacity 0}))
+                                (nc/transition "opacity 0.2s ease"))}
+                      [:div
+                       {:style (merge
+                                 {:max-width "100%"
+                                  :max-height "100%"
+                                  :background-color 'white
+                                  :overflow-y 'scroll
+                                  :box-shadow "0 0 4px 0 rgba(168,167,164,0.4)"
+                                  :margin 20
+                                  :-webkit-backface-visibility "hidden"
+                                  :-webkit-perspective "1000px"}
 
-                               (if (= :post-in anim-state)
-                                 (merge
-                                   (nc/transform "translate3d(0,0,0)"))
-                                 (merge
-                                   (nc/transform "translate3d(0,15px,0)")))
-                               (nc/transition "transform 0.15s ease"))
-                      :on-click (fn [e]
-                                  (.stopPropagation e)
-                                  nil)}
-                     current-view]
-                    [:div.text-center
-                     {:style {:margin-top 10
-                              :margin-bottom 20}}
-                     [:a {:href "#"
-                          :style {:text-decoration 'none
-                                  :font-weight '500
-                                  :font-size 14}
-                          :on-click (fn [e]
-                                      (.preventDefault e)
-                                      (swap! !modal assoc :visible? false)
-                                      nil)}
-                      "Close"]]]]]]))}))))))
+                                 (if (= :post-in anim-state)
+                                   (merge
+                                     (nc/transform "translate3d(0,0,0)"))
+                                   (merge
+                                     (nc/transform "translate3d(0,15px,0)")))
+                                 (nc/transition "transform 0.15s ease"))
+                        :on-click (fn [e]
+                                    (.stopPropagation e)
+                                    nil)}
+                       current-view]
+                      [:div.text-center
+                       {:style {:margin-top 10
+                                :margin-bottom 20}}
+                       [:a {:href "#"
+                            :style {:text-decoration 'none
+                                    :font-weight '500
+                                    :font-size 14}
+                            :on-click (fn [e]
+                                        (.preventDefault e)
+                                        (swap! !modal assoc :visible? false)
+                                        nil)}
+                        "Close"]]]]])]))}))))))
