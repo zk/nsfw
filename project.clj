@@ -32,6 +32,7 @@
                  [cljsjs/fastclick "1.0.6-0"]
                  [cljsjs/hammer "2.0.4-5"]
                  [cljsjs/google-maps "3.18-1"]
+                 #_[cljsjs/mapbox-gl "0.42.2-0"]
                  [reaver "0.1.2"]
                  [hickory "0.7.1"]
                  [org.apache.commons/commons-compress "1.16.1"]
@@ -40,7 +41,8 @@
                  [org.postgresql/postgresql "42.1.4"]
                  [honeysql "0.9.1"]
                  [nilenso/honeysql-postgres "0.2.3"]
-                 [migratus "1.0.1"]]
+                 [migratus "1.0.1"]
+                 [cljsjs/youtube "1.1-0"]]
   :plugins [[lein-cljsbuild "1.1.7"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
