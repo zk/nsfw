@@ -101,7 +101,9 @@
 
 (defn round [n]
   #? (:clj
-      (Math/round n)
+      (if (float? n)
+        (Math/round n)
+        n)
       :cljs
       (.round js/Math n)))
 
@@ -341,11 +343,11 @@
         (pprint/pprint o sbw)
         (str sb))))
 
-(defn pp [& args]
+(defn pp [o]
   #? (:clj
-      (apply pprint/pprint args)
+      (apply pprint/pprint o)
       :cljs
-      (println (pp-str (apply str args)))))
+      (println (pp-str o))))
 
 
 #? (:clj
