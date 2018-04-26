@@ -1,7 +1,7 @@
 (ns nsfw.mobile-nav
   #?(:cljs
      (:require [nsfw.util :as nu]
-               [nsfw.comps2 :as nc]
+               [nsfw.components :as nc]
                [nsfw.popbar :as pb]
                [nsfw.page :as page]
                [rx.css :as rc]

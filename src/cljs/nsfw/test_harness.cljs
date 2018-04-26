@@ -3,7 +3,7 @@
             [reagent.core :as r]
             [nsfw.util :as nu]
             [nsfw.css :as nc]
-            [nsfw.comps2 :as comps]
+            [nsfw.components :as comps]
             [cljs.core.async :as async
              :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
