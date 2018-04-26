@@ -112,6 +112,43 @@ linear-gradient(45deg, "
 (defn padding-top [n] {:padding-top (px n)})
 (defn padding-bot [n] {:padding-bot (px n)})
 
+(defn cover-bg [{:keys [src] :as opts}]
+  (merge
+    {:background-image (str "url('" src "')")
+     :background-position "center center"
+     :background-size 'cover}
+    (dissoc opts :src)))
+
+(def flex-center {:display 'flex
+                  :justify-content 'center
+                  :align-items 'center})
+
+(def flex-apart {:display 'flex
+                 :flex-direction 'row
+                 :justify-content 'space-between
+                 :align-items 'center})
+
+(def flex-left {:display 'flex
+                :justify-content 'flex-start
+                :align-items 'center
+                :flex-wrap 'wrap})
+
+(def flex-right {:display 'flex
+                 :justify-content 'flex-end
+                 :align-items 'center
+                 :flex-wrap 'wrap})
+
+(def flex-bot {:display 'flex
+               :flex-direction 'column
+               :justify-content 'flex-end
+               :align-items 'flex-start})
+
+(def flex-bot-center
+  {:display 'flex
+   :flex-direction 'column
+   :justify-content 'flex-end
+   :align-items 'center})
+
 (defmacro inject-css-defs [{:keys [sizes fonts] :as spec}]
   (let [{:keys [xs sm md lg xl]} sizes
         {:keys [header copy impact monospace]} fonts]
@@ -166,9 +203,7 @@ linear-gradient(45deg, "
        (def ~'shadow-lg (:lg shadows))
        (def ~'shadow-inner (:inner shadows))
 
-       (def ~'flex-center {:display "flex"
-                           :justify-content "center"
-                           :align-items "center"})
+       (def ~'flex-center flex-center)
 
        (def ~'flex-vcenter {:display "flex"
                             :flex-direction "column"
@@ -183,7 +218,14 @@ linear-gradient(45deg, "
        (def ~'flex-left {:display "flex"
                          :justify-content "flex-start"
                          :align-items "center"
-                         :flex-wrap "wrap"}))))
+                         :flex-wrap "wrap"})
+
+       (def ~'flex-bot flex-bot)
+
+       (def ~'flex-bot-center flex-bot-center)
+
+
+       (def ~'cover-bg cover-bg))))
 
 
 ;;;
@@ -273,13 +315,16 @@ linear-gradient(45deg, "
      [:.monospace-font {:font-family monospace}]
 
 
-     [:.full-size {:width "100%"
-                   :height "100%"}]
-     [:.abs-full-size {:position 'absolute
-                       :width "100%"
-                       :height "100%"
-                       :top 0
-                       :left 0}]
+     [:.full-size
+      {:width "100%"
+       :height "100%"
+       :position 'relative}]
+     [:.full-size-abs
+      {:position 'absolute
+       :width "100%"
+       :height "100%"
+       :top 0
+       :left 0}]
 
 
      [:.scroll-y
@@ -289,7 +334,9 @@ linear-gradient(45deg, "
      [:.visible-xs
       {:display 'none}
       (at-bp :xs
-             {:display 'block})]]))
+             {:display 'block})]
+
+     [:.rel {:position 'relative}]]))
 
 (defn defaults [css-spec]
   (let [{:keys [sm md]} (:sizes css-spec)
@@ -359,6 +406,7 @@ linear-gradient(45deg, "
   [k {:keys [base-color
              base-size
              border-color
+             active-color
              text-color
              border-radius
              border-radius-alt]
@@ -401,13 +449,14 @@ linear-gradient(45deg, "
                       :border-color (co/rotate-hue border-color (* 1 hover-amount))
                       :color (co/rotate-hue text-color hover-amount)}
 
-        active-styles {:background-color (-> base-color
-                                             (co/rotate-hue active-amount)
-                                             (co/darken 12))
+        active-styles {:background-color (or active-color
+                                             (-> base-color
+                                                 (co/rotate-hue active-amount)
+                                                 (co/darken 12)))
                        :border-color (co/rotate-hue border-color (* 1 active-amount))
                        :color (co/rotate-hue text-color active-amount)}]
     [[selector
-      {:border-radius (px border-radius-alt)}
+      {:border-radius (px border-radius)}
       root-styles
       [:&:hover hover-styles]
       [:&:active active-styles]
@@ -438,24 +487,7 @@ linear-gradient(45deg, "
         :font-weight 'normal}
        (reduce merge style-overrides))]))
 
-(def flex-center {:display 'flex
-                  :justify-content 'center
-                  :align-items 'center})
 
-(def flex-apart {:display 'flex
-                 :flex-direction 'row
-                 :justify-content 'space-between
-                 :align-items 'center})
-
-(def flex-left {:display 'flex
-                :justify-content 'flex-start
-                :align-items 'center
-                :flex-wrap 'wrap})
-
-(def flex-right {:display 'flex
-                :justify-content 'flex-end
-                :align-items 'center
-                :flex-wrap 'wrap})
 
 (def flexbox
   [[:.flex-apart flex-apart]
@@ -495,7 +527,7 @@ linear-gradient(45deg, "
                      :align-items 'flex-start
                      :flex-wrap 'wrap}]
 
-   [:.flex-left-bot {:flex-direction 'row
+   [:.flex-left-bot {:flex-direction 'column
                      :justify-content 'flex-start
                      :align-items 'flex-end
                      :flex-wrap 'wrap}]
@@ -503,6 +535,8 @@ linear-gradient(45deg, "
    [:.flex-top {:display 'flex
                 :justify-content 'flex-start
                 :align-items 'flex-start}]
+
+   [:.flex-bot flex-bot]
 
    [:.flex-masonry {:display 'flex
                     :flex-direction 'column
