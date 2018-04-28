@@ -71,7 +71,7 @@
     #? (:clj
         (.getMillis (.parseDateTime iso-parser o))
         :cljs
-        (gd/fromIsoString o))
+        (.getTime (gd/fromIsoString o)))
     :else o))
 
 
