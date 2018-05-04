@@ -1,6 +1,9 @@
 (ns nsfw.aws_cljs
   (:require [cljsjs.aws-sdk-js]
-            [nsfw.util :as nu]))
+            [nsfw.util :as nu]
+            [cljs.core.async :as async
+             :refer [<! >! chan close! put! take! timeout]])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (def AWS
   (try
@@ -49,13 +52,15 @@
 
 (defn ddb-put-item [ddb table-name item
                     & [{:keys [key->attr]}]]
-  (.putItem
-   ddb
-   (clj->js
-    {:TableName (name table-name)
-     :Item (->> item
-                (map (fn [[k v]]
-                       {(item-key->attr-key key->attr k) (clj->js v)}))
-                (into {}))})
-   (fn [err data]
-     (put! ch [data err]))))
+  (let [ch (chan)]
+    (.putItem
+     ddb
+     (clj->js
+      {:TableName (name table-name)
+       :Item (->> item
+                  (map (fn [[k v]]
+                         {(map-entry->attr-key key->attr k v) (clj->js v)}))
+                  (into {}))})
+     (fn [err data]
+       (put! ch [data err])))
+    ch))

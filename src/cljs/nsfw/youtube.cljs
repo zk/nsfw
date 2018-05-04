@@ -8,8 +8,8 @@
             [cljs.core.async :as async
              :refer [<! >! chan close! put! take! timeout]
              :refer-macros [go go-loop]]
-            #_[cljsjs.youtube]))
-
+            [cljsjs.youtube])
+  (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (def !tag (atom nil))
 
