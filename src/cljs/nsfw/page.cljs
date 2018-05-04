@@ -445,12 +445,12 @@
 
 (defn $interpose-children [{:keys [separator] :as opts} children]
   (vec
-    (concat
-      [:div
-       (dissoc opts :separator)]
-      (->> children
-           (remove nil?)
-           (interpose separator)))))
+   (concat
+    [:div
+     (dissoc opts :separator)]
+    (->> children
+         (remove nil?)
+         (interpose separator)))))
 
 (defn async-class [init-args
                    {ext-cdm :component-did-mount

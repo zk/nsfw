@@ -28,6 +28,7 @@
                  [camel-snake-kebab "0.4.0"]
                  [clj-jwt "0.1.1"]
                  [clj-aws-s3 "0.3.10"]
+                 [cljsjs/aws-sdk-js "2.94.0-0"]
                  [com.rpl/specter "1.1.0"]
                  [cljsjs/fastclick "1.0.6-0"]
                  [cljsjs/hammer "2.0.4-5"]

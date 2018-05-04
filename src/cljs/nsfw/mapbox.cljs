@@ -2,7 +2,8 @@
   (:require [reagent.core :as rea]
             [nsfw.util :as util]
             [clojure.string :as str]
-            [clojure.set :as set]))
+            [clojure.set :as set]
+            #_[cljsjs.mapbox-gl]))
 
 (defn camel-keyword [k]
   (let [parts (-> k
@@ -34,9 +35,11 @@
     m))
 
 
-(defn map-render []
+(defn map-render [{:keys [style]}]
   [:div.rx-map
-   {:style {:width "100%" :height "100%"}}])
+   {:style (merge
+             {:width "100%" :height "100%"}
+             style)}])
 
 (defn pad-coll [n coll val]
   (take n (concat coll (repeat val))))

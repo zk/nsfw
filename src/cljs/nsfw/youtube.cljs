@@ -2,8 +2,6 @@
   (:require [clojure.string :as str]
             [nsfw.util :as nu]
             [nsfw.page :as page]
-            [rx.css :as css]
-            [rx.exp :as exp]
             [reagent.core :as r]
             [nsfw.components :as nc]
             [dommy.core :as dommy]
@@ -112,9 +110,12 @@
   (when p
     (.getPlayerState p)))
 
+(defn round-to-resolution [yt-time]
+  (nu/round (* 1000 yt-time)))
+
 (defn get-current-time [p]
   (when p
-    (exp/round-to-resolution
+    (round-to-resolution
      (.getCurrentTime p))))
 
 (defn get-video-start-bytes [p]

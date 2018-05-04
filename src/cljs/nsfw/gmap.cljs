@@ -380,7 +380,6 @@
      :component-did-mount map-did-mount
      :component-will-receive-props map-rec-props}))
 
-
 (defn meters-between [[p1 p2]]
   (.computeDistanceBetween google.maps.geometry.spherical
     (google.maps.LatLng. (clj->js p1))
