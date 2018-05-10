@@ -1747,3 +1747,48 @@ Been thinking about further loader work. Couple of things:
 
 1. Loader rendered on backend. CSS animated.
 2. JS attaches to
+
+* <2018-05-10 Thu 10:29>
+
+Writing API endpoints is way too scary at the moment, it's like I
+don't have a good handle on a few things:
+
++ What are all the endpoints?
++ Per endpoint, what are the expected preconditions?
++ What are all the error states per endpoint
++ What are all the side effects and return values for the endpoint?
++ How do I quickly access all this information, including drill-down
+  and search?
++ Are they "hooked up" correctly? Meaning transit encoding / decoding,
+  routes, etc.
+
+In general there's one success state and many error states. Error
+states have to do with validating input data, availability and success
+of calling external resources (APIs, databases, files).
+
+The tricky part is that some of these checks and validations depend on
+the success or failure of previous checks.
+
+
+Ok, let's answer these questions.
+
+Uh-oh, I feel a rabbit hole coming on.
+
+Ok, so where are all the endpoints? For GI endpoints they're all int
+he handler map. There's a name (key) and there's a handler with a
+possible docstring. Since it's clojure we can presumably grab all this
+through introspection.
+
+The linear thing isn't enough, its' too easy to lose context. If I'm
+adding another window it's got to be comprehensive.
+
+For all endpoints is order important? Grouping is imortant, I guess
+order is important too.
+
+
+Ooh, interesting, already paying dividens
+
+https://cl.ly/3o3f3i1d2e3L/Screen%20Shot%202018-05-10%20at%2011.35.33%20AM.png
+
+Just noticed the shape of the return value of the success case is not
+the same as the return value shape of the error cases.

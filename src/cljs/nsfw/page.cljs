@@ -433,9 +433,9 @@
                opts
                nil)]
     (vec
-      (concat
-        [opts]
-        body))))
+     (concat
+      [opts]
+      body))))
 
 (defn elvc [comp children]
   (vec
