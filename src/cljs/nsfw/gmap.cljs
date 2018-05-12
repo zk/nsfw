@@ -4,6 +4,26 @@
             [clojure.string :as str]
             [clojure.set :as set]))
 
+
+(def !delayed-inits (atom []))
+
+(defn ^{:export true} init_gmap []
+  (doseq [f @!delayed-inits]
+    (f))
+  (reset! !delayed-inits []))
+
+(defn script-loaded? []
+  (try
+    (.-maps js/google)
+    (catch js/Error e false)))
+
+(defn run-after-script-load [f]
+  (if (script-loaded?)
+    (f)
+    (swap! !delayed-inits
+      conj
+      f)))
+
 (defn camel-keyword [k]
   (let [parts (-> k
                   name
@@ -377,7 +397,10 @@
 (defn $map-view [& children]
   (rea/create-class
     {:reagent-render map-render
-     :component-did-mount map-did-mount
+     :component-did-mount
+     (fn [this]
+       (run-after-script-load
+         #(map-did-mount this)))
      :component-will-receive-props map-rec-props}))
 
 (defn meters-between [[p1 p2]]

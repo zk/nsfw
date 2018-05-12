@@ -15,10 +15,10 @@
 (def !delayed-inits (atom []))
 
 (set! js/onYouTubeIframeAPIReady
-      (fn []
-        (doseq [f @!delayed-inits]
-          (f))
-        (reset! !delayed-inits [])))
+  (fn []
+    (doseq [f @!delayed-inits]
+      (f))
+    (reset! !delayed-inits [])))
 
 
 ;; Player API
@@ -150,8 +150,8 @@
   (if (script-loaded?)
     (f)
     (swap! !delayed-inits
-           conj
-           f)))
+      conj
+      f)))
 
 (defn create-player [node
                      {:keys [video-id
