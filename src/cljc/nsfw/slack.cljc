@@ -3,7 +3,7 @@
      (:require [clj-http.client :as client]
                [clojure.string :as str])
      :cljs
-     (:require [clj-http.client :as client]
+     (:require [cljs-http.client :as client]
                [clojure.string :as str])))
 
 (defn post-to-channel [webhook-url {:keys [message
@@ -21,5 +21,7 @@
                       (when attachments
                         {:attachments attachments}))
        :content-type :json})
-    (catch Exception e
-      (prn e))))
+    #?(:clj (catch Exception e
+              (prn e))
+       :cljs (catch js/Error e
+               (prn e)))))
