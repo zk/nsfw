@@ -374,7 +374,7 @@
 
 (defn remove-path [url]
   (when url
-    (re-find #"(https?|ws)://[^/]*" url)))
+    (first (re-find #"(https?|ws)://[^/]*" url))))
 
 (defn script-source->csp-frag [s]
   (when (str/starts-with? s "http")
@@ -457,44 +457,45 @@
                 content-security-policy]
          :as compiled-spec} (compile-spec specs)
 
-         resp (html-resp
-                [:html5
-                 html-attrs
-                 (vec
-                   (concat
-                     [:head]
-                     (css-html css)
-                     head))
-                 (vec
-                   (concat
-                     [:body
-                      body-attrs]
-                     body
-                     (when env
-                       [[:script {:type "text/javascript"}
-                         (write-page-data :env env)]])
-                     (js-html js)))])
+        resp (html-resp
+               [:html5
+                html-attrs
+                (vec
+                  (concat
+                    [:head]
+                    (css-html css)
+                    head))
+                (vec
+                  (concat
+                    [:body
+                     body-attrs]
+                    body
+                    (when env
+                      [[:script {:type "text/javascript"}
+                        (write-page-data :env env)]])
+                    (js-html js)))])
 
 
-         js (concat
-              js
-              (when env
-                [[:script {:type "text/javascript"}
-                  (write-page-data :env env)]]))
+        js (concat
+             js
+             (when env
+               [[:script {:type "text/javascript"}
+                 (write-page-data :env env)]]))
 
-         default-csp {:script-src ["'self'"]}
+        default-csp {:script-src ["'self'"]}
 
-         csp (merge-csp
-               default-csp
-               content-security-policy)
+        csp (merge-csp
+              default-csp
+              content-security-policy)
 
-         csp (merge-csp
-               csp
-               (js-entries->csp-frag js))
+        csp (merge-csp
+              csp
+              (js-entries->csp-frag js))
 
-         resp (add-to-content-security-policy
-                resp
-                csp)]
+        resp (add-to-content-security-policy
+               resp
+               csp)]
+
     resp))
 
 (defn cljs-page-template
