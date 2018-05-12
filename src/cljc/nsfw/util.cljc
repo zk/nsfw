@@ -345,7 +345,7 @@
 
 (defn pp [o]
   #? (:clj
-      (apply pprint/pprint o)
+      (pprint/pprint o)
       :cljs
       (println (pp-str o))))
 
