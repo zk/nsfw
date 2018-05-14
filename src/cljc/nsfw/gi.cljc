@@ -19,7 +19,7 @@
                       include-response?
                       timeout
                       transit-opts]
-               :or {timeout 5000}
+               :or {timeout 20000}
                :as req}
               payload]
   (when-not uri
