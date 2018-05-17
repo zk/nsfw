@@ -1,4 +1,4 @@
-(defproject nsfw "0.12.14"
+(defproject nsfw "0.12.15"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
                  [org.clojure/clojurescript "1.9.946"]
@@ -43,7 +43,12 @@
                  [honeysql "0.9.1"]
                  [nilenso/honeysql-postgres "0.2.3"]
                  [migratus "1.0.1"]
-                 [cljsjs/youtube "1.1-0"]]
+                 [cljsjs/youtube "1.1-0"]
+
+                 [com.googlecode.libphonenumber/libphonenumber "8.9.6"]
+                 [cljsjs/libphonenumber "8.4.1-1"]
+
+]
   :plugins [[lein-cljsbuild "1.1.7"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
