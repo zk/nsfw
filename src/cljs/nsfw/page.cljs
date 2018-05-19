@@ -55,6 +55,15 @@
 (defn navigate-to [& parts]
   (aset (aget js/window "location") "href" (apply str parts)))
 
+(defn location-hash []
+  (let [lh (.. js/window -location -hash)]
+    (if (empty? lh)
+      nil
+      (subs lh 1))))
+
+(defn set-location-hash [hash]
+  (set! (.. js/window -location -hash) hash))
+
 (defn reload []
   (.reload (aget js/window "location")))
 

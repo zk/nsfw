@@ -48,7 +48,7 @@
                  [com.googlecode.libphonenumber/libphonenumber "8.9.6"]
                  [cljsjs/libphonenumber "8.4.1-1"]
 
-]
+                 [cljsjs/fuse "2.6.2-0"]]
   :plugins [[lein-cljsbuild "1.1.7"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs" "src/cljc"]

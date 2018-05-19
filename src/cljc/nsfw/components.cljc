@@ -1287,3 +1287,31 @@
                  {:ref #(reset! !node %)}
                  props)]
               children)))})))))
+
+#?(:cljs
+   (defn $poller
+     [{:keys [on-poll
+              period
+              active?]
+       :or {period 1000
+            on-poll (fn [& args])}}]
+     (let [!run? (atom active?)]
+       (r/create-class
+         {:component-did-mount
+          (fn [_]
+            (go-loop []
+              (<! (timeout 1000))
+              (on-poll)
+              (when @!run?
+                (recur))))
+          :component-did-update
+          (page/cdu-diff
+            (fn [[{na :active?}] [{oa :active?}]]
+              (when (not= na oa)
+                (reset! !run? na))))
+          :component-will-unmount
+          (fn [_]
+            (reset! !run? false))
+          :reagent-render
+          (fn []
+            [:span])}))))

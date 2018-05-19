@@ -233,20 +233,20 @@
 
 
 #? (:clj
-    (defn to-transit [o & [handlers]]
+    (defn to-transit [o & [opts]]
       (let [bs (java.io.ByteArrayOutputStream.)]
         (transit/write
-          (transit/writer bs :json {:handlers handlers})
+          (transit/writer bs :json opts)
           o)
         (.toString bs)))
     :cljs
-    (defn to-transit [o & [handlers]]
+    (defn to-transit [o & [opts]]
       (transit/write
-        (transit/writer :json handlers)
+        (transit/writer :json opts)
         o)))
 
 #? (:clj
-    (defn from-transit [s & [handlers]]
+    (defn from-transit [s & [opts]]
       (when s
         (transit/read
           (transit/reader
@@ -254,11 +254,11 @@
               (java.io.ByteArrayInputStream. (.getBytes s "UTF-8"))
               s)
             :json
-            {:handlers handlers}))))
+            opts))))
     :cljs
-    (defn from-transit [s & [handlers]]
+    (defn from-transit [s & [opts]]
       (transit/read
-        (transit/reader :json handlers)
+        (transit/reader :json opts)
         s)))
 
 (defn url-encode [s]
