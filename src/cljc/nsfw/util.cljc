@@ -598,3 +598,22 @@
 
 (defn pad [s n]
   (sformat (str "%0" n "d") s))
+
+
+(defn cos [theta]
+  #?(:clj (Math/cos theta)
+     :cljs (.cos js/Math theta)))
+
+(defn sin [theta]
+  #?(:clj (Math/sin theta)
+     :cljs (.sin js/Math theta)))
+
+(defn sqrt [n]
+  #?(:clj (Math/sqrt n)
+     :cljs (.sqrt js/Math n)))
+
+(defn sq [n] (* n n))
+
+(def PI
+  #?(:clj Math/PI
+     :cljs (.-PI js/Math)))
