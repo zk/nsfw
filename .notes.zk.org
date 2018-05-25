@@ -1792,3 +1792,17 @@ https://cl.ly/3o3f3i1d2e3L/Screen%20Shot%202018-05-10%20at%2011.35.33%20AM.png
 
 Just noticed the shape of the return value of the success case is not
 the same as the return value shape of the error cases.
+
+
+* <2018-05-24 Thu 10:50>
+
+Decided to switch off of onesignal due to the data privacy stuff. They
+basically sell all info about your users (which they are transparent
+about) and I'm not super comfortable about that.
+
+Besides it's $1 for 1M push notifications on SNS so why not. There's a
+bit more set up.
+
+To send a push you need:
+
+1. Platform app arn
