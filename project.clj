@@ -1,4 +1,4 @@
-(defproject nsfw "0.12.18"
+(defproject nsfw "0.12.19"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
                  [org.clojure/clojurescript "1.9.946"]
