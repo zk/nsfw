@@ -75,12 +75,9 @@
         [nil {:message (.getMessage e)} e]))))
 
 (comment
-  (def ACCK "")
-  (def SECK "")
-
   (def push-creds
-    {:access-key ACCK
-     :secret-key SECK
+    {:access-key ""
+     :secret-key ""
      :region :us-west-2
      :platform "APNS_SANDBOX"
      :application-arn ""})
