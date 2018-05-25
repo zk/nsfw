@@ -75,24 +75,24 @@
         [nil {:message (.getMessage e)} e]))))
 
 (comment
-  (def ACCK "AKIAISSWAYHXHK265KZA")
-  (def SECK "2+VQvNzKFXy9GMmsJsYULJGOecNYSHOLDbzxM3H/")
+  (def ACCK "")
+  (def SECK "")
 
   (def push-creds
     {:access-key ACCK
      :secret-key SECK
      :region :us-west-2
      :platform "APNS_SANDBOX"
-     :application-arn "arn:aws:sns:us-west-2:753209818049:app/APNS_SANDBOX/VeeDev"})
+     :application-arn ""})
 
   (prn
     (create-ios-endpoint-arn push-creds
-      "ea7cdef8cab20ae04c9b9394bba1d14cb423eb8642ed32571f562744c580afcf"))
+      "push-key"))
 
   (prn
     (send-ios-push
       push-creds
-      "arn:aws:sns:us-west-2:753209818049:endpoint/APNS_SANDBOX/VeeDev/557ed9ed-d5e3-37e8-bb14-c7e97ccf3158"
+      "endpoint-arn"
       {:alert {:title "hello world"
                :subtitle "subtitle"
                :body "the quick brown fox"}}))
@@ -108,5 +108,5 @@
   (prn
     (send-ios-push
       push-creds
-      "arn:aws:sns:us-west-2:753209818049:endpoint/APNS_SANDBOX/VeeDev/557ed9ed-d5e3-37e8-bb14-c7e97ccf3158"
+      "endpoint-arn"
       nil)))
