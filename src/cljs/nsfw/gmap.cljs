@@ -158,6 +158,8 @@
   nil)
 
 
+;; https://developers.google.com/maps/documentation/javascript/reference/3/polygon#Polyline
+
 (defmethod add-obj :polyline
   [{:keys [gmap obj el]}]
   (let [props (second el)
@@ -182,6 +184,41 @@
   [{:keys [gmap obj el]}]
   (let [props (second el)
         {:keys [path geodesic stroke-weight stroke-opacity]} props]
+    (.setOptions obj (-> props
+                         kebob->camel
+                         clj->js))
+    (attach-event-listeners
+      obj
+      props
+      (fn [e]
+        (let [pos (.-latLng e)]
+          {:lat (.lat pos)
+           :lng (.lng pos)}))))
+  obj)
+
+(defmethod add-obj :polygon
+  [{:keys [gmap obj el]}]
+  (let [props (second el)
+        props (assoc props :map gmap)
+        polyline (google.maps.Polygon. (-> props
+                                           kebob->camel
+                                           clj->js))]
+    (attach-event-listeners
+      polyline
+      props
+      (fn [e]
+        (let [pos (.-latLng e)]
+          {:lat (.lat pos) :lng (.lng pos)})))
+    polyline))
+
+(defmethod remove-obj :polygon
+  [{:keys [gmap obj el]}]
+  (.setMap obj nil)
+  nil)
+
+(defmethod update-obj :polygon
+  [{:keys [gmap obj el]}]
+  (let [props (second el)]
     (.setOptions obj (-> props
                          kebob->camel
                          clj->js))
@@ -393,6 +430,8 @@
       opts
       (map-event-transforms gmap))
     (rea/set-state this {:gmap gmap :objs new-objs})))
+
+;; https://developers.google.com/maps/documentation/javascript/reference/3/
 
 (defn $map-view [& children]
   (rea/create-class

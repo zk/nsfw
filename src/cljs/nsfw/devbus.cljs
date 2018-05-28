@@ -15,6 +15,7 @@
 
 (defn close [s]
   (when s
+    (.close s)
     (.close s)))
 
 (defn handlers-client [url handlers
@@ -31,7 +32,9 @@
        (on-open (.-target o)))
 
      :on-error
-     (fn [o] (on-error (.-target o)))
+     (fn [o]
+       (prn "ERR")
+       (on-error (.-target o)))
 
      :on-message
      (fn [o]
@@ -47,7 +50,9 @@
                (apply handler (.-target o) args))))))
 
      :on-close
-     (fn [o] (on-close (.-target o)))}))
+     (fn [o]
+       (prn "WS ON CLOSE")
+       (on-close (.-target o)))}))
 
 (deftype ObjectHandler []
   Object
@@ -188,13 +193,28 @@
         :devbus)))
   (reset! !state nil))
 
+(defn distinct-by
+  ([f coll]
+   (let [step (fn step [xs seen]
+                (lazy-seq
+                  ((fn [[x :as xs] seen]
+                     (when-let [s (seq xs)]
+                       (let [v (f x)]
+                         (if (contains? seen v)
+                           (recur (rest s) seen)
+                           (cons x (step (rest s) (conj seen v)))))))
+                   xs seen)))]
+     (step coll #{}))))
+
 (defn add-items [ref-items]
   #_(prn "add items" ref-items)
   (swap! !state update :ref-items
     #(set
-       (concat
-         %
-         ref-items)))
+       (distinct-by
+         (fn [i] (select-keys i [:title :section]))
+         (concat
+           %
+           ref-items))))
 
   (when-let [db (:db @!state)]
     #_(prn "db there")
@@ -222,3 +242,8 @@
                     item
                     [:title :section :value])
                   {:value state})]])))))))
+
+#_(defn send! [state-item]
+    (send-state
+      (:db @!state)
+      state-item))
