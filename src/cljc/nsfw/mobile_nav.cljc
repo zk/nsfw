@@ -29,13 +29,12 @@
          :class "mobile-nav-container"
          :initial-view :content}
         [{:key :content
-          :stick-to :top
+          :stick-to :right
           :comp (page/elvc
                  [:div
-                  (merge
-                    opts
-                    {:style (merge
-                              (:style opts))})]
+                  {:style (merge
+                            {:height "100%"}
+                            (:style opts))}]
                  children)}]]))
 
    (defn $hamburger-menu [opts]
