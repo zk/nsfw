@@ -52,6 +52,10 @@
     (when-not (= new-path cur-path)
       (.pushState js/window.history nil nil new-path))))
 
+(defn history-push-url [& parts]
+  (.pushState js/window.history nil nil
+    (apply str parts)))
+
 (defn navigate-to [& parts]
   (aset (aget js/window "location") "href" (apply str parts)))
 
@@ -63,6 +67,10 @@
 
 (defn set-location-hash [hash]
   (set! (.. js/window -location -hash) hash))
+
+(defn replace-location-hash [hash]
+  (.replaceState js/history
+    nil nil (str "#" hash)))
 
 (defn reload []
   (.reload (aget js/window "location")))
@@ -168,6 +176,10 @@
 
 (defn set-scroll [n]
   (.scrollTo js/window 0 n))
+
+(defn set-scroll-top [el n]
+  (when el
+    (set! (.-scrollTop el) n)))
 
 (defn nav-handlers [{:keys [views routes]}]
   (let [routes (or routes
@@ -365,7 +377,8 @@
                      (dommy/unlisten! js/window :popstate f)))]))
 
 
-(defn dispatch-current-path [{:keys [routes actions context]}]
+(defn dispatch-current-path [{:keys [routes actions context]}
+                             & [path]]
   (let [actions-lookup (nu/lookup-map
                          :key
                          actions)]
@@ -386,7 +399,8 @@
                           (keyword? attach-to))
                     (dommy/sel1 attach-to)
                     attach-to))))
-            (nu/throw-str "No action for " route-key)))))))
+            (nu/throw-str "No action for " route-key))))
+      {:path path})))
 
 (defn init [{:keys [init-state
                     context
