@@ -123,6 +123,13 @@ linear-gradient(45deg, "
                   :justify-content 'center
                   :align-items 'center})
 
+(def flex-vcenter {:display "flex"
+                   :flex-direction "column"
+                   :justify-content "center"
+                   :align-items "stretch"})
+
+
+
 (def flex-apart {:display 'flex
                  :flex-direction 'row
                  :justify-content 'space-between
@@ -205,10 +212,7 @@ linear-gradient(45deg, "
 
        (def ~'flex-center flex-center)
 
-       (def ~'flex-vcenter {:display "flex"
-                            :flex-direction "column"
-                            :justify-content "center"
-                            :align-items "center"})
+       (def ~'flex-vcenter flex-vcenter)
 
        (def ~'flex-apart {:display "flex"
                           :flex-direction "row"
@@ -503,10 +507,7 @@ linear-gradient(45deg, "
 
    [:.flex-center flex-center]
 
-   [:.flex-vcenter {:display 'flex
-                    :flex-direction 'column
-                    :justify-content 'center
-                    :align-items 'center}]
+   [:.flex-vcenter flex-vcenter]
 
 
    [:.flex-center-top {:display 'flex
