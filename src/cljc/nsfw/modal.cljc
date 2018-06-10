@@ -82,6 +82,7 @@
        (let [!ui (r/atom {:anim-state (if visible?
                                         :post-in
                                         :post-out)})
+             !scroll-div (atom nil)
              on-keydown (fn [e]
                           (when (= 27 (.. e -keyCode))
                             (swap! !modal assoc :visible? false)))]
@@ -97,6 +98,7 @@
                   (when (not= ov? nv?)
                     (if nv?
                       (go
+                        (page/set-scroll-top @!scroll-div 0)
                         (swap! !ui assoc :anim-state :pre-in)
                         (<! (timeout 17))
                         (swap! !ui assoc :anim-state :post-in))
@@ -113,7 +115,7 @@
               (remove-watch !modal :anims))
             :reagent-render
             (fn [& args]
-              (let [[{:keys [style container-style bare?]} views] (page/ensure-opts args)
+              (let [[{:keys [style container-style bare? dark?]} views] (page/ensure-opts args)
                     {:keys [anim-state]} @!ui
                     view-lookup (nu/lookup-map
                                   :key
@@ -144,8 +146,12 @@
                             :-webkit-perspective "1000px"
                             :background-color
                             (if (= :post-in anim-state)
-                              "rgba(255,255,255,0.95)"
-                              "rgba(255,255,255,0.0)")}
+                              (if dark?
+                                "rgba(0,0,0,0.95)"
+                                "rgba(255,255,255,0.95)")
+                              (if dark?
+                                "rgba(0,0,0,0)"
+                                "rgba(255,255,255,0)"))}
                            (if (= :post-out anim-state)
                              (nc/transform "translate3d(-100%,0,0)")
                              (nc/transform "translate3d(0,0,0)"))
@@ -172,9 +178,11 @@
                     {:style {:height "100%"
                              :width "100%"}}
                     [:div
-                     {:style {:width "100%"
+                     {:ref #(when % (reset! !scroll-div %))
+                      :style {:width "100%"
                               :height "100%"
-                              :position 'relative}}
+                              :position 'relative
+                              :overflow-y 'scroll}}
                      [:div.flex-vcenter
                       {:style (merge
                                 {:position 'absolute
@@ -190,12 +198,9 @@
                                 (nc/transition "opacity 0.2s ease"))}
                       [:div
                        {:style (merge
-                                 {:max-width "100%"
-                                  :max-height "100%"
-                                  :background-color 'white
-                                  :overflow-y 'scroll
-                                  :box-shadow "0 0 4px 0 rgba(168,167,164,0.4)"
-                                  :margin 20
+                                 {:flex 1
+                                  :max-width "100%"
+                                  :height "100%"
                                   :-webkit-backface-visibility "hidden"
                                   :-webkit-perspective "1000px"}
 
@@ -209,15 +214,15 @@
                                     (.stopPropagation e)
                                     nil)}
                        current-view]
-                      [:div.text-center
-                       {:style {:margin-top 10
-                                :margin-bottom 20}}
-                       [:a {:href "#"
-                            :style {:text-decoration 'none
-                                    :font-weight '500
-                                    :font-size 14}
-                            :on-click (fn [e]
-                                        (.preventDefault e)
-                                        (swap! !modal assoc :visible? false)
-                                        nil)}
-                        "Close"]]]]])]))}))))))
+                      #_[:div.text-center
+                         {:style {:margin-top 10
+                                  :margin-bottom 20}}
+                         [:a {:href "#"
+                              :style {:text-decoration 'none
+                                      :font-weight '500
+                                      :font-size 14}
+                              :on-click (fn [e]
+                                          (.preventDefault e)
+                                          (swap! !modal assoc :visible? false)
+                                          nil)}
+                          "Close"]]]]])]))}))))))
