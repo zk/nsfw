@@ -10,16 +10,16 @@
              :refer-macros [go go-loop]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
-(def !tag (atom nil))
+(defonce !tag (atom nil))
 
-(def !delayed-inits (atom []))
+(defonce !delayed-inits (atom []))
 
-(set! js/onYouTubeIframeAPIReady
-  (fn []
-    (doseq [f @!delayed-inits]
-      (f))
-    (reset! !delayed-inits [])))
-
+(defn attach-ready []
+  (set! js/onYouTubeIframeAPIReady
+    (fn []
+      (doseq [f @!delayed-inits]
+        (f))
+      (reset! !delayed-inits []))))
 
 ;; Player API
 
@@ -107,7 +107,9 @@
 
 (defn get-player-state [p]
   (when p
-    (.getPlayerState p)))
+    (and
+      (fn? (.-getPlayerState p))
+      (.getPlayerState p))))
 
 (defn round-to-resolution [yt-time]
   (nu/round (* 1000 yt-time)))
@@ -139,6 +141,7 @@
       @!tag))
 
 (defn attach-script []
+  (prn "attaching script")
   (let [tag (.createElement js/document "script")
         _ (set! (.-src tag) "https://www.youtube.com/iframe_api")
         first-script-node (.item (.getElementsByTagName js/document "script") 0)
@@ -177,8 +180,7 @@
   (= (get-player-state p) 1))
 
 (defn gather-props [player]
-  {:player player
-   :playing? (playing? player)
+  {:playing? (playing? player)
    :time (get-current-time player)
    :duration (get-duration player)})
 
@@ -187,6 +189,14 @@
     (when (or (not= (:width old) (:width new))
               (not= (:height old) (:height new)))
       (set-size p (:width new) (:height new)))))
+
+(defn update-playing [p playing-flag?]
+  (prn "P" p)
+  (when p
+    (when-not (= (playing? p) playing-flag?)
+      (if playing-flag?
+        (play-video p)
+        (pause-video p)))))
 
 (defn $video [{:keys [on-player
                       on-playing
@@ -211,11 +221,11 @@
           (let [next-run-id (nu/uuid)
                 last-run-id @!current-run-id]
             (swap!
-             !runs
-             (fn [runs]
-               (-> runs
-                   (assoc last-run-id nil)
-                   (assoc next-run-id true))))
+              !runs
+              (fn [runs]
+                (-> runs
+                    (assoc last-run-id nil)
+                    (assoc next-run-id true))))
 
             (reset! !current-run-id next-run-id)
 
@@ -223,8 +233,8 @@
               (when (get @!runs next-run-id)
                 (when on-time
                   (on-time
-                   @!player
-                   (get-current-time @!player)))
+                    @!player
+                    (get-current-time @!player)))
                 (<! (timeout (or throttle-time 200)))
                 (recur))))
 
@@ -240,40 +250,41 @@
             (on-paused @!player)))
 
         initialize-video (fn [opts]
+                           (prn "INIT" opts)
                            (reset! !player
-                                   (create-player
-                                    @!node
-                                    (merge
-                                      (select-keys
-                                       opts
-                                       [:width :height :video-id :player-vars])
-                                      {:on-ready
-                                       (fn [e]
-                                         (when on-ready
-                                           (on-ready @!player e))
-                                         (when on-props
-                                           (on-props
-                                            @!player
-                                            (gather-props @!player))))
+                             (create-player
+                               @!node
+                               (merge
+                                 (select-keys
+                                   opts
+                                   [:width :height :video-id :player-vars])
+                                 {:on-ready
+                                  (fn [e]
+                                    (when on-ready
+                                      (on-ready @!player e))
+                                    (when on-props
+                                      (on-props
+                                        @!player
+                                        (gather-props @!player))))
 
-                                       :on-state-change
-                                       (fn [e]
-                                         (let [state (.-data e)]
-                                           (condp = state
-                                             -1 nil
-                                             0 nil
-                                             1 (internal-on-playing)
-                                             2 (internal-on-paused)
-                                             3 nil
-                                             5 nil
-                                             nil))
+                                  :on-state-change
+                                  (fn [e]
+                                    (let [state (.-data e)]
+                                      (condp = state
+                                        -1 nil
+                                        0 nil
+                                        1 (internal-on-playing)
+                                        2 (internal-on-paused)
+                                        3 nil
+                                        5 nil
+                                        nil))
 
 
-                                         (when on-state-change
-                                           (on-state-change e))
+                                    (when on-state-change
+                                      (on-state-change e))
 
-                                         (when on-props
-                                           (on-props (gather-props @!player))))})))
+                                    (when on-props
+                                      (on-props (gather-props @!player))))})))
 
                            (when on-player
                              (when @!current-run-id
@@ -281,42 +292,53 @@
                              (on-player @!player)))]
 
     (r/create-class
-     {:component-did-mount
-      (fn [_]
-        (when-not (script-attached?)
-          (attach-script))
-        (run-after-script-load
-         (fn []
-           (initialize-video opts))))
+      {:component-did-mount
+       (fn [_]
+         (when-not (script-attached?)
+           (attach-script))
+         (run-after-script-load
+           (fn []
+             (initialize-video opts))))
 
-      :component-will-unmount
-      (fn [_]
-        (when @!tag
-          (try
-            (.removeFromParent @!tag)
-            (catch js/Error e
-              (prn "Error removing yt script from parent")
-              nil)))
-        (when @!current-run-id
-          (swap! !runs assoc @!current-run-id nil)))
+       :component-will-unmount
+       (fn [_]
+         (when @!tag
+           (try
+             (.removeFromParent @!tag)
+             (catch js/Error e
+               (prn "Error removing yt script from parent")
+               nil)))
+         (when @!current-run-id
+           (swap! !runs assoc @!current-run-id nil)))
 
-      :component-did-update
-      (page/cdu-diff
-       (fn [[old-opts]
-            [new-opts]]
-         (if (not= (:video-id old-opts)
-                   (:video-id new-opts))
-           (initialize-video new-opts)
-           (update-player-opts
-            @!player
-            old-opts
-            new-opts))))
+       :component-did-update
+       (page/cdu-diff
+         (fn [[old-opts]
+              [new-opts]]
+           (run-after-script-load
+             (fn []
+               (if (not= (:video-id old-opts)
+                         (:video-id new-opts))
+                 (initialize-video new-opts)
+                 (update-player-opts
+                   @!player
+                   old-opts
+                   new-opts))))
 
-      :reagent-render
-      (fn [{:keys [video-id width height]}]
-        [:div.yt-vid-wrapper
-         {:key video-id
-          :style {:width width
-                  :height height}}
-         [:div
-          {:ref #(when % (reset! !node %))}]])})))
+           #_(run-after-script-load
+               (fn []
+                 (when (not= (:playing? old-opts) (:playing? new-opts))
+                   (update-playing
+                     @!player
+                     (:playing? new-opts)))))))
+
+       :reagent-render
+       (fn [{:keys [video-id width height]}]
+         [:div.yt-vid-wrapper
+          {:key video-id
+           :style {:width width
+                   :height height}}
+          [:div
+           {:ref #(when % (reset! !node %))}]])})))
+
+(attach-ready)
