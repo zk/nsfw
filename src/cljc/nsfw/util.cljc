@@ -215,11 +215,11 @@
 
 #? (:clj (json/add-encoder org.bson.types.ObjectId json/encode-str))
 
- (defn to-json [o]
+ (defn to-json [o & [opts-or-replacer space]]
    #? (:clj
-       (json/generate-string o)
+       (json/generate-string o opts-or-replacer)
        :cljs
-       (.stringify js/JSON (clj->js o))))
+       (.stringify js/JSON (clj->js o) opts-or-replacer space)))
 
 (defn from-json [o & [prevent-keywordize]]
   #? (:clj
@@ -617,3 +617,8 @@
 (def PI
   #?(:clj Math/PI
      :cljs (.-PI js/Math)))
+
+#?(:clj
+   (defmacro file-contents [path]
+     (let [fc# (slurp path)]
+       `~fc#)))
