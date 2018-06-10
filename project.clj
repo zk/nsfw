@@ -1,7 +1,7 @@
-(defproject nsfw "0.12.21"
+(defproject nsfw "0.12.22"
   :description "No Such Framework -- Experimental"
-  :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
-                 [org.clojure/clojurescript "1.9.946"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
+                 [org.clojure/clojurescript "1.10.238"]
                  [clj-stacktrace "0.2.8"]
                  [cheshire "5.5.0"]
                  [hiccup "2.0.0-alpha1"]
@@ -44,7 +44,6 @@
                  [nilenso/honeysql-postgres "0.2.3"]
                  [migratus "1.0.1"]
                  [cljsjs/youtube "1.1-0"]
-
                  [com.googlecode.libphonenumber/libphonenumber "8.9.6"]
                  [cljsjs/libphonenumber "8.4.1-1"]
 
