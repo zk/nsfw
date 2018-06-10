@@ -1093,10 +1093,10 @@
      (when offset
        (or (nu/parse-double offset)
            (nu/parse-double
-            (subs
-             offset
-             0
-             (- (count offset) 2))))))
+             (subs
+               offset
+               0
+               (- (count offset) 2))))))
 
    (defn parse-offset-as-percent [offset]
      (when offset
@@ -1147,11 +1147,19 @@
                                        viewport-top viewport-bot]
                                 :as bounds}]
 
+     #_(prn
+         "1"
+         (<= viewport-top wp-top viewport-bot)
+         "2"
+         (<= viewport-top wp-bot viewport-bot))
+
      (cond
        (= 0 (- viewport-bot viewport-top)) ::invisible
 
        (or (<= viewport-top wp-top viewport-bot)
-           (<= viewport-top wp-bot viewport-bot)) ::inside
+           (<= viewport-top wp-bot viewport-bot)
+           (and (<= wp-top viewport-top)
+                (>= wp-bot viewport-bot))) ::inside
 
        (< viewport-bot wp-top) ::below
        (< wp-top viewport-top) ::above
@@ -1229,64 +1237,64 @@
            !on-exit (atom on-exit)
 
            on-scroll (page/throttle
-                      (fn []
-                        (handle-scroll
-                         @!node
-                         @!ancestor
-                         direction
-                         fire-on-rapid-scroll?
-                         offsets
-                         !prev-position
-                         @!on-position-change
-                         @!on-enter
-                         @!on-exit))
-                      throttle-ms)]
+                       (fn []
+                         (handle-scroll
+                           @!node
+                           @!ancestor
+                           direction
+                           fire-on-rapid-scroll?
+                           offsets
+                           !prev-position
+                           @!on-position-change
+                           @!on-enter
+                           @!on-exit))
+                       throttle-ms)]
        (r/create-class
-        {:component-did-mount
-         (fn [_]
-           (when-not @!node
-             (nu/throw-str "Node not available at mount: " @!node))
-           (reset! !ancestor
-                   (or
-                     ancestor
-                     (find-scrollable-ancestor
-                      @!node
-                      direction)))
+         {:component-did-mount
+          (fn [_]
+            (when-not @!node
+              (nu/throw-str "Node not available at mount: " @!node))
+            (reset! !ancestor
+              (or
+                ancestor
+                (find-scrollable-ancestor
+                  @!node
+                  direction)))
 
-           (dommy/listen! @!ancestor :scroll on-scroll)
+            (dommy/listen! @!ancestor :scroll on-scroll)
 
 
-           (on-scroll))
+            (on-scroll))
 
-         :component-did-update
-         (page/cdu-diff
-          (fn [[{opc :on-position-change
-                 oen :on-enter
-                 oex :on-exit}]
-               [{npc :on-position-change
-                 nen :on-enter
-                 nex :on-exit}]]
-            (when (not (= opc npc))
-              (reset! !on-position-change npc))
-            (when (not (= oen nen))
-              (reset! !on-enter nen))
-            (when (not (= oex nex))
-              (reset! !on-exit nex))))
+          :component-did-update
+          (page/cdu-diff
+            (fn [[{opc :on-position-change
+                   oen :on-enter
+                   oex :on-exit}]
+                 [{npc :on-position-change
+                   nen :on-enter
+                   nex :on-exit}]]
+              (when (not (= opc npc))
+                (reset! !on-position-change npc))
+              (when (not (= oen nen))
+                (reset! !on-enter nen))
+              (when (not (= oex nex))
+                (reset! !on-exit nex))))
 
-         :component-will-unmount
-         (fn [_]
-           (dommy/unlisten! @!ancestor :scroll on-scroll))
+          :component-will-unmount
+          (fn [_]
+            (dommy/unlisten! @!ancestor :scroll on-scroll))
 
-         :reagent-render
-         (fn [& args]
-           (let [[opts & children] (page/ensure-opts args)
-                 props (apply dissoc opts prop-keys)]
-             (page/elvc
-              [:div
-               (merge
-                 {:ref #(reset! !node %)}
-                 props)]
-              children)))})))))
+          :reagent-render
+          (fn [& args]
+            (let [[opts & children] (page/ensure-opts args)
+                  props (apply dissoc opts prop-keys)]
+              (page/elvc
+                [:div
+                 (merge
+                   {:ref #(reset! !node %)}
+                   props)]
+                children)))})))))
 
 #?(:cljs
    (defn $poller
