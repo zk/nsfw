@@ -20,6 +20,8 @@
                v]))
        (into {})))
 
+(prefix [:foo "bar"])
+
 (defn px [n]
   (if (and (string? n) (str/includes? n "px"))
     n

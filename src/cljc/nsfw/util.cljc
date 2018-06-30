@@ -12,14 +12,22 @@
                 [camel-snake-kebab.core :as csk])
       :cljs
       (:require [clojure.string :as str]
-                [nsfw.crypt :as crypt]
                 [cognitect.transit :as transit]
                 [goog.date :as gd]
                 [goog.i18n.DateTimeFormat]
                 [cljs.pprint :as pprint]
                 [goog.string :as gstring]
                 [goog.string.format]
-                [camel-snake-kebab.core :as csk]))
+                [camel-snake-kebab.core :as csk]
+
+                [goog.crypt :as crypt]
+                [goog.crypt.base64 :as b64]
+                [goog.crypt.Md5 :as Md5]
+                [goog.crypt.Sha1 :as Sha1]
+                [goog.crypt.Sha2 :as Sha2]
+                [goog.crypt.Sha256 :as Sha256]
+                [goog.crypt.Sha384 :as Sha384]
+                [goog.crypt.Sha512 :as Sha512]))
 
   #? (:clj
       (:import [java.util Date]
@@ -180,7 +188,6 @@
       (throw (Exception. (apply str args)))
       :cljs
       (throw (js/Error. (apply str args)))))
-
 
 
 #? (:clj
@@ -507,11 +514,11 @@
       (defn to-base64-str [s & [o]]
         (when s
           (bs/to-string
-            (bt/encode
-              s
-              :base64
-              (or o
-                  {:url-safe? false})))))
+           (bt/encode
+            s
+            :base64
+            (or o
+                {:url-safe? false})))))
 
       (defn from-base64-str [s & [o]]
         (when s
@@ -534,12 +541,62 @@
       (defn hex-str->byte-array [s]
         (.toByteArray (BigInteger. s 16)))))
 
+#? (:cljs
+    (do
+      (defn string->bytes [s]
+        (crypt/stringToUtf8ByteArray s))
+
+      (defn bytes->hex
+        "convert bytes to hex"
+        [bytes-in]
+        (crypt/byteArrayToHex bytes-in))
+
+      (defn digest [hasher bytes]
+        (.update hasher bytes)
+        (.digest hasher))
+
+      (defn hash-bytes [s hash-type]
+        (digest
+         (case hash-type
+           :md5 (goog.crypt.Md5.)
+           :sha1 (goog.crypt.Sha1.)
+           :sha2 (goog.crypt.Sha2.)
+           :sha256 (goog.crypt.Sha256.)
+           :sha384 (goog.crypt.Sha384.)
+           :sha512 (goog.crypt.Sha512.)
+           (throw (js/Error. (str "'" hash-type "' is not a valid hash algorithm."))))
+         (string->bytes s)))
+
+      (defn to-base64-str [s & [o]]
+        (when s
+          (if (string? s)
+            (b64/encodeString s)
+            (b64/encodeByteArray s))))
+
+      (defn from-base64-str [s & [o]]
+        (when (and s (string? s))
+          (b64/decodeString s)))
+
+      (defn sha256-bytes [data & [o]]
+        (when data
+          (hash-bytes data :sha256)))
+
+      (defn sha256 [s & [o]]
+        (bytes->hex (sha256-bytes s o)))
+
+      (defn sha512-bytes [data & [o]]
+        (when data
+          (hash-bytes data :sha512)))
+
+      (defn sha512 [s & [o]]
+        (bytes->hex (sha512-bytes s 0)))))
+
+
 
 (defn pluralize [n singular plural]
   (if (= 1 n)
     singular
     plural))
-
 
 #? (:cljs
     (do

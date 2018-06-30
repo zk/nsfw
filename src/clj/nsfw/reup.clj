@@ -45,11 +45,13 @@
       (intern 'user 'reup-app nil))
     (when-not (resolve 'user/after-reup)
       (intern 'user 'after-reup
-        (fn []
-          (when start-app-sym
-            (binding [*ns* (find-ns 'user)]
-              (alter-var-root (resolve 'user/reup-app)
-                (constantly (@(resolve start-app-sym)))))))))
+              (fn []
+                (when start-app-sym
+                  (binding [*ns* (find-ns 'user)]
+                    (alter-var-root (resolve 'user/reup-app)
+                                    (constantly (when-let [a (resolve start-app-sym)]
+                                                  (let [f (deref a)]
+                                                    (f))))))))))
 
     (require (ns-for-sym start-app-sym) :reload)
     (require (ns-for-sym stop-app-sym) :reload)
@@ -62,24 +64,24 @@
 
   (fn []
     (time
-      (do
-        (when start-app-sym
-          (binding [*ns* (find-ns 'user)]
-            (do
-              (try
-                (@(resolve stop-app-sym) @(resolve 'user/reup-app))
-                (catch Exception e
-                  (println "Exception stopping app:" e)))))
-          (alter-var-root (resolve 'user/reup-app) (constantly nil)))
-        (let [res (if start-app-sym
-                    (repl/refresh :after 'user/after-reup)
-                    (repl/refresh))]
-          (when (exception? res)
-            (throw res)))
+     (do
+       (when start-app-sym
+         (binding [*ns* (find-ns 'user)]
+           (do
+             (try
+               (@(resolve stop-app-sym) @(resolve 'user/reup-app))
+               (catch Exception e
+                 (println "Exception stopping app:" e)))))
+         (alter-var-root (resolve 'user/reup-app) (constantly nil)))
+       (let [res (if start-app-sym
+                   (repl/refresh :after 'user/after-reup)
+                   (repl/refresh))]
+         (when (exception? res)
+           (throw res)))
 
-        (when tests-regex
-          (doseq [ns-sym (->> (cp/classpath-directories)
-                              ns-find/find-namespaces
-                              (filter #(re-find tests-regex (str %))))]
-            (require ns-sym))
-          (clojure.test/run-all-tests tests-regex))))))
+       (when tests-regex
+         (doseq [ns-sym (->> (cp/classpath-directories)
+                             ns-find/find-namespaces
+                             (filter #(re-find tests-regex (str %))))]
+           (require ns-sym))
+         (clojure.test/run-all-tests tests-regex))))))

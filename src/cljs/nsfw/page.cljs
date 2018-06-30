@@ -56,6 +56,12 @@
   (.pushState js/window.history nil nil
     (apply str parts)))
 
+(defn history-push-state [state-obj title path]
+  (.pushState js/window.history
+    (clj->js state-obj)
+    title
+    path))
+
 (defn navigate-to [& parts]
   (aset (aget js/window "location") "href" (apply str parts)))
 

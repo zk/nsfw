@@ -69,8 +69,8 @@
                                   (pr-str data)))
         nil))))
 
-(defn send-state [db {:keys [ref] :as state-item}]
-  (send db
+(defn send-state [devbus-conn {:keys [ref] :as state-item}]
+  (send devbus-conn
     [(merge
        (select-keys
          state-item
@@ -78,115 +78,74 @@
        (when ref
          {:value (deref ref)}))]))
 
-(defn client [url
-              {:keys [mobile-states
-                      on-mobile-states]
-               :as opts}]
-  (let [db
-        (handlers-client
-          url
-          {:request-mobile-states
-           (fn [db]
-             (send
-               db
-               [:full-mobile-states
-                (->> mobile-states
-                     (map (fn [{:keys [ref] :as item}]
-                            (merge
-                              (select-keys
-                                item
-                                [:title :section :value])
-                              (when ref
-                                {:value (deref ref)})))))]))
-           :full-mobile-states
-           (fn [db states]
-             (when on-mobile-states
-               (on-mobile-states states)))
-           :heartbeat (fn [_]
-                        (prn "devbus heartbeat"))}
-          (merge
-            (when mobile-states
-              {:on-open
-               (fn [ws]
-                 (send
-                   ws
-                   [:full-mobile-states
-                    (->> mobile-states
-                         (map (fn [{:keys [ref] :as item}]
-                                (merge
-                                  (select-keys
-                                    item
-                                    [:title :section :value])
-                                  (when ref
-                                    {:value (deref ref)})))))]))
-               :on-close
-               (fn [ws]
-                 (doseq [{:keys [ref]} mobile-states]
-                   (when ref
-                     (remove-watch ref :devbus))))})
-            opts))]
-    (doseq [{:keys [ref] :as item} mobile-states]
-      (when ref
-        (add-watch
-          ref
-          :devbus
-          (fn [_ _ _ state]
-            (send db
-              [:full-mobile-states
-               [(merge
-                  (select-keys
-                    item
-                    [:title :section :value])
-                  {:value state})]])))))
-    db))
-
 (def !state (atom nil))
 
-(defn init [url]
-  (when (:db @!state)
-    (close (:db @!state)))
-  (let [db (handlers-client
-             url
-             {:request-mobile-states
-              (fn [db]
+(defn realize-state-item
+  [{:keys [ref] :as si}]
+  (if ref
+    (-> si
+        (dissoc :ref)
+        (assoc :value (deref ref))
+        (assoc :updated-at (nu/now)))
+    si))
+
+(defn realize-state-items [sis]
+  (->> sis
+       (map realize-state-item)
+       vec))
+
+(def app-client-handlers
+  {:request-state-items
+   (fn [devbus-conn]
+     (send
+       devbus-conn
+       [:state-items
+        (->> @!state
+             :state-items
+             realize-state-items)]))
+   :heartbeat
+   (fn [devbus-conn]
+     (prn "got heartbeat"))})
+
+(defn app-client [url]
+  (when (:devbus-conn @!state)
+    (close (:devbus-conn @!state)))
+  (let [devbus-conn
+        (handlers-client
+          url
+          app-client-handlers
+          {:on-open
+           (fn [devbus-conn]
+             (send devbus-conn
+               [:state-items
+                (->> @!state
+                     :state-items
+                     realize-state-item)]))
+           :on-close (fn [devbus-conn]
+                       (prn "devbus client closed"))})]
+    (swap! !state assoc :devbus-conn devbus-conn)))
+
+
+(defn debug-client [url
+                    on-state-items]
+  (handlers-client
+    url
+    {:state-items
+     (fn [_ state-items]
+       (on-state-items state-items))
+     :heartbeat (fn [_]
+                  (prn "heartbeat"))}
+    {:on-open (fn [db]
                 (send
                   db
-                  [:full-mobile-states
-                   (->> @!state
-                        :ref-items
-                        (map (fn [{:keys [ref] :as item}]
-                               (merge
-                                 (select-keys
-                                   item
-                                   [:title :section :value])
-                                 (when ref
-                                   {:value (deref ref)})))))]))
-              :heartbeat
-              (fn [db]
-                (prn "got heartbeat"))}
-             {:on-open
-              (fn [db]
-                (send db
-                  [:full-mobile-states
-                   (->> @!state
-                        :ref-items
-                        (map (fn [{:keys [ref] :as item}]
-                               (merge
-                                 (select-keys
-                                   item
-                                   [:title :section :value])
-                                 (when ref
-                                   {:value (deref ref)})))))]))
-              :on-close (fn [db]
-                          (prn "devbus client closed"))})]
-    (swap! !state assoc :db db)))
+                  [:request-state-items]))}))
 
 (defn shutdown []
   (prn "devbus shutdown")
-  (when-let [db (:db @!state)]
-    (prn "shutdown db")
-    (close db))
-  (doseq [{:keys [ref] :as item} (:ref-items @!state)]
+  (when-let [devbus-conn (:devbus-conn @!state)]
+    (prn "shutdown devbus-conn")
+    (close devbus-conn))
+  (doseq [{:keys [ref] :as item} (:state-items @!state)]
     (when ref
       (remove-watch
         ref
@@ -206,44 +165,44 @@
                    xs seen)))]
      (step coll #{}))))
 
-(defn add-items [ref-items]
-  #_(prn "add items" ref-items)
-  (swap! !state update :ref-items
-    #(set
-       (distinct-by
-         (fn [i] (select-keys i [:title :section]))
-         (concat
-           %
-           ref-items))))
+(defn process-state-items [sis]
+  (->> sis
+       (map (fn [{:keys [title section ref value key]}]
+              (merge
+                {:key (if key
+                        (name key)
+                        (str section "." title))}
+                (when ref
+                  {:ref ref})
+                (when value
+                  {:value value}))))))
 
-  (when-let [db (:db @!state)]
-    #_(prn "db there")
-    (send db
-      [:full-mobile-states
-       (->> @!state
-            :ref-items
-            (map (fn [{:keys [ref] :as item}]
-                   (merge
-                     (select-keys
-                       item
-                       [:title :section :value])
-                     (when ref
-                       {:value (deref ref)})))))]))
-  (doseq [{:keys [ref] :as item} (:ref-items @!state)]
-    (when ref
-      (add-watch ref :devbus
-        (fn [_ _ _ state]
-          #_(prn (:title item) "changed" state (:db @!state))
-          (when-let [db (:db @!state)]
-            (send db
-              [:full-mobile-states
-               [(merge
-                  (select-keys
-                    item
-                    [:title :section :value])
-                  {:value state})]])))))))
+(defn trackmult [state-items]
+  (let [state-items (process-state-items state-items)
+        new-state-items (set
+                          (distinct-by
+                            :key
+                            (concat
+                              state-items
+                              (:state-items @!state))))]
 
-#_(defn send! [state-item]
-    (send-state
-      (:db @!state)
-      state-item))
+    (swap! !state assoc :state-items new-state-items)
+
+    (when-let [devbus-conn (:devbus-conn @!state)]
+      (send devbus-conn
+        [:state-items
+         (->> state-items
+              realize-state-items)]))
+
+    (doseq [{:keys [ref] :as item} (->> state-items
+                                        (filter :ref))]
+      (when ref
+        (add-watch ref :devbus
+          (fn [_ _ _ state]
+            (when-let [devbus-conn (:devbus-conn @!state)]
+              (send devbus-conn
+                [:state-items
+                 [(realize-state-item item)]]))))))))
+
+(defn track [si]
+  (trackmult [si]))

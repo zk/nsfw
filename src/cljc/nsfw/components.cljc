@@ -1146,13 +1146,6 @@
    (defn get-current-position [{:keys [wp-top wp-bot
                                        viewport-top viewport-bot]
                                 :as bounds}]
-
-     #_(prn
-         "1"
-         (<= viewport-top wp-top viewport-bot)
-         "2"
-         (<= viewport-top wp-bot viewport-bot))
-
      (cond
        (= 0 (- viewport-bot viewport-top)) ::invisible
 
