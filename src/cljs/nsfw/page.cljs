@@ -21,20 +21,8 @@
 (defn stop-app [app]
   (app))
 
-(defn start-app [handlers]
-  (let [handler-key (try
-                      (:handler (page-data :env))
-                      (catch js/Error e
-                        nil))]
-    (if-let [handler (get handlers handler-key)]
-      (handler
-        (page-data :env))
-      (do
-        (throw (js/Error. (str "Couldn't find :handler in :env for `"
-                               (pr-str handler-key)
-                               "`, options: "
-                               (keys handlers))))
-        (fn [])))))
+(defn start-app [init-fn]
+  (init-fn))
 
 (defn hook-reload-fn [f]
   (let [!app (atom (f))]
@@ -43,8 +31,8 @@
         (@!app))
       (reset! !app (f)))))
 
-(defn reloader [gen-handlers]
-  (hook-reload-fn (fn [] (start-app (gen-handlers)))))
+(defn reloader [init-fn]
+  (hook-reload-fn (fn [] (start-app init-fn))))
 
 (defn push-path [& parts]
   (let [new-path (apply str (remove nil? parts))
