@@ -1,4 +1,4 @@
-(defproject nsfw "0.12.27"
+(defproject nsfw "0.12.28"
   :description "No Such Framework -- Experimental"
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.238"]
@@ -23,7 +23,10 @@
                  [hashobject/hashids "0.2.0"]
                  [org.clojure/java.classpath "0.2.2"]
                  [garden "1.3.5"]
-                 [reagent "0.7.0"]
+                 [reagent "0.8.1"]
+                 [cljsjs/react "16.3.2-0"]
+                 [cljsjs/react-dom "16.3.2-0"]
+                 [cljsjs/create-react-class "15.6.3-0"]
                  [cljs-http "0.1.45"]
                  [camel-snake-kebab "0.4.0"]
                  [clj-jwt "0.1.1"]
@@ -46,8 +49,8 @@
                  [cljsjs/youtube "1.1-0"]
                  [com.googlecode.libphonenumber/libphonenumber "8.9.6"]
                  [cljsjs/libphonenumber "8.4.1-1"]
-
-                 [cljsjs/fuse "2.6.2-0"]]
+                 [cljsjs/fuse "2.6.2-0"]
+                 [com.taoensso/timbre "4.10.0"]]
   :plugins [[lein-cljsbuild "1.1.7"]]
   :repl-options {:init (load-file "reup.clj")}
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
