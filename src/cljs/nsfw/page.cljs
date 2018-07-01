@@ -370,31 +370,32 @@
                    (fn []
                      (dommy/unlisten! js/window :popstate f)))]))
 
-
-(defn dispatch-current-path [{:keys [routes actions context]}
-                             & [path]]
+(defn dispatch-current-path
+  [{:keys [routes actions context]}
+   & [path]]
   (let [actions-lookup (nu/lookup-map
-                         :key
-                         actions)]
+                        :key
+                        actions)]
     (dispatch-route
-      routes
-      (fn [route-key route-params path]
-        (if (not route-key)
-          (nu/throw-str "No matching route for " path)
-          (if-let [{:keys [view handler attach-to]}
-                   (get actions-lookup route-key)]
-            (do
-              (when handler
-                (handler route-params context))
-              (when view
-                (r/render-component
-                  [view route-params context]
-                  (if (or (string? attach-to)
-                          (keyword? attach-to))
-                    (dommy/sel1 attach-to)
-                    attach-to))))
-            (nu/throw-str "No action for " route-key))))
-      {:path path})))
+     routes
+     (fn [route-key route-params path]
+       (if (not route-key)
+         (nu/throw-str "No matching route for " path)
+         (if-let [{:keys [view handler attach-to]}
+                  (get actions-lookup route-key)]
+           (do
+             (when handler
+               (handler route-params context))
+             (when view
+               (prn "view" view route-params context attach-to)
+               (r/render-component
+                [view route-params context]
+                (if (or (string? attach-to)
+                        (keyword? attach-to))
+                  (dommy/sel1 attach-to)
+                  attach-to))))
+           (nu/throw-str "No action for " route-key))))
+     {:path path})))
 
 (defn init [{:keys [init-state
                     context
@@ -407,28 +408,28 @@
   (let [!state (or !state (r/atom init-state))
         !current-view (r/atom nil)
         bus (ops/kit
-              !state
-              context
-              handlers)
+             !state
+             context
+             handlers)
 
         routes (when (and routes (not-empty? routes))
                  ["" routes])]
 
     (let [unload (hook-dispatch
-                   {:views views
-                    :routes routes
-                    :on-view (fn [route-key rp]
-                               (when-let [view (get views route-key)]
-                                 (reset! !current-view view)))
+                  {:views views
+                   :routes routes
+                   :on-view (fn [route-key rp]
+                              (when-let [view (get views route-key)]
+                                (reset! !current-view view)))
 
-                    :on-handler (fn [route-key rp]
-                                  (ops/send bus route-key rp))})]
+                   :on-handler (fn [route-key rp]
+                                 (ops/send bus route-key rp))})]
 
       (when @!current-view
         (r/render-component
-          [@!current-view !state bus]
-          (.getElementById js/document
-            (or root-id root-class "page-container"))))
+         [@!current-view !state bus]
+         (.getElementById js/document
+                          (or root-id root-class "page-container"))))
 
       (fn []
         (prn "Unloading")
