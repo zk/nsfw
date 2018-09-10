@@ -158,7 +158,17 @@
   (if (and form (sequential? form))
     (condp = (first form)
       'rmk (fn [v]
-             (apply dissoc v (rest form)))
+             (->> form
+                  rest
+                  (reduce (fn [v form-el]
+                            (if (sequential? form-el)
+                              (update-in
+                                v
+                                (butlast form-el)
+                                (fn [m]
+                                  (dissoc m (last form-el))))
+                              (dissoc v form-el)))
+                    v)))
       identity)
     identity))
 
@@ -172,6 +182,36 @@
     (let [filter-fn (gen-filter-function (parse-filter-text filter-text))]
       (filter-fn value))
     value))
+
+(defn $clj-data-view [_ _]
+  (let [!ui (r/atom nil)]
+    (fn [opts
+         clj-obj]
+      (let [{:keys [filter-text]} @!ui]
+        [:div
+         {:key key
+          :id key}
+         [:div
+          {:style {:display 'flex
+                   :align-items 'left
+                   :justify-content 'space-between
+                   :background-color "#555"
+                   :margin-bottom 10
+                   :padding 10}}
+          [:div
+           {:style {:flex 1}}
+           [:input {:style {:width "100%"}
+                    :type "text"
+                    :value filter-text
+                    :on-change
+                    (fn [e]
+                      (swap! !ui assoc
+                        :filter-text
+                        (.. e -target -value)))}]]]
+         [$pp-pre (apply-filter clj-obj filter-text)]
+         #_[$searchable
+            {}
+            value]]))))
 
 (defn $state-item [_ _ ]
   (let [!ui (r/atom nil)]
@@ -209,14 +249,14 @@
             {}
             value]]))))
 
-(defn $nav-header [title]
+(defn $nav-header [& title-parts]
   [:div {:style {:padding 10
                  :background-color "black"}}
 
    [:h1 {:style {:font-size 16
                  :font-weight 'normal
                  :margin 0}}
-    title]])
+    (apply str title-parts)]])
 
 
 (defn load-debug-app-state [{:keys [s3-key s3-bucket]}]
@@ -241,17 +281,17 @@
     (fn [{:keys [header]} & children]
       [:div.collapsable
        [:div.collapsable-header
-        {:style {}
+        {:style {:cursor 'pointer}
          :on-click (fn [e]
-                     (prn "click")
                      (.preventDefault e)
                      (swap! !open? not)
                      nil)}
         header]
-       (vec
-         (concat
-           [:div.collapsable-body]
-           children))])))
+       (when @!open?
+         (vec
+           (concat
+             [:div.collapsable-body]
+             children)))])))
 
 (defn $root []
   [:div.mag-left
@@ -266,80 +306,89 @@
              :color 'white
              :overflow-y 'scroll}}
     [:div
-     {:style {:margin-bottom 30}}
-     [$nav-header "Debug App States"]
-     [:div.pad-sm
-      (->> DEBUG_APP_STATES
-           (map (fn [{:keys [s3-key] :as das}]
-                  [:a {:key s3-key
-                       :href "#"
-                       :style {:padding 10
-                               :display 'block
-                               :color 'white}
-                       :on-click (fn []
-                                   (load-debug-app-state das))}
-                   [:h3
-                    {:style {:margin 0
-                             :font-size 16}}
-                    s3-key]])))]]
+     {:style {:margin-bottom 1}}
+     [$collapable
+      {:header [$nav-header (str "Debug App States" " (" (count DEBUG_APP_STATES) ")")]}
+      [:div.pad-sm
+       (->> DEBUG_APP_STATES
+            (map (fn [{:keys [s3-key] :as das}]
+                   [:a {:key s3-key
+                        :href "#"
+                        :style {:padding 10
+                                :display 'block
+                                :color 'white}
+                        :on-click (fn []
+                                    (load-debug-app-state das))}
+                    [:h3
+                     {:style {:margin 0
+                              :font-size 16}}
+                     s3-key]])))]]]
 
     [:div
-     {:style {:margin-bottom 30}}
-     [$nav-header "Mem"]
-     [:div.pad-sm
-      (->> @!state
-           :state-items
-           (sort-by :key)
-           (map (fn [{:keys [key value]}]
-                  [:a {:key key
-                       :href (str "#" key)
-                       :style {:padding 10
-                               :display 'block
-                               :color 'white}}
-                   [:h3
-                    {:style {:margin 0
-                             :font-size 16}}
-                    key]])))]]
+     {:style {:margin-bottom 1}}
+     [$collapable
+      {:header
+       [$nav-header "Mem" " (" (count (:state-items @!state)) ")"]}
+      [:div.pad-sm
+       (->> @!state
+            :state-items
+            (sort-by :key)
+            (map (fn [{:keys [key value]}]
+                   [:a {:key key
+                        :href (str "#" key)
+                        :style {:padding 10
+                                :display 'block
+                                :color 'white}}
+                    [:h3
+                     {:style {:margin 0
+                              :font-size 16}}
+                     key]])))]]]
 
-    [$nav-header "Test States"]
 
-    [:div
-     (->> @!state
-          :test-states
-          (group-by :section)
-          (map (fn [[section-title test-states]]
-                 [:div
-                  {:key section-title
-                   :style {:margin-bottom 20}}
-                  [$collapable
-                   {:header [:div
-                             {:style {:padding 10}}
-                             [:h4 {:style {:font-size 12
-                                           :font-weight "500"
-                                           :text-transform 'uppercase
-                                           :letter-spacing 1
-                                           :margin 0
-                                           :color "#ccc"}}
-                              section-title]]}
-                   [:div
-                    (->> test-states
-                         (map (fn [{:keys [title] :as test-state}]
-                                [:a {:key (str section-title "-" title)
-                                     :href "#"
-                                     :style {:padding 10
-                                             :display 'block
-                                             :padding-left 25
-                                             :color 'white}
-                                     :on-click (fn [e]
-                                                 (.preventDefault e)
-                                                 (devbus/send
-                                                   @!db
-                                                   [:load-test-state test-state])
-                                                 nil)}
-                                 [:h3
-                                  {:style {:margin 0
-                                           :font-size 16}}
-                                  title]])))]]])))]]
+    (let [sections (->> @!state
+                        :test-states
+                        (group-by :section))]
+      [$collapable
+       {:header
+        [$nav-header "Test States" " (" (count sections) ")"]}
+       [:div
+        (->> sections
+             (map (fn [[section-title test-states]]
+                    [:div
+                     {:key section-title}
+                     [$collapable
+                      {:header [:div
+                                {:style {:padding 10}}
+                                [:h4 {:style {:font-size 12
+                                              :font-weight "500"
+                                              :text-transform 'uppercase
+                                              :letter-spacing 1
+                                              :margin 0
+                                              :color "#ccc"}}
+                                 section-title]]}
+                      [:div
+                       (->> test-states
+                            (map (fn [{:keys [title] :as test-state}]
+                                   [:a {:key (str section-title "-" title)
+                                        :href "#"
+                                        :style {:padding 10
+                                                :display 'block
+                                                :padding-left 25
+                                                :color 'white}
+                                        :on-click (fn [e]
+                                                    (.preventDefault e)
+                                                    (swap! !state
+                                                      assoc
+                                                      :current-test-state
+                                                      test-state)
+                                                    (devbus/send
+                                                      @!db
+                                                      [:load-test-state test-state])
+                                                    nil)}
+                                    [:h3
+                                     {:style {:margin 0
+                                              :font-size 16}}
+                                     title]])))]]])))]])]
    [:div.mag-content
     {:style {:position 'fixed
              :left 200
@@ -354,6 +403,8 @@
       [:div.col-sm-12
        [:div
         [:br]
+        (when-let [current-test-state (:current-test-state @!state)]
+          [$clj-data-view {} current-test-state])
         (->> @!state
              :state-items
              (filter #(= (:sel-state-item-key @!state)
@@ -361,16 +412,6 @@
              (map (fn [{:keys [key value updated-at] :as si}]
                     [$state-item {:key key} si]))
              doall)]]]]]])
-
-(def actions
-  [{:key :verification
-    :view $root
-    :handler (fn []
-               (when-let [lh (page/location-hash)]
-                 (swap! !state assoc
-                   :selected-section
-                   (nu/url-decode lh))))
-    :attach-to :#cljs-entry}])
 
 (defn init []
   (let [on-hashchange (fn []

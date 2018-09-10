@@ -50,20 +50,30 @@
                  [com.googlecode.libphonenumber/libphonenumber "8.9.6"]
                  [cljsjs/libphonenumber "8.4.1-1"]
                  [cljsjs/fuse "2.6.2-0"]
-                 [com.taoensso/timbre "4.10.0"]]
-  :plugins [[lein-cljsbuild "1.1.7"]]
+                 [com.taoensso/timbre "4.10.0"]
+                 [mount "0.1.13"]]
+  :plugins [[lein-cljsbuild "1.1.7"]
+            [lein-figwheel "0.5.16"]]
+
   :repl-options {:init (load-file "reup.clj")}
+
   :source-paths ["src/clj" "src/cljs" "src/cljc"]
   :test-paths ["test/clj"]
   :jar-name "nsfw.jar"
+  :figwheel {:validate-config false
+             :server-logfile "target/figwheel_server.log"
+             :server-port 44101
+             :repl-eval-timeout 20000
+             :http-server-root "resources/public"
+             :repl false}
   :cljsbuild
   {:builds {:dev
             {:source-paths ["src/cljs" "src/cljc"]
-             :compiler {:output-to "target/cljs/nsfw.js"
-                        :output-dir "target/cljs"
+             :figwheel {:on-jsload "nsfw.devbus.gui/reload-hook"}
+             :compiler {:output-to "resources/public/cljs/devbus.js"
+                        :output-dir "resources/public/cljs"
                         :optimizations :none
                         :source-map true
-                        :main "rx.entry"
+                        :main "nsfw.devbus.gui"
                         :asset-path "/cljs"
-                        :recompile-dependents false
-                        }}}})
+                        :recompile-dependents true}}}})

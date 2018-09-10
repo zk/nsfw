@@ -211,7 +211,7 @@
                [:test-states (-> @!state :test-states)]))
 
            :load-test-state
-           (fn [_ test-state]
+           (fn [_ [test-state]]
              (when-let [on-receive (:on-receive @!state)]
                (on-receive test-state)))
            :heartbeat
