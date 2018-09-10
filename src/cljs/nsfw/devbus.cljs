@@ -1,5 +1,13 @@
 (ns nsfw.devbus
-  (:require [nsfw.util :as nu]))
+  (:require [nsfw.util :as nu]
+            [taoensso.timbre :as log :include-macros true]
+            [cljs.test
+             :refer-macros [deftest is
+                            testing run-tests
+                            async]]
+            [cljs.core.async
+             :refer [<! chan put! timeout close!]
+             :refer-macros [go go-loop]]))
 
 (defn ws [url
           {:keys [on-open
@@ -13,10 +21,96 @@
     (set! (.-onerror s) on-error)
     s))
 
-(defn close [s]
+(defn close-ws [s]
   (when s
-    (.close s)
     (.close s)))
+
+(defn <ws [url]
+  (let [ch (chan)
+        socket (ws
+                 url
+                 {:on-open (fn [o]
+                             (put! ch {:event-type :open
+                                       :event o}))
+                  :on-error (fn [o]
+                              (put! ch {:event-type :error
+                                        :event o})
+                              (close! ch))
+                  :on-message (fn [o]
+                                (put! ch {:event-type :message
+                                          :event o}))
+                  :on-close (fn [o]
+                              (put! ch {:event-type :close
+                                        :event o})
+                              (close! ch))})]
+
+    {:ch ch
+     :socket socket}))
+
+(defn pws [url {:keys [on-open
+                       on-message
+                       on-close
+                       on-error]
+                :or {on-open (fn [_])
+                     on-message (fn [_])
+                     on-close (fn [_])
+                     on-error (fn [_])}}]
+  (let [!run? (atom true)
+        !socket (atom nil)
+        out {:close (fn []
+                      (reset! !run? false)
+                      (when @!socket
+                        (.close @!socket)))
+             :send (fn [data]
+                     (.send @!socket data))
+             :!socket !socket}]
+    (go-loop []
+      (let [{:keys [ch socket]} (<ws url)]
+        (reset! !socket socket)
+        (loop []
+          (let [{:keys [event-type event] :as message} (<! ch)]
+            (condp = event-type
+              :open (on-open event out)
+              :message (on-message event out)
+              :close (on-close event out)
+              :error (on-error event out))
+            (when (get #{:open :message} event-type)
+              (recur))))
+
+
+        (when @!socket
+          (log/debug "Closing socket")
+          (.close @!socket))
+        (log/info "Connection lost")
+        (when @!run?
+          (<! (timeout 1000))
+          (log/info "Reconnecting")
+          (recur))
+        (log/info "Stopping pws")))
+    out))
+
+(defn close-pws [{:keys [close] :as pws}]
+  (when pws
+    (close)))
+
+(defn pws-open? [{:keys [!socket]}]
+  (when-let [s @!socket]
+    (let [state (.-readyState s)]
+      (= (.-OPEN s) state))))
+
+(deftest test-pws-close
+  (let [p (pws "ws://localhost:44100/devbus"
+            {:on-close (fn [] (prn "close"))
+             :on-error (fn [] (prn "error"))})]
+    (async done
+      (go
+        (<! (timeout 500))
+        (close-pws p)
+        (is (not (pws-open? p)))
+        (done)))))
+
+(defn stop-client [conn]
+  (close-pws conn))
 
 (defn handlers-client [url handlers
                        & [{:keys [on-open
@@ -25,33 +119,32 @@
                            :or {on-open (fn [_])
                                 on-error (fn [_])
                                 on-close (fn [_])}}]]
-  (ws
+  (pws
     url
     {:on-open
-     (fn [o]
-       (on-open (.-target o)))
+     (fn [o pws-client]
+       (on-open (.-target o) pws-client))
 
      :on-error
      (fn [o]
-       (prn "ERR")
        (on-error (.-target o)))
 
      :on-message
-     (fn [o]
+     (fn [o pws-client]
        (let [res (try
                    (nu/from-transit (.-data o))
-                   (catch js/Error e nil))]
-         #_(prn "DEBUG" (.-data o))
+                   (catch js/Error e
+                     (log/debug "Error decoding message" (.-data o))
+                     nil))]
          (when res
-           #_(nu/pp-str res)
            (let [[key & args] res
                  handler (get handlers key)]
              (when handler
-               (apply handler (.-target o) args))))))
+               (handler pws-client args))))))
 
      :on-close
      (fn [o]
-       (prn "WS ON CLOSE")
+       (prn "oc")
        (on-close (.-target o)))}))
 
 (deftype ObjectHandler []
@@ -60,11 +153,14 @@
   (rep [this v] (str v))
   (stringRep [this v] (str v)))
 
-(defn send [s data]
-  (when s
+(defn send [{sendpws :send :as pws} data]
+  (when-not sendpws
+    (nu/throw-str (str "send requires pws object, got " pws)))
+  (when sendpws
     (try
-      (.send s (nu/to-transit data))
+      (sendpws (nu/to-transit data))
       (catch js/Error e
+        (log/info "Error encoding" data)
         #_(.error js/console (str "Error serializing"
                                   (pr-str data)))
         nil))))
@@ -94,57 +190,80 @@
        (map realize-state-item)
        vec))
 
-(def app-client-handlers
-  {:request-state-items
-   (fn [devbus-conn]
-     (send
-       devbus-conn
-       [:state-items
-        (->> @!state
-             :state-items
-             realize-state-items)]))
-   :heartbeat
-   (fn [devbus-conn]
-     (prn "got heartbeat"))})
-
 (defn app-client [url]
   (when (:devbus-conn @!state)
-    (close (:devbus-conn @!state)))
+    (stop-client (:devbus-conn @!state)))
   (let [devbus-conn
         (handlers-client
           url
-          app-client-handlers
-          {:on-open
+          {:request-state-items
            (fn [devbus-conn]
+             (send
+               devbus-conn
+               [:state-items
+                (->> @!state
+                     :state-items
+                     realize-state-items)]))
+           :request-test-states
+           (fn [devbus-conn]
+             (send
+               devbus-conn
+               [:test-states (-> @!state :test-states)]))
+
+           :load-test-state
+           (fn [_ test-state]
+             (when-let [on-receive (:on-receive @!state)]
+               (on-receive test-state)))
+           :heartbeat
+           (fn [devbus-conn]
+             (prn "got heartbeat"))}
+          {:on-open
+           (fn [ws devbus-conn]
+             (log/debug "Startup broadcast for :state-items, :test-states")
              (send devbus-conn
                [:state-items
                 (->> @!state
                      :state-items
-                     realize-state-item)]))
-           :on-close (fn [devbus-conn]
-                       (prn "devbus client closed"))})]
+                     realize-state-items)])
+             (send devbus-conn
+               [:test-states
+                (->> @!state
+                     :test-states)]))})]
     (swap! !state assoc :devbus-conn devbus-conn)))
 
-
 (defn debug-client [url
-                    on-state-items]
+                    {:keys [on-state-items
+                            on-test-states
+                            on-open]
+                     :as opts}]
   (handlers-client
     url
     {:state-items
-     (fn [_ state-items]
+     (fn [_ [state-items]]
        (on-state-items state-items))
+     :test-states
+     (fn [_ [test-states]]
+       (on-test-states test-states))
      :heartbeat (fn [_]
                   (prn "heartbeat"))}
-    {:on-open (fn [db]
-                (send
-                  db
-                  [:request-state-items]))}))
+    (merge
+      opts
+      {:on-open (fn [db pws]
+                  (log/debug "Connected, broadcasting"
+                    (->> [:request-state-items
+                          :request-test-states]
+                         (interpose ", ")
+                         (apply str)))
+                  (send pws [:request-state-items])
+                  (send pws [:request-test-states])
+                  (when on-open
+                    (on-open db pws)))})))
 
 (defn shutdown []
-  (prn "devbus shutdown")
+  (log/info "Devbus shutdown")
   (when-let [devbus-conn (:devbus-conn @!state)]
-    (prn "shutdown devbus-conn")
-    (close devbus-conn))
+    (log/info "Shutting down devbus-conn")
+    (stop-client devbus-conn))
   (doseq [{:keys [ref] :as item} (:state-items @!state)]
     (when ref
       (remove-watch
@@ -170,7 +289,7 @@
        (map (fn [{:keys [title section ref value key]}]
               (merge
                 {:key (if key
-                        (name key)
+                        (str (namespace key) "." (name key))
                         (str section "." title))}
                 (when ref
                   {:ref ref})
@@ -194,7 +313,7 @@
          (->> state-items
               realize-state-items)]))
 
-    (doseq [{:keys [ref] :as item} (->> state-items
+    (doseq [{:keys [ref key] :as item} (->> state-items
                                         (filter :ref))]
       (when ref
         (add-watch ref :devbus
@@ -206,3 +325,27 @@
 
 (defn track [si]
   (trackmult [si]))
+
+(defn atom? [o]
+  (satisfies? IAtom o))
+
+(defn watch [k v]
+  (try
+    (track
+      (merge
+        {:key k}
+        (if (atom? v)
+          {:ref v}
+          {:value v})))
+    (catch js/Error e
+      (println "Couldn't watch" k "-" e))))
+
+(defn hook-test-states
+  [test-states
+   on-receive]
+  (swap! !state
+    assoc
+    :test-states test-states
+    :on-receive on-receive)
+  (when-let [conn (:devbus-conn @!state)]
+    (send conn [:test-states test-states])))
