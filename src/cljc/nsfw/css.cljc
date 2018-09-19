@@ -130,8 +130,6 @@ linear-gradient(45deg, "
                    :justify-content "center"
                    :align-items "stretch"})
 
-
-
 (def flex-apart {:display 'flex
                  :flex-direction 'row
                  :justify-content 'space-between
@@ -157,6 +155,13 @@ linear-gradient(45deg, "
    :flex-direction 'column
    :justify-content 'flex-end
    :align-items 'center})
+
+
+(def parent-size {:position 'absolute
+                  :top 0
+                  :left 0
+                  :right 0
+                  :bottom 0})
 
 (defmacro inject-css-defs [{:keys [sizes fonts] :as spec}]
   (let [{:keys [xs sm md lg xl]} sizes
@@ -215,6 +220,8 @@ linear-gradient(45deg, "
        (def ~'flex-center flex-center)
 
        (def ~'flex-vcenter flex-vcenter)
+
+       (def ~'parent-size parent-size)
 
        (def ~'flex-apart {:display "flex"
                           :flex-direction "row"
@@ -493,8 +500,6 @@ linear-gradient(45deg, "
         :font-weight 'normal}
        (reduce merge style-overrides))]))
 
-
-
 (def flexbox
   [[:.flex-apart flex-apart]
 
@@ -575,3 +580,30 @@ linear-gradient(45deg, "
                                :flex-direction 'column
                                :align-items 'center
                                :justify-content 'center}]])
+
+
+(defn gen-all-rules [spec]
+  [flexbox
+   (headers spec)])
+
+(defn compile-to-string [rules & [override-opts]]
+  (garden/css
+    (merge
+      {
+       :pretty-print? false
+       :vendors ["webkit" "moz" "ms"]
+       :auto-prefix #{:justify-content
+                      :align-items
+                      :flex-direction
+                      :flex-wrap
+                      :align-self
+                      :transition
+                      :transform
+                      :background-clip
+                      :background-origin
+                      :background-size
+                      :filter
+                      :font-feature-settings
+                      :appearance}}
+      override-opts)
+    rules))

@@ -13,3 +13,4 @@ out
 TAGS
 .nrepl-port
 .lein-repl-history
+/resources/public

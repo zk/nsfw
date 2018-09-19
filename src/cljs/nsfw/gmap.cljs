@@ -1,6 +1,7 @@
 (ns nsfw.gmap
   (:require [reagent.core :as rea]
             [nsfw.util :as util]
+            [nsfw.page :as page]
             [clojure.string :as str]
             [clojure.set :as set]))
 
@@ -64,15 +65,15 @@
 (defn unwrap-children [children]
   (->> children
        (mapcat
-         (fn [c]
-           (if (or (list? (first c))
-                   (vector? (first c)))
-             c
-             [c])))
+        (fn [c]
+          (if (and #_(seqable? c)
+                   (or (list? (first c))
+                       (vector? (first c))
+                       (seq? (first c))))
+            c
+            [c])))
        (remove empty?)
        (remove nil?)))
-
-
 
 (defmulti remove-obj :key)
 (defmulti add-obj :key)
@@ -156,6 +157,41 @@
   [{:keys [gmap obj el]}]
   (.setMap obj nil)
   nil)
+
+
+(defmethod add-obj :circle
+  [{:keys [gmap el]}]
+  (let [props (second el)
+        props (assoc props :map gmap)
+        ;;props (apply dissoc props EVENT_KEYS)
+        circle (google.maps.Circle. (clj->js props))]
+    (attach-event-listeners
+      circle
+      props
+      (fn [e]
+        (let [pos (.getPosition circle)]
+          {:lat (.lat pos) :lng (.lng pos)})))
+    circle))
+
+(defmethod update-obj :circle
+  [{:keys [gmap obj el]}]
+  (let [props (second el)]
+    (.setOptions obj (-> props
+                         kebob->camel
+                         clj->js))
+    (attach-event-listeners
+      obj
+      props
+      (fn [e]
+        (let [pos (.getPosition obj)]
+          {:lat (.lat pos) :lng (.lng pos)}))))
+  obj)
+
+(defmethod remove-obj :circle
+  [{:keys [gmap obj el]}]
+  (.setMap obj nil)
+  nil)
+
 
 
 ;; https://developers.google.com/maps/documentation/javascript/reference/3/polygon#Polyline
@@ -272,17 +308,17 @@
         new-objs (->> groups
                       (map (fn [[k els]]
                              [k (populate-els
-                                  k
-                                  gmap
-                                  (get objs k)
-                                  els)]))
+                                 k
+                                 gmap
+                                 (get objs k)
+                                 els)]))
                       (into {})
                       doall)]
 
     ;; clear non existent el keys
     (doseq [k (set/difference
-                (set obj-keys)
-                (set el-keys))]
+               (set obj-keys)
+               (set el-keys))]
       (doseq [obj (get objs k)]
         (remove-obj {:key k :obj obj :el nil})))
 
@@ -353,6 +389,7 @@
         opts (dissoc opts :map-type)
         initial (:initial opts)
         initial-bounds (-> opts :initial :bounds)
+        bounds-padding (-> opts :initial :bounds-padding)
 
 
         gmap (js/google.maps.Map.
@@ -366,7 +403,7 @@
                gmap
                {}
                children)]
-    #_(prn "maptype" (.-mapTypes gmap))
+
     (when map-type
       (let [mt-str (name map-type)
             stamen? (re-find #"^stamen-" mt-str)]
@@ -374,15 +411,17 @@
           (let [stamen-type (str/replace mt-str #"^stamen-" "")]
             (do
               (.set
-                (.-mapTypes gmap)
-                stamen-type
-                (js/google.maps.StamenMapType. stamen-type))
+               (.-mapTypes gmap)
+               stamen-type
+               (js/google.maps.StamenMapType. stamen-type))
               (.setMapTypeId gmap stamen-type)))
           (condp = map-type
             ;; adtl map types here
             nil))))
     (when initial-bounds
-      (.fitBounds gmap (clj->js initial-bounds)))
+      (.fitBounds gmap
+                  (clj->js initial-bounds)
+                  bounds-padding))
     (attach-event-listeners gmap opts (map-event-transforms gmap))
     (rea/set-state this {:gmap gmap :objs objs})
     gmap))
@@ -405,42 +444,83 @@
       (> (dist-between (:east c1) (:east c2)) max-delta)
       (> (dist-between (:west c1) (:west c2)) max-delta))))
 
-(defn map-rec-props [this next-props]
-  (let [{:keys [gmap objs]} (rea/state this)
-        {:keys [opts children]} (parse-args (rest next-props))
+#_(defn map-rec-props [this next-props]
+    (let [{:keys [gmap objs]} (rea/state this)
+          {:keys [opts children]} (parse-args (rest next-props))
 
-        center (:center opts)
-        bounds (:bounds opts)
-        zoom (:zoom opts)
-        opts (dissoc opts :center :bounds)
-        new-objs (populate-map gmap objs children)]
+          center (:center opts)
+          bounds (:bounds opts)
+          zoom (:zoom opts)
+          opts (dissoc opts :center :bounds)
+          new-objs (populate-map gmap objs children)]
+      #_(.setOptions gmap (-> opts
+                              kebob->camel
+                              clj->js))
+
+      (when center
+        #_(and center (sigdiff-latlng? center (center-from-map gmap)))
+        (.panTo gmap (clj->js center)))
+      (when (and bounds (util/spy (sigdiff-bounds? bounds (bounds-from-map gmap))))
+        (.fitBounds gmap (clj->js bounds)))
+      (when zoom
+        (.setZoom gmap zoom))
+      (attach-event-listeners
+       gmap
+       opts
+       (map-event-transforms gmap))
+      (rea/set-state this {:gmap gmap :objs new-objs})))
+
+(defn map-rec-props [[old-opts & old-children]
+                     [new-opts & new-children]
+                     this]
+
+  (let [{:keys [gmap objs]} (rea/state this)
+
+        {old-center :center
+         old-zoom :zoom
+         old-bounds :bounds} old-opts
+
+        {new-center :center
+         new-zoom :zoom
+         new-bounds :bounds} new-opts
+
+        opts (dissoc new-opts :center :bounds)
+        new-objs (populate-map gmap objs new-children)]
     #_(.setOptions gmap (-> opts
                             kebob->camel
                             clj->js))
 
-    (when center
+    (when (and new-center (not= old-center new-center))
       #_(and center (sigdiff-latlng? center (center-from-map gmap)))
-      (.panTo gmap (clj->js center)))
-    (when (and bounds (sigdiff-bounds? bounds (bounds-from-map gmap)))
-      (.fitBounds gmap (clj->js bounds)))
-    (when zoom
-      (.setZoom gmap zoom))
+      (.panTo gmap (clj->js new-center)))
+    (when (and new-bounds
+               (not= old-bounds new-bounds)
+               (sigdiff-bounds? new-bounds (bounds-from-map gmap)))
+      (.fitBounds gmap (clj->js new-bounds)))
+    (when (and new-zoom (not= old-zoom new-zoom))
+      (.setZoom gmap new-zoom))
     (attach-event-listeners
-      gmap
-      opts
-      (map-event-transforms gmap))
+     gmap
+     opts
+     (map-event-transforms gmap))
     (rea/set-state this {:gmap gmap :objs new-objs})))
 
 ;; https://developers.google.com/maps/documentation/javascript/reference/3/
 
+
+;; :bounds - {:north :south :east :west}
+;; :initial :bounds - {:north :south :east :west}
+;; :map-type-id - "satellite"
+
 (defn $map-view [& children]
   (rea/create-class
-    {:reagent-render map-render
-     :component-did-mount
-     (fn [this]
-       (run-after-script-load
-         #(map-did-mount this)))
-     :component-will-receive-props map-rec-props}))
+   {:reagent-render map-render
+    :component-did-mount
+    (fn [this]
+      (run-after-script-load
+       #(map-did-mount this)))
+    :component-did-update
+    (page/cdu-diff map-rec-props)}))
 
 (defn meters-between [[p1 p2]]
   (.computeDistanceBetween google.maps.geometry.spherical

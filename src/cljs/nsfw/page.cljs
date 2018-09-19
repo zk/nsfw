@@ -461,7 +461,7 @@
       comp
       children)))
 
-(defn $interpose-children [{:keys [separator] :as opts} children]
+(defn $interpose-children [{:keys [separator] :as opts} & children]
   (vec
    (concat
     [:div
@@ -522,7 +522,7 @@
 (defn cdu-diff [f]
   (fn [this [_ & old-args]]
     (let [new-args (rest (r/argv this))]
-      (f old-args new-args))))
+      (f old-args new-args this))))
 
 (defn ls-set [k obj]
   (when (and k (.-localStorage js/window))

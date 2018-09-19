@@ -92,8 +92,8 @@
 (defn decode-content-type [cts]
   (let [parts (str/split cts #";")
         media-type (some->
-                     (first parts)
-                     str/trim)]
+                    (first parts)
+                    str/trim)]
     {:media-type media-type
      :params (->> parts
                   rest
@@ -278,6 +278,15 @@
            util/to-json)
        ";"))
 
+(defn js-var-obj [var-name clj-obj]
+  (str "var "
+       (name key)
+       "="
+       (-> clj-obj
+           util/to-transit
+           util/to-json)
+       ";"))
+
 (defn cljs-page-template [{:keys [js css env data
                                   body-class head
                                   meta-named
@@ -398,7 +407,7 @@
 (defn js-entries->csp-frag [os]
   (->> os
        (map js-entry->csp-frag)
-       (reduce merge-csp)))
+       (reduce merge-csp {})))
 
 #_(add-to-content-security-policy
     {}
@@ -482,7 +491,7 @@
                [[:script {:type "text/javascript"}
                  (write-page-data :env env)]]))
 
-        default-csp {:script-src ["'self'"]}
+        default-csp {}
 
         csp (merge-csp
               default-csp
@@ -492,9 +501,11 @@
               csp
               (js-entries->csp-frag js))
 
-        resp (add-to-content-security-policy
+        resp (if (empty? csp)
                resp
-               csp)]
+               (add-to-content-security-policy
+                 resp
+                 csp))]
 
     resp))
 
@@ -536,8 +547,8 @@
                          middleware (or middleware identity)
                          data (or data identity)]
                      (middleware
-                       (fn [req]
-                         (render (data req)))))
+                      (fn [req]
+                        (render (data req)))))
                    fn-or-map)]))
        (into {})))
 
@@ -550,9 +561,9 @@
             handler-fn (get compiled-handlers handler)]
         (when handler-fn
           (handler-fn
-            (-> req
-                (update-in [:params] merge route-params)
-                (update-in [:route-params] merge route-params))))))))
+           (-> req
+               (update-in [:params] merge route-params)
+               (update-in [:route-params] merge route-params))))))))
 
 (defn wrap-log-request [handler]
   (fn [r]

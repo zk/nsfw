@@ -4,7 +4,6 @@
                 [nsfw.util :as nu]
                 [nsfw.css :as nc]
                 [nsfw.page :as page]
-                [rx.css :as css]
                 [dommy.core :as dommy]
                 [cljs.core.async :as async
                  :refer [<! >! chan close! put! take! timeout]]))

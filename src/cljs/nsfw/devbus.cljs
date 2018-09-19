@@ -1,6 +1,7 @@
 (ns nsfw.devbus
   (:require [nsfw.util :as nu]
             [taoensso.timbre :as log :include-macros true]
+            [datascript.transit :as dt]
             [cljs.test
              :refer-macros [deftest is
                             testing run-tests
@@ -8,6 +9,15 @@
             [cljs.core.async
              :refer [<! chan put! timeout close!]
              :refer-macros [go go-loop]]))
+
+
+(def DEFAULT_READ_HANDLERS
+  (merge
+    dt/read-handlers))
+
+(def DEFAULT_WRITE_HANDLERS
+  (merge
+    dt/write-handlers))
 
 (defn ws [url
           {:keys [on-open
@@ -115,7 +125,8 @@
 (defn handlers-client [url handlers
                        & [{:keys [on-open
                                   on-error
-                                  on-close]
+                                  on-close
+                                  transit-read-handlers]
                            :or {on-open (fn [_])
                                 on-error (fn [_])
                                 on-close (fn [_])}}]]
@@ -132,7 +143,11 @@
      :on-message
      (fn [o pws-client]
        (let [res (try
-                   (nu/from-transit (.-data o))
+                   (nu/from-transit (.-data o)
+                     {:handlers
+                      (merge
+                        DEFAULT_READ_HANDLERS
+                        transit-read-handlers)})
                    (catch js/Error e
                      (log/debug "Error decoding message" (.-data o))
                      nil))]
@@ -153,14 +168,20 @@
   (rep [this v] (str v))
   (stringRep [this v] (str v)))
 
-(defn send [{sendpws :send :as pws} data]
+(defn send [{sendpws :send :as pws}
+            data
+            &
+            [{:keys [write-handlers]}]]
   (when-not sendpws
     (nu/throw-str (str "send requires pws object, got " pws)))
   (when sendpws
     (try
-      (sendpws (nu/to-transit data))
+      (sendpws (nu/to-transit data
+                 {:handlers (merge
+                              DEFAULT_WRITE_HANDLERS
+                              write-handlers)}))
       (catch js/Error e
-        (log/info "Error encoding" data)
+        (log/info "Error encoding" e)
         #_(.error js/console (str "Error serializing"
                                   (pr-str data)))
         nil))))
@@ -190,7 +211,7 @@
        (map realize-state-item)
        vec))
 
-(defn app-client [url]
+(defn app-client [url & [opts]]
   (when (:devbus-conn @!state)
     (stop-client (:devbus-conn @!state)))
   (let [devbus-conn
@@ -217,18 +238,22 @@
            :heartbeat
            (fn [devbus-conn]
              (prn "got heartbeat"))}
-          {:on-open
-           (fn [ws devbus-conn]
-             (log/debug "Startup broadcast for :state-items, :test-states")
-             (send devbus-conn
-               [:state-items
-                (->> @!state
-                     :state-items
-                     realize-state-items)])
-             (send devbus-conn
-               [:test-states
-                (->> @!state
-                     :test-states)]))})]
+          (merge
+            {:on-open
+             (fn [ws devbus-conn]
+               (log/debug "Startup broadcast for :state-items, :test-states")
+               (send devbus-conn
+                 [:state-items
+                  (->> @!state
+                       :state-items
+                       realize-state-items)]
+                 opts)
+               (send devbus-conn
+                 [:test-states
+                  (->> @!state
+                       :test-states)]
+                 opts))}
+            opts))]
     (swap! !state assoc :devbus-conn devbus-conn)))
 
 (defn debug-client [url

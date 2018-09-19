@@ -9,6 +9,7 @@
             [cljs.reader :as reader]
             [taoensso.timbre :as log :include-macros true]
             [reagent.core :as r]
+            [datascript.transit :as dt]
             [mount.core
              :as mount
              :refer-macros [defstate]]
@@ -25,10 +26,15 @@
    :region "us-west-2"})
 
 
+
 (def DEBUG_APP_STATES
-  [{:s3-key "debug-app-state/app-state-zk-1536536501989.transit.json"
-    :s3-bucket "nalopastures"
-    :s3-region "us-west-2"}])
+  (->> ["app-state-zk-1537217263557.transit.json"
+        "app-state-zk-1537004440662.transit.json"
+        "app-state-zk-1536536501989.transit.json"]
+       (map (fn [key-frag]
+              {:s3-key (str "debug-app-state/" key-frag)
+               :s3-bucket "nalopastures"
+               :s3-region "us-west-2"}))))
 
 (def !state (r/atom nil))
 (defonce !db (atom nil))
@@ -305,27 +311,10 @@
              :background-color "#333"
              :color 'white
              :overflow-y 'scroll}}
-    [:div
-     {:style {:margin-bottom 1}}
-     [$collapable
-      {:header [$nav-header (str "Debug App States" " (" (count DEBUG_APP_STATES) ")")]}
-      [:div.pad-sm
-       (->> DEBUG_APP_STATES
-            (map (fn [{:keys [s3-key] :as das}]
-                   [:a {:key s3-key
-                        :href "#"
-                        :style {:padding 10
-                                :display 'block
-                                :color 'white}
-                        :on-click (fn []
-                                    (load-debug-app-state das))}
-                    [:h3
-                     {:style {:margin 0
-                              :font-size 16}}
-                     s3-key]])))]]]
 
-    [:div
-     {:style {:margin-bottom 1}}
+
+    [page/$interpose-children
+     {:separator [:div {:style {:height 1}}]}
      [$collapable
       {:header
        [$nav-header "Mem" " (" (count (:state-items @!state)) ")"]}
@@ -342,53 +331,70 @@
                     [:h3
                      {:style {:margin 0
                               :font-size 16}}
-                     key]])))]]]
+                     key]])))]]
 
 
-    (let [sections (->> @!state
-                        :test-states
-                        (group-by :section))]
-      [$collapable
-       {:header
-        [$nav-header "Test States" " (" (count sections) ")"]}
-       [:div
-        (->> sections
-             (map (fn [[section-title test-states]]
-                    [:div
-                     {:key section-title}
-                     [$collapable
-                      {:header [:div
-                                {:style {:padding 10}}
-                                [:h4 {:style {:font-size 12
-                                              :font-weight "500"
-                                              :text-transform 'uppercase
-                                              :letter-spacing 1
-                                              :margin 0
-                                              :color "#ccc"}}
-                                 section-title]]}
-                      [:div
-                       (->> test-states
-                            (map (fn [{:keys [title] :as test-state}]
-                                   [:a {:key (str section-title "-" title)
-                                        :href "#"
-                                        :style {:padding 10
-                                                :display 'block
-                                                :padding-left 25
-                                                :color 'white}
-                                        :on-click (fn [e]
-                                                    (.preventDefault e)
-                                                    (swap! !state
-                                                      assoc
-                                                      :current-test-state
-                                                      test-state)
-                                                    (devbus/send
-                                                      @!db
-                                                      [:load-test-state test-state])
-                                                    nil)}
-                                    [:h3
-                                     {:style {:margin 0
-                                              :font-size 16}}
-                                     title]])))]]])))]])]
+     (let [sections (->> @!state
+                         :test-states
+                         (group-by :section))]
+       [$collapable
+        {:header
+         [$nav-header "Test States" " (" (count sections) ")"]}
+        [:div
+         (->> sections
+              (map (fn [[section-title test-states]]
+                     [:div
+                      {:key section-title}
+                      [$collapable
+                       {:header [:div
+                                 {:style {:padding 10}}
+                                 [:h4 {:style {:font-size 12
+                                               :font-weight "500"
+                                               :text-transform 'uppercase
+                                               :letter-spacing 1
+                                               :margin 0
+                                               :color "#ccc"}}
+                                  section-title]]}
+                       [:div
+                        (->> test-states
+                             (map (fn [{:keys [title] :as test-state}]
+                                    [:a {:key (str section-title "-" title)
+                                         :href "#"
+                                         :style {:padding 10
+                                                 :display 'block
+                                                 :padding-left 25
+                                                 :color 'white}
+                                         :on-click (fn [e]
+                                                     (.preventDefault e)
+                                                     (swap! !state
+                                                       assoc
+                                                       :current-test-state
+                                                       test-state)
+                                                     (devbus/send
+                                                       @!db
+                                                       [:load-test-state test-state])
+                                                     nil)}
+                                     [:h3
+                                      {:style {:margin 0
+                                               :font-size 16}}
+                                      title]])))]]])))]])
+
+     [$collapable
+      {:header [$nav-header (str "Debug App States" " (" (count DEBUG_APP_STATES) ")")]}
+      [:div.pad-sm
+       (->> DEBUG_APP_STATES
+            (map (fn [{:keys [s3-key] :as das}]
+                   [:a {:key s3-key
+                        :href "#"
+                        :style {:padding 10
+                                :display 'block
+                                :color 'white}
+                        :on-click (fn []
+                                    (load-debug-app-state das))}
+                    [:h3
+                     {:style {:margin 0
+                              :font-size 16}}
+                     s3-key]])))]]]]
    [:div.mag-content
     {:style {:position 'fixed
              :left 200

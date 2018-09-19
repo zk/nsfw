@@ -4,7 +4,6 @@
                [nsfw.components :as nc]
                [nsfw.popbar :as pb]
                [nsfw.page :as page]
-               [rx.css :as rc]
                [reagent.core :as r])))
 
 #?

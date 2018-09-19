@@ -51,7 +51,9 @@
                  [cljsjs/libphonenumber "8.4.1-1"]
                  [cljsjs/fuse "2.6.2-0"]
                  [com.taoensso/timbre "4.10.0"]
-                 [mount "0.1.13"]]
+                 [mount "0.1.13"]
+                 [datascript "0.16.6"]
+                 [datascript-transit "0.2.2"]]
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-figwheel "0.5.16"]]
 

@@ -214,9 +214,7 @@
                           (bt/hash o :md5 opts))
                         16)
               pad (apply str (repeat (- 32 (count md5-str)) "0"))]
-          (str pad md5-str))))
-    :cljs
-    (def md5 crypt/md5))
+          (str pad md5-str)))))
 
 
 
@@ -589,9 +587,14 @@
           (hash-bytes data :sha512)))
 
       (defn sha512 [s & [o]]
-        (bytes->hex (sha512-bytes s 0)))))
+        (bytes->hex (sha512-bytes s 0)))
 
+      (defn md5-bytes [data & [o]]
+        (when data
+          (hash-bytes data :md5)))
 
+      (defn md5 [s & [o]]
+        (bytes->hex (md5-bytes s o)))))
 
 (defn pluralize [n singular plural]
   (if (= 1 n)
@@ -679,3 +682,10 @@
    (defmacro file-contents [path]
      (let [fc# (slurp path)]
        `~fc#)))
+
+
+(defn chan? [x]
+  (instance?
+    #?(:cljs cljs.core.async.impl.channels.ManyToManyChannel
+       :clj clojure.core.async.impl.channels.ManyToManyChannel)
+    x))

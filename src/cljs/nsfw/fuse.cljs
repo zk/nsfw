@@ -11,9 +11,11 @@
 
 (defn test-fuse []
   (let [index (create-index
-                [{:title "The old man and the sea"
+                [{:id "foo"
+                  :title "The old man and the sea"
                   :author "Hemingway"}
-                 {:title "1984"
+                 {:id "bar"
+                  :title "1984"
                   :author "George Oldwell"}]
                 {:threshold 0.3
                  :location 0
@@ -21,4 +23,4 @@
                  :maxPatternLength 32,
                  :minMatchCharLength 1
                  :keys ["title" "author"]})]
-    (search index "ol")))
+    (search index "th")))
