@@ -157,11 +157,16 @@ linear-gradient(45deg, "
    :align-items 'center})
 
 
-(def parent-size {:position 'absolute
-                  :top 0
-                  :left 0
-                  :right 0
-                  :bottom 0})
+(def parent-size-abs {:position 'absolute
+                      :top 0
+                      :left 0
+                      :right 0
+                      :bottom 0})
+
+(def parent-size-rel
+  {:width "100%"
+   :height "100%"
+   :position 'relative})
 
 (defmacro inject-css-defs [{:keys [sizes fonts] :as spec}]
   (let [{:keys [xs sm md lg xl]} sizes
@@ -221,7 +226,8 @@ linear-gradient(45deg, "
 
        (def ~'flex-vcenter flex-vcenter)
 
-       (def ~'parent-size parent-size)
+       (def ~'parent-size-rel parent-size-rel)
+       (def ~'parent-size-abs parent-size-abs)
 
        (def ~'flex-apart {:display "flex"
                           :flex-direction "row"
@@ -340,6 +346,11 @@ linear-gradient(45deg, "
        :left 0}]
 
 
+     [:.parent-size-rel parent-size-rel]
+
+     [:.parent-size-abs parent-size-abs]
+
+
      [:.scroll-y
       {:overflow-y 'scroll
        :-webkit-overflow-scrolling 'touch}]
@@ -414,13 +425,17 @@ linear-gradient(45deg, "
        {:width (px lg)
         :height (px lg)}]]]))
 
-
 (defn button
   [k {:keys [base-color
              base-size
-             border-color
+             base-border-color
+             active-border-color
              active-color
+             hover-color
+             hover-border-color
              text-color
+             hover-text-color
+             active-text-color
              border-radius
              border-radius-alt]
       :or {text-color (co/rgb 255 255 255)
@@ -434,7 +449,9 @@ linear-gradient(45deg, "
                 :base-color
                 :base-size
                 :text-color)
-        border-color (or border-color base-color)
+
+        base-border-color (or base-border-color
+                              base-color)
 
         hover-amount 6
         active-amount 14
@@ -445,43 +462,53 @@ linear-gradient(45deg, "
                        :border-style 'solid
                        :border-width (px 1)
                        :font-size (px 15)
-                       :font-weight 'bold
+                       :font-weight 'normal
                        :padding "5px 20px"
                        ;;:width "100%"
                        :cursor 'pointer}
                       {:background-color base-color
-                       :border-color (or border-color base-color)
-                       :color text-color
-                       :letter-spacing (px 1)}
-                      props
-                      (transition "background-color 0.2s ease, border-color 0.2s ease"))
+                       :border-color base-border-color
+                       :color text-color}
+                      (transition
+                        "background-color 0.08s ease, border-color 0.08s ease"))
 
-        hover-styles {:background-color (-> base-color
-                                            (co/rotate-hue hover-amount)
-                                            (co/darken 7))
-                      :border-color (co/rotate-hue border-color (* 1 hover-amount))
-                      :color (co/rotate-hue text-color hover-amount)}
+        hover-styles {:background-color (or hover-color
+                                            (-> base-color
+                                                (co/rotate-hue hover-amount)
+                                                (co/darken 7)))
+                      :border-color (or
+                                      hover-border-color
+                                      active-border-color
+                                      (co/rotate-hue base-border-color (* 1 hover-amount)))
+                      :color (or hover-text-color
+                                 active-text-color
+                                 (co/rotate-hue text-color hover-amount))}
 
         active-styles {:background-color (or active-color
                                              (-> base-color
                                                  (co/rotate-hue active-amount)
                                                  (co/darken 12)))
-                       :border-color (co/rotate-hue border-color (* 1 active-amount))
-                       :color (co/rotate-hue text-color active-amount)}]
+                       :border-color (or
+                                       active-border-color
+                                       (co/rotate-hue base-border-color (* 1 active-amount)))
+                       :color (or active-text-color
+                                  (co/rotate-hue text-color active-amount))}]
     [[selector
-      {:border-radius (px border-radius)}
       root-styles
       [:&:hover hover-styles]
       [:&:active active-styles]
       [:&:focus
-       {:outline 0}]]
+       {:outline 0}]
+      [:&:.round
+       {:border-radius (px border-radius)}]]
      [(str selector "-alt")
-      {:border-radius (px border-radius-alt)}
       root-styles
       [:&:hover hover-styles]
       [:&:active active-styles]
       [:&:focus
-       {:outline 0}]]]))
+       {:outline 0}]
+      [:&:.round
+       {:border-radius (px border-radius-alt)}]]]))
 
 (defn buttons [css-spec]
   (->> css-spec

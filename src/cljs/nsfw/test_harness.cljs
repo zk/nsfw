@@ -8,6 +8,10 @@
              :refer [<! >! chan close! sliding-buffer put! take! alts! timeout pipe mult tap]])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
+
+;; Warning, changes not reloaded automatically by figwheel unless
+;; configured
+
 (nc/inject-css-defs
   {:sizes {:xs 5 :sm 10 :md 20 :lg 50 :xl 100}
    :fonts {:header "'Helvetica Neue', Helvetica, sans-serif"
@@ -32,13 +36,20 @@
   (when (= 27 (.. e -keyCode))
     (swap! !current assoc :open? false)))
 
+(defn selected-plan! []
+  (->> @!current
+       :plans
+       (filter #(= (str (:section %) (:title %))
+                   (:selected-plan-id @!current)))
+       first))
+
 (defn reload! []
   (doseq [selector (:component-selectors @!current)]
     (doseq [$el (dommy/sel selector)]
       (r/unmount-component-at-node $el)))
   (dommy/unlisten! js/window :keydown on-keydown)
   (when-let [f (-> @!current :reload-fn)]
-    (f)))
+    (f (selected-plan!))))
 
 (defn set-reload-fn! [f]
   (swap! !current assoc :reload-fn f))
@@ -159,18 +170,15 @@
       [$console-root]
       $test-harness-console)))
 
-(defn selected-plan! []
-  (->> @!current
-       :plans
-       (filter #(= (str (:section %) (:title %))
-                   (:selected-plan-id @!current)))
-       first))
 
-(defn init! [{:keys [component-selectors console plans state-refs]}]
+
+(defn init! [{:keys [component-selectors console plans state-refs on-reload]}]
   (set-component-selectors! component-selectors)
   (attach-console! console)
   (set-plans! plans)
-  (swap! !current assoc :state-refs state-refs))
+  (swap! !current assoc :state-refs state-refs)
+  (when on-reload
+    (set-reload-fn! on-reload)))
 
 ;; Usage
 #_ (th/init!

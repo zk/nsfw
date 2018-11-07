@@ -371,31 +371,34 @@
                      (dommy/unlisten! js/window :popstate f)))]))
 
 (defn dispatch-current-path
-  [{:keys [routes actions context]}
-   & [path]]
-  (let [actions-lookup (nu/lookup-map
-                        :key
-                        actions)]
+  [{:keys [routes actions context default-key path]}]
+  (let [actions-lookup (nu/lookup-map :key actions)]
     (dispatch-route
-     routes
-     (fn [route-key route-params path]
-       (if (not route-key)
-         (nu/throw-str "No matching route for " path)
-         (if-let [{:keys [view handler attach-to]}
-                  (get actions-lookup route-key)]
-           (do
-             (when handler
-               (handler route-params context))
-             (when view
-               (prn "view" view route-params context attach-to)
-               (r/render-component
-                [view route-params context]
-                (if (or (string? attach-to)
-                        (keyword? attach-to))
-                  (dommy/sel1 attach-to)
-                  attach-to))))
-           (nu/throw-str "No action for " route-key))))
-     {:path path})))
+      routes
+      (fn [route-key route-params path]
+        (if (not route-key)
+          (nu/throw-str "No matching route for " path)
+          (if-let [{:keys [view handler attach-to view-opts]}
+                   (or (get actions-lookup route-key)
+                       (get actions-lookup default-key))]
+            (do
+              (when handler
+                (handler route-params context))
+              (when view
+                (let [attach-el (if (or (string? attach-to)
+                                        (keyword? attach-to))
+                                  (dommy/sel1 attach-to)
+                                  attach-to)]
+                  #_(r/unmount-component-at-node attach-el)
+                  (r/render-component
+                    [view
+                     (merge
+                       route-params
+                       view-opts)
+                     context]
+                    attach-el))))
+            (nu/throw-str "No action for " route-key))))
+      {:path path})))
 
 (defn init [{:keys [init-state
                     context
@@ -461,7 +464,7 @@
       comp
       children)))
 
-(defn $interpose-children [{:keys [separator] :as opts} & children]
+(defn $interpose-children [{:keys [separator] :as opts} children]
   (vec
    (concat
     [:div

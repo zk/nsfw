@@ -19,7 +19,8 @@
 (defn tunnel [{:keys [uri
                       include-response?
                       timeout
-                      transit-opts]
+                      transit-opts
+                      with-credentials?]
                :or {timeout 20000}
                :as req}
               payload]
@@ -31,16 +32,17 @@
   (go
     (let [res #?(:clj
                  (http/post
-                  uri
-                  {:content-type :transit+json
-                   :form-params (nu/to-transit payload transit-opts)})
+                   uri
+                   {:content-type :transit+json
+                    :form-params (nu/to-transit payload transit-opts)})
                  :cljs
                  (<! (http/post
-                      uri
-                      {:transit-params payload
-                       :headers {"Content-Type" "application/transit+json"}
-                       :timeout timeout
-                       :transit-opts transit-opts})))
+                       uri
+                       {:transit-params payload
+                        :headers {"Content-Type" "application/transit+json"}
+                        :timeout timeout
+                        :transit-opts transit-opts
+                        :with-credentials? with-credentials?})))
           {:keys [success
                   body
                   headers
@@ -63,9 +65,9 @@
 
         (= -1
            (.indexOf
-            (or (get headers "Content-Type")
-                (get headers "content-type"))
-            "application/transit+json"))
+             (or (get headers "Content-Type")
+                 (get headers "content-type"))
+             "application/transit+json"))
         [nil
          {:error (str "tunnel response content-type not application/transit+json: " (pr-str resp))}
          req]

@@ -307,7 +307,10 @@
                      active-fg
 
                      hover-bg
-                     hover-fg]}]
+                     hover-fg
+
+                     icon-size]
+              :or {icon-size 22}}]
           [:div.copy-button.text-center
            {:class (when @!copied?
                      "highlighted")
@@ -322,7 +325,7 @@
             :on-mouse-over
             (fn [])}
            [:a {:style {:display 'block
-                        :padding "0 6px"}
+                        :padding "0 3px"}
                 :href "#"
                 :on-mouse-over
                 (fn [e]
@@ -372,7 +375,7 @@
                            {:color active-fg}
                            (transition "none"))
                          {:color rest-fg})
-                       {:font-size 22
+                       {:font-size icon-size
                         :margin 5})}]]])}))))
 
 
@@ -485,6 +488,7 @@
                           (page/ensure-opts args)
                           [0 :visible?]
                           false))
+         !mouseover-timeout (atom nil)
          ch (chan 10)]
      (r/create-class
        {:component-did-mount
@@ -542,9 +546,18 @@
           (close! ch))
         :component-did-update
         (page/cdu-diff
-          (fn [[{ov :visible? :as oo} :as old] [{nv :visible? :as no} :as new]]
+          (fn [[{ov :visible?
+                 oemo :enable-mouse-over?
+                 :as oo} :as old]
+               [{nv :visible?
+                 nemo :enable-mouse-over?
+                 :as no} :as new]]
             (when (not= old new)
-              (put! ch (page/ensure-opts new)))))
+              (put! ch (page/ensure-opts new)))
+            (when (and (not nemo)
+                       (not= oemo nemo))
+              (js/clearTimeout @!mouseover-timeout)
+              (reset! !mouseover-timeout nil))))
         :reagent-render
         (fn [_ & _]
           (let [[opts & body] @!state
@@ -554,8 +567,11 @@
                         border-color
                         pop-style
                         enable-mouse-over?
+                        mouseover-delay
                         offset
+                        offset-right
                         visible?
+                        inline?
                         border-color]
                  po-content :content
                  :or {position :bot-center
@@ -621,10 +637,11 @@
                                :ty "100%"
                                :h-align 'center
                                :carat-side :top}
+
                   :bot-right {:slide-axis "translateY"
                               :slide-dist 5
                               :bottom (+ -3 offset)
-                              :right 0
+                              :right (+ 0 offset-right)
                               :tx "0"
                               :ty "100%"
                               :h-align 'right
@@ -657,14 +674,28 @@
              (merge
                {:style (merge
                          {:position 'relative}
+                         (when inline?
+                           {:display 'inline})
                          style)}
                (when enable-mouse-over?
                  {:on-mouse-over
                   (fn [e]
-                    (swap! !state assoc-in [0 :visible?] true)
+                    (if mouseover-delay
+                      (swap! !mouseover-timeout
+                        (fn [to]
+                          (when to
+                            (js/clearTimeout to))
+                          (js/setTimeout
+                            (fn []
+                              (swap! !state assoc-in [0 :visible?] true))
+                            mouseover-delay)))
+                      (swap! !state assoc-in [0 :visible?] true))
                     nil)
                   :on-mouse-out
                   (fn [e]
+                    (when @!mouseover-timeout
+                      (js/clearTimeout @!mouseover-timeout)
+                      (reset! !mouseover-timeout nil))
                     (swap! !state assoc-in [0 :visible?] false)
                     nil)
                   :on-touch-end
@@ -672,7 +703,9 @@
                     (swap! !state update-in [0 :visible?] not)
                     nil)}))
              (page/elvc
-               [:div.popover-body]
+               [:div.popover-body
+                {:style (when inline?
+                          {:display 'inline})}]
                body)
              [:div
               {:style (merge
@@ -727,7 +760,6 @@
                      {:fill 'none
                       :stroke border-color
                       :stroke-width 6
-
                       :points "0,100 50,8 100,100"}])])
                [:div
                 {:style {:display "flex"
@@ -761,19 +793,19 @@
                                   nil)
                   :style (merge
                            {:flex 1
+                            :z-index 100
                             :border-radius 5
+                            :position 'relative
                             :overflow 'hidden
                             :background-color 'black
                             :color 'white
                             :padding "7px 10px"
                             :font-size 14
-                            :line-height "130%"
                             :text-align 'center
                             :box-shadow "0 4px 8px 0 rgba(0,0,0,0.12), 0 2px 4px 0 rgba(0,0,0,0.08)"}
 
                            (when border-color
-                             {:border (str "solid " border-color " 1px")}
-                             )
+                             {:border (str "solid " border-color " 1px")})
                            (when (= :top carat-side)
                              {:margin-top -5})
                            (when (= :bot carat-side)

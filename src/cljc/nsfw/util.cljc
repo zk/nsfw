@@ -689,3 +689,12 @@
     #?(:cljs cljs.core.async.impl.channels.ManyToManyChannel
        :clj clojure.core.async.impl.channels.ManyToManyChannel)
     x))
+
+
+(defn clamp [x low high]
+  (if (and x low high)
+    (cond
+      (> x high) high
+      (< x low) low
+      :else x)
+    x))

@@ -5,6 +5,7 @@
             [reagent.core :as r]
             [nsfw.components :as nc]
             [dommy.core :as dommy]
+            [cljs-http.client :as hc]
             [cljs.core.async :as async
              :refer [<! >! chan close! put! take! timeout]
              :refer-macros [go go-loop]])
@@ -75,7 +76,7 @@
 
 (defn get-available-playback-rates [p]
   (when p
-    (.getAvailablePlaybackRates p)))
+    (js->clj (.getAvailablePlaybackRates p))))
 
 ;; vid info
 
@@ -86,6 +87,10 @@
 (defn get-video-url [p]
   (when p
     (.getVideoUrl p)))
+
+(defn get-video-data [p]
+  (when p
+    (js->clj (.getVideoData p) :keywordize-keys true)))
 
 (defn get-video-embed-code [p]
   (when p
@@ -141,7 +146,6 @@
       @!tag))
 
 (defn attach-script []
-  (prn "attaching script")
   (let [tag (.createElement js/document "script")
         _ (set! (.-src tag) "https://www.youtube.com/iframe_api")
         first-script-node (.item (.getElementsByTagName js/document "script") 0)
@@ -179,6 +183,16 @@
 (defn playing? [p]
   (= (get-player-state p) 1))
 
+(defn toggle-play-pause [p]
+  (if (playing? p)
+    (pause-video p)
+    (play-video p)))
+
+(defn toggle-play-stop [p]
+  (if (playing? p)
+    (stop-video p)
+    (play-video p)))
+
 (defn gather-props [player]
   {:playing? (playing? player)
    :time (get-current-time player)
@@ -191,12 +205,19 @@
       (set-size p (:width new) (:height new)))))
 
 (defn update-playing [p playing-flag?]
-  (prn "P" p)
   (when p
     (when-not (= (playing? p) playing-flag?)
       (if playing-flag?
         (play-video p)
         (pause-video p)))))
+
+(defn handle-loop [p [low high]]
+  (when (and low high)
+    (let [ms (get-current-time p)]
+      (when (> ms high)
+        (seek-to p low))
+      (when (< ms low)
+        (seek-to p low)))))
 
 (defn $video [{:keys [on-player
                       on-playing
@@ -206,7 +227,9 @@
                       on-props
 
                       on-time
-                      throttle-time]
+                      throttle-time
+
+                      loop]
                :or {on-playing (fn [])
                     on-paused (fn [])}
                :as opts}]
@@ -215,6 +238,8 @@
 
         !runs (atom {})
         !current-run-id (atom nil)
+
+        !loop (atom loop)
 
         internal-on-playing
         (fn []
@@ -235,6 +260,8 @@
                   (on-time
                     @!player
                     (get-current-time @!player)))
+                (when @!loop
+                  (handle-loop @!player @!loop))
                 (<! (timeout (or throttle-time 200)))
                 (recur))))
 
@@ -250,7 +277,6 @@
             (on-paused @!player)))
 
         initialize-video (fn [opts]
-                           (prn "INIT" opts)
                            (reset! !player
                              (create-player
                                @!node
@@ -263,9 +289,10 @@
                                     (when on-ready
                                       (on-ready @!player e))
                                     (when on-props
-                                      (on-props
-                                        @!player
-                                        (gather-props @!player))))
+                                      (when-let [props (gather-props @!player)]
+                                        (on-props
+                                          @!player
+                                          (gather-props @!player)))))
 
                                   :on-state-change
                                   (fn [e]
@@ -284,7 +311,10 @@
                                       (on-state-change e))
 
                                     (when on-props
-                                      (on-props (gather-props @!player))))})))
+                                      (when-let [props (gather-props @!player)]
+                                        (on-props
+                                          @!player
+                                          (gather-props @!player)))))})))
 
                            (when on-player
                              (when @!current-run-id
@@ -296,6 +326,7 @@
        (fn [_]
          (when-not (script-attached?)
            (attach-script))
+         (attach-ready)
          (run-after-script-load
            (fn []
              (initialize-video opts))))
@@ -313,8 +344,8 @@
 
        :component-did-update
        (page/cdu-diff
-         (fn [[old-opts]
-              [new-opts]]
+         (fn [[{old-loop :loop :as old-opts}]
+              [{new-loop :loop :as new-opts}]]
            (run-after-script-load
              (fn []
                (if (not= (:video-id old-opts)
@@ -323,7 +354,10 @@
                  (update-player-opts
                    @!player
                    old-opts
-                   new-opts))))
+                   new-opts))
+
+               (when (not= old-loop new-loop)
+                 (reset! !loop new-loop))))
 
            #_(run-after-script-load
                (fn []
@@ -341,4 +375,19 @@
           [:div
            {:ref #(when % (reset! !node %))}]])})))
 
-(attach-ready)
+
+(defn <videos-by-ids [{:keys [api-key]} video-ids
+                      & [{:keys [limit offset]
+                          :or {limit 10}}]]
+  (go
+    (let [res (<! (hc/get
+                    "https://www.googleapis.com/youtube/v3/videos"
+                    {:query-params {:key api-key
+                                    :part "snippet"
+                                    :maxResults limit
+                                    :id (->> video-ids
+                                             (interpose ",")
+                                             (apply str))}}))]
+      (if (:success res)
+        [(:body res)]
+        [nil res]))))
