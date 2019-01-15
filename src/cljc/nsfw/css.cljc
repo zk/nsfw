@@ -426,32 +426,61 @@ linear-gradient(45deg, "
         :height (px lg)}]]]))
 
 (defn button
-  [k {:keys [base-color
-             base-size
-             base-border-color
-             active-border-color
-             active-color
-             hover-color
-             hover-border-color
-             text-color
-             hover-text-color
-             active-text-color
-             border-radius
-             border-radius-alt]
-      :or {text-color (co/rgb 255 255 255)
-           border-radius 4
-           border-radius-alt 999}
+  [k {:keys
+      [base-bg-color
+       base-fg-color
+       base-border-color
+
+       hover-bg-color
+       hover-fg-color
+       hover-border-color
+
+       active-bg-color
+       active-fg-color
+       active-border-color
+
+       border-radius]
       :as opts}]
-  (let [s (name k)
+  (let [hover-bg-color (or hover-bg-color
+                           active-bg-color
+                           base-bg-color)
+
+        hover-fg-color (or hover-fg-color
+                           active-fg-color
+                           base-fg-color)
+
+        hover-border-color (or hover-border-color
+                               active-border-color
+                               base-border-color)
+
+        active-bg-color (or active-bg-color
+                            base-bg-color)
+
+        active-fg-color (or active-fg-color
+                            base-fg-color)
+
+        active-border-color (or active-border-color
+                                base-border-color)
+
+        border-radius (or border-radius 0)
+
+        style (dissoc opts
+                :base-bg-color
+                :base-fg-color
+                :base-border-color
+
+                :hover-bg-color
+                :hover-fg-color
+                :hover-border-color
+
+                :active-bg-color
+                :active-fg-color
+                :active-border-color
+
+                :border-radius)
+
+        s (name k)
         selector (str ".btn-" s)
-
-        props (dissoc opts
-                :base-color
-                :base-size
-                :text-color)
-
-        base-border-color (or base-border-color
-                              base-color)
 
         hover-amount 6
         active-amount 14
@@ -459,56 +488,39 @@ linear-gradient(45deg, "
         root-styles (merge
                       {:background-color 'transparent
                        :outline 0
-                       :border-style 'solid
-                       :border-width (px 1)
+                       :border-color 'transparent
+                       :border-width 0
                        :font-size (px 15)
                        :font-weight 'normal
                        :padding "5px 20px"
-                       ;;:width "100%"
                        :cursor 'pointer}
-                      {:background-color base-color
-                       :border-color base-border-color
-                       :color text-color}
+                      (when base-border-color
+                        {:border-color base-border-color
+                         :border-style 'solid
+                         :border-width (px 1)})
+                      {:background-color base-bg-color
+                       :color base-fg-color}
                       (transition
-                        "background-color 0.08s ease, border-color 0.08s ease"))
+                        "background-color 0.08s ease, border-color 0.08s ease")
+                      #_style)
 
-        hover-styles {:background-color (or hover-color
-                                            (-> base-color
-                                                (co/rotate-hue hover-amount)
-                                                (co/darken 7)))
-                      :border-color (or
-                                      hover-border-color
-                                      active-border-color
-                                      (co/rotate-hue base-border-color (* 1 hover-amount)))
-                      :color (or hover-text-color
-                                 active-text-color
-                                 (co/rotate-hue text-color hover-amount))}
+        hover-styles {:background-color hover-bg-color
+                      :color hover-fg-color
+                      :border-color hover-border-color}
 
-        active-styles {:background-color (or active-color
-                                             (-> base-color
-                                                 (co/rotate-hue active-amount)
-                                                 (co/darken 12)))
-                       :border-color (or
-                                       active-border-color
-                                       (co/rotate-hue base-border-color (* 1 active-amount)))
-                       :color (or active-text-color
-                                  (co/rotate-hue text-color active-amount))}]
+        active-styles {:background-color active-bg-color
+                       :border-color active-border-color
+                       :color active-fg-color}]
     [[selector
       root-styles
       [:&:hover hover-styles]
       [:&:active active-styles]
       [:&:focus
        {:outline 0}]
-      [:&:.round
-       {:border-radius (px border-radius)}]]
-     [(str selector "-alt")
-      root-styles
-      [:&:hover hover-styles]
-      [:&:active active-styles]
-      [:&:focus
-       {:outline 0}]
-      [:&:.round
-       {:border-radius (px border-radius-alt)}]]]))
+      [:&.round
+       {:border-radius (px border-radius)}]
+      [:&.hover hover-styles]
+      [:&.active active-styles]]]))
 
 (defn buttons [css-spec]
   (->> css-spec

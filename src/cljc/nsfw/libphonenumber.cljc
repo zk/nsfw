@@ -33,6 +33,15 @@
         parsed (.parse pu number-str country)]
     (.isValidNumber pu parsed)))
 
+(defn parse-and-keep-raw-input [number-str region-code]
+  (.parseAndKeepRawInput (get-instance) number-str region-code))
+
+(comment
+
+  (prn (parse-and-keep-raw-input "" "ZZ"))
+
+  )
+
 (defn format-e164 [number-str country]
   (let [pu (get-instance)
         parsed (.parse pu number-str country)]
@@ -52,3 +61,14 @@
   (let [pu (get-instance)
         parsed (.parse pu number-str country)]
     (.format pu parsed RFC3966)))
+
+
+(comment
+
+  (format-e164 "14157580667" "US")
+
+  (format-national "14157580667" "US")
+
+  (format-international "14157580667" "US")
+
+  )

@@ -309,7 +309,8 @@
                      hover-bg
                      hover-fg
 
-                     icon-size]
+                     icon-size
+                     render-icon]
               :or {icon-size 22}}]
           [:div.copy-button.text-center
            {:class (when @!copied?
@@ -324,59 +325,63 @@
                      style)
             :on-mouse-over
             (fn [])}
-           [:a {:style {:display 'block
-                        :padding "0 3px"}
-                :href "#"
-                :on-mouse-over
-                (fn [e]
-                  (.preventDefault e)
-                  (reset! !copied? false)
-                  #_(reset! !hover? true)
-                  nil)
-                :on-mouse-out
-                (fn [e]
-                  (.preventDefault e)
-                  #_(reset! !hover? false)
-                  nil)
-                :on-click
-                (fn [e]
-                  (.preventDefault e)
-                  (.stopPropagation e)
-                  (let [ta (.createElement js/document "textarea")
-                        x (.-scrollX js/window)
-                        y (.-scrollY js/window)]
-                    (dommy/set-style! ta :position "absolute")
-                    (dommy/set-style! ta :bottom 0)
-                    (dommy/set-style! ta :opacity 0)
-                    (set! (.-value ta) text)
-                    (.appendChild
-                      (.-body js/document)
-                      ta)
-                    (.focus ta)
-                    (.scrollTo js/window x y)
-                    (.select ta)
-                    (.execCommand js/document "copy")
-                    (.removeChild
-                      (.-body js/document)
-                      ta)
-                    (reset! !copied? true)
-                    (go
-                      (let [ct-val (nu/now)]
-                        (reset! !ct ct-val)
-                        (<! (timeout 16))
-                        (when (= @!ct ct-val)
-                          (reset! !copied? false)))))
-                  nil)}
-            [:i.ion-ios-copy
-             {:style (merge
-                       (transition "color 0.5s ease")
-                       (if @!copied?
-                         (merge
-                           {:color active-fg}
-                           (transition "none"))
-                         {:color rest-fg})
-                       {:font-size icon-size
-                        :margin 5})}]]])}))))
+           [:div
+            {:style {:display 'block
+                     :padding "3px"
+                     :line-height "50%"
+                     :cursor 'pointer}
+             :on-mouse-over
+             (fn [e]
+               (.preventDefault e)
+               (reset! !copied? false)
+               #_(reset! !hover? true)
+               nil)
+             :on-mouse-out
+             (fn [e]
+               (.preventDefault e)
+               #_(reset! !hover? false)
+               nil)
+             :on-click
+             (fn [e]
+               (.preventDefault e)
+               (.stopPropagation e)
+               (let [ta (.createElement js/document "textarea")
+                     x (.-scrollX js/window)
+                     y (.-scrollY js/window)]
+                 (dommy/set-style! ta :position "absolute")
+                 (dommy/set-style! ta :bottom 0)
+                 (dommy/set-style! ta :opacity 0)
+                 (set! (.-value ta) text)
+                 (.appendChild
+                   (.-body js/document)
+                   ta)
+                 (.focus ta)
+                 (.scrollTo js/window x y)
+                 (.select ta)
+                 (.execCommand js/document "copy")
+                 (.removeChild
+                   (.-body js/document)
+                   ta)
+                 (reset! !copied? true)
+                 (go
+                   (let [ct-val (nu/now)]
+                     (reset! !ct ct-val)
+                     (<! (timeout 100))
+                     (when (= @!ct ct-val)
+                       (reset! !copied? false)))))
+               nil)}
+            (if render-icon
+              [render-icon {:copied? @!copied?}]
+              [:i.ion-ios-copy
+                 {:style (merge
+                           (transition "color 0.5s ease")
+                           (if @!copied?
+                             (merge
+                               {:color active-fg}
+                               (transition "none"))
+                             {:color rest-fg})
+                           {:font-size icon-size
+                            :margin 5})}])]])}))))
 
 
 #?
@@ -560,7 +565,7 @@
               (reset! !mouseover-timeout nil))))
         :reagent-render
         (fn [_ & _]
-          (let [[opts & body] @!state
+          (let [[opts body] @!state
                 {:keys [position
                         style
                         width
@@ -572,7 +577,8 @@
                         offset-right
                         visible?
                         inline?
-                        border-color]
+                        border-color
+                        no-pad?]
                  po-content :content
                  :or {position :bot-center
                       color 'white
@@ -702,11 +708,7 @@
                   (fn [e]
                     (swap! !state update-in [0 :visible?] not)
                     nil)}))
-             (page/elvc
-               [:div.popover-body
-                {:style (when inline?
-                          {:display 'inline})}]
-               body)
+             body
              [:div
               {:style (merge
                         {:position 'absolute
@@ -714,7 +716,7 @@
                          :opacity (if visible?
                                     1
                                     0)
-                         :z-index 1000
+                         :z-index 2000
                          :pointer-events (if visible?
                                            'inherit
                                            'none)}
@@ -793,13 +795,13 @@
                                   nil)
                   :style (merge
                            {:flex 1
-                            :z-index 100
+                            :z-index 2000
                             :border-radius 5
                             :position 'relative
                             :overflow 'hidden
                             :background-color 'black
                             :color 'white
-                            :padding "7px 10px"
+                            :padding (when-not no-pad? "7px 10px")
                             :font-size 14
                             :text-align 'center
                             :box-shadow "0 4px 8px 0 rgba(0,0,0,0.12), 0 2px 4px 0 rgba(0,0,0,0.08)"}
@@ -855,7 +857,6 @@
                        :stroke border-color
                        :stroke-width 6
                        :points "0,100 50,8 100,100"}])]])]]]))}))))
-
 
 #?
 (:cljs

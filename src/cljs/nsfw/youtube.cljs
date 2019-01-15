@@ -8,7 +8,10 @@
             [cljs-http.client :as hc]
             [cljs.core.async :as async
              :refer [<! >! chan close! put! take! timeout]
-             :refer-macros [go go-loop]])
+             :refer-macros [go go-loop]]
+            [taoensso.timbre
+             :as log
+             :include-macros true])
   (:require-macros [cljs.core.async.macros :refer [go go-loop]]))
 
 (defonce !tag (atom nil))
@@ -38,7 +41,10 @@
 
 (defn seek-to [p ms & [allow-seek-ahead?]]
   (when p
-    (.seekTo p (/ ms 1000) allow-seek-ahead?)))
+    (try
+      (.seekTo p (/ ms 1000) allow-seek-ahead?)
+      (catch js/Error e
+        (log/warn "nsfw.youtube: player not initialized")))))
 
 (defn mute [p]
   (when p

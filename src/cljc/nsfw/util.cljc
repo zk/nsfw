@@ -262,9 +262,10 @@
             opts))))
     :cljs
     (defn from-transit [s & [opts]]
-      (transit/read
-        (transit/reader :json opts)
-        s)))
+      (when s
+        (transit/read
+          (transit/reader :json opts)
+          s))))
 
 (defn url-encode [s]
   (when s
